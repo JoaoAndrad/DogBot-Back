@@ -37,6 +37,18 @@ services:
       # enable autoreload via watchmedo when set to '1'
       - DEV_AUTORELOAD=1
 
+  spotify-worker:
+    build:
+      context: .
+      dockerfile: Dockerfilelocal
+    env_file:
+      - .env.development
+      - .env
+    depends_on:
+      - db
+    command: sh -c "while true; do python manage.py spotify_jobs all && sleep 300; done"
+    restart: unless-stopped
+
   adminer:
     image: adminer:latest
     restart: always

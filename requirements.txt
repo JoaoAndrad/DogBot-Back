@@ -8,3 +8,4 @@ djangorestframework>=3.14
 django-cors-headers>=3.15
 watchdog>=2.1
 google-cloud-firestore>=2.11
+requests>=2.0
