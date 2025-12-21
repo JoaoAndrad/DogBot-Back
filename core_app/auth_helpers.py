@@ -27,7 +27,9 @@ def bot_required(view_func):
     @wraps(view_func)
     def _wrapped(request, *args, **kwargs):
         secret = getattr(settings, "BOT_SECRET", None)
-        header = request.headers.get("X-Bot-Secret") or request.META.get("HTTP_X_BOT_SECRET")
+        header = request.headers.get("X-Bot-Secret") or request.META.get(
+            "HTTP_X_BOT_SECRET"
+        )
         if not secret or header != secret:
             return HttpResponseForbidden("Forbidden")
         return view_func(request, *args, **kwargs)
@@ -38,5 +40,7 @@ def bot_required(view_func):
 def verify_bot_request(request):
     """Programmatic check: returns True if request is authenticated, else False."""
     secret = getattr(settings, "BOT_SECRET", None)
-    header = request.headers.get("X-Bot-Secret") or request.META.get("HTTP_X_BOT_SECRET")
+    header = request.headers.get("X-Bot-Secret") or request.META.get(
+        "HTTP_X_BOT_SECRET"
+    )
     return bool(secret and header == secret)

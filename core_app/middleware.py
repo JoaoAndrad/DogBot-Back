@@ -18,7 +18,9 @@ class ServiceAuthMiddleware:
     def __call__(self, request):
         # Only enforce for bot API prefix; adjust if your bot uses a different path
         if request.path.startswith("/api/bot/"):
-            header = request.headers.get("X-Bot-Secret") or request.META.get("HTTP_X_BOT_SECRET")
+            header = request.headers.get("X-Bot-Secret") or request.META.get(
+                "HTTP_X_BOT_SECRET"
+            )
             if not self.secret or header != self.secret:
                 return HttpResponseForbidden("Forbidden")
         return self.get_response(request)

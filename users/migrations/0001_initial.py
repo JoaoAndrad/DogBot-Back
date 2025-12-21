@@ -14,13 +14,18 @@ class Migration(migrations.Migration):
                 (
                     "id",
                     models.BigAutoField(
-                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
                     ),
                 ),
                 (
                     "wa_id",
                     models.CharField(
-                        max_length=64, unique=True, help_text="WhatsApp id, e.g. 5511999999999@c.us"
+                        max_length=64,
+                        unique=True,
+                        help_text="WhatsApp id, e.g. 5511999999999@c.us",
                     ),
                 ),
                 ("phone", models.CharField(max_length=32, blank=True, null=True)),

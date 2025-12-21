@@ -15,7 +15,6 @@ for env_file in (
         load_dotenv(env_file)
 
 from .aws_config import *  # noqa: F401,F403,E402
-
 # Export the composed settings by importing modules
 from .base import *  # noqa: F401,F403,E402
 from .databases import *  # noqa: F401,F403,E402

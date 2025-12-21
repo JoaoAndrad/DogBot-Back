@@ -2,11 +2,8 @@ from rest_framework import permissions, viewsets
 from rest_framework.authentication import TokenAuthentication
 
 from .models import SpotifyHistory, TrainingHistory, UserProfile
-from .serializers import (
-    SpotifyHistorySerializer,
-    TrainingHistorySerializer,
-    UserProfileSerializer,
-)
+from .serializers import (SpotifyHistorySerializer, TrainingHistorySerializer,
+                          UserProfileSerializer)
 
 
 class BaseAuthMixin:

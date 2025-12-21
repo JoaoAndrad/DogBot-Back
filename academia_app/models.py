@@ -1,9 +1,12 @@
 from django.db import models
+
 from users.models import UserProfile
 
 
 class TrainingHistory(models.Model):
-    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name="training_history")
+    user = models.ForeignKey(
+        UserProfile, on_delete=models.CASCADE, related_name="training_history"
+    )
     training_date = models.DateTimeField(blank=True, null=True)
     data = models.JSONField(blank=True, null=True)
     notes = models.TextField(blank=True, null=True)

@@ -74,7 +74,11 @@ def import_spotify_history(data_path):
                 user=user,
                 track_id=it.get("track_id") or it.get("id"),
                 track_name=it.get("track_name") or it.get("name"),
-                artists=", ".join(it.get("artists", [])) if it.get("artists") else it.get("artist"),
+                artists=(
+                    ", ".join(it.get("artists", []))
+                    if it.get("artists")
+                    else it.get("artist")
+                ),
                 played_at=it.get("played_at"),
                 raw=it,
             )

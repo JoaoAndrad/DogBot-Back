@@ -11,5 +11,6 @@ urlpatterns = [
     path("api/users/", include("users.urls")),
     path("api/spotify/", include("spotify_app.urls")),
     path("api/trainings/", include("academia_app.urls")),
+    path("api/polls/", include("polls.urls")),
     path("api-token-auth/", obtain_auth_token, name="api_token_auth"),
 ]

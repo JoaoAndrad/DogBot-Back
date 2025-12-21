@@ -5,7 +5,15 @@ from rest_framework import serializers
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = None
-        fields = ["id", "wa_id", "phone", "name", "metadata", "created_at", "updated_at"]
+        fields = [
+            "id",
+            "wa_id",
+            "phone",
+            "name",
+            "metadata",
+            "created_at",
+            "updated_at",
+        ]
 
     def __init__(self, *args, **kwargs):
         if self.Meta.model is None:

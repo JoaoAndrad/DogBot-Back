@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     "users.apps.UsersConfig",
     "spotify_app.apps.SpotifyAppConfig",
     "academia_app.apps.AcademiaAppConfig",
+    "polls.apps.PollsConfig",
     # REST
     "rest_framework",
     "rest_framework.authtoken",
@@ -93,6 +94,8 @@ CORS_ALLOWED_ORIGINS = (
 )
 
 REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": ("rest_framework.authentication.TokenAuthentication",),
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework.authentication.TokenAuthentication",
+    ),
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
 }
