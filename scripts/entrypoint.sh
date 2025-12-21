@@ -3,28 +3,41 @@ set -e
 
 # Run database migrations (no input) on container start
 echo "[entrypoint] Running migrations..."
-if [ -n "${DB_HOST}" ] && [ "${DB_HOST}" != "" ]; then
-  echo "[entrypoint] Waiting for database at ${DB_HOST}:${DB_PORT:-5432}..."
+if [ -n "${DB_HOST}" ] && [ "${DB_HOST}" != "" ] || [ -n "${DATABASE_URL}" ]; then
+  echo "[entrypoint] Waiting for database..."
   # try connecting via psycopg2 until success (requires psycopg2-binary installed in image)
   python - <<'PY'
 import os, time, sys
 try:
   import psycopg2
+  from urllib.parse import urlparse
 except Exception:
   sys.exit(0)
-host=os.environ.get('DB_HOST')
-port=os.environ.get('DB_PORT','5432')
-db=os.environ.get('DB_NAME')
-user=os.environ.get('DB_USER')
-pw=os.environ.get('DB_PASSWORD')
+
+# Prefer DATABASE_URL if present
+db_url = os.environ.get('DATABASE_URL')
+if db_url:
+  parsed = urlparse(db_url)
+  host = parsed.hostname
+  port = parsed.port or 5432
+  db = parsed.path[1:] if parsed.path else None
+  user = parsed.username
+  pw = parsed.password
+else:
+  host = os.environ.get('DB_HOST')
+  port = int(os.environ.get('DB_PORT', '5432'))
+  db = os.environ.get('DB_NAME')
+  user = os.environ.get('DB_USER')
+  pw = os.environ.get('DB_PASSWORD')
+
 if not host:
   sys.exit(0)
-ok=False
+ok = False
 for i in range(60):
   try:
-    conn=psycopg2.connect(host=host,port=port,database=db or 'postgres',user=user or 'postgres',password=pw or '')
+    conn = psycopg2.connect(host=host, port=port, database=db or 'postgres', user=user or 'postgres', password=pw or '')
     conn.close()
-    ok=True
+    ok = True
     break
   except Exception:
     time.sleep(1)

@@ -10,6 +10,11 @@ try:
 except Exception:
     load_dotenv = None
 
+try:
+    import dj_database_url
+except Exception:
+    dj_database_url = None
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
@@ -87,25 +92,30 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "core.wsgi.application"
 
-# Database: default to sqlite for quick start, but read POSTGRES env if provided
-if env("DB_NAME"):
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.postgresql",
-            "NAME": env("DB_NAME"),
-            "USER": env("DB_USER", ""),
-            "PASSWORD": env("DB_PASSWORD", ""),
-            "HOST": env("DB_HOST", "localhost"),
-            "PORT": env("DB_PORT", "5432"),
-        }
-    }
+# Database: prefer universal `DATABASE_URL` (e.g. provided by SquareCloud).
+database_url = env("DATABASE_URL")
+if database_url and dj_database_url is not None:
+    DATABASES = {"default": dj_database_url.parse(database_url)}
 else:
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": str(BASE_DIR / "db.sqlite3"),
+    # Fallback to DB_* env vars (used in local docker-compose) or sqlite
+    if env("DB_NAME"):
+        DATABASES = {
+            "default": {
+                "ENGINE": "django.db.backends.postgresql",
+                "NAME": env("DB_NAME"),
+                "USER": env("DB_USER", ""),
+                "PASSWORD": env("DB_PASSWORD", ""),
+                "HOST": env("DB_HOST", "localhost"),
+                "PORT": env("DB_PORT", "5432"),
+            }
         }
-    }
+    else:
+        DATABASES = {
+            "default": {
+                "ENGINE": "django.db.backends.sqlite3",
+                "NAME": str(BASE_DIR / "db.sqlite3"),
+            }
+        }
 
 AUTH_PASSWORD_VALIDATORS = []
 
