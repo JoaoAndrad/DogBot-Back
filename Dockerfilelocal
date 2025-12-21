@@ -12,5 +12,5 @@ COPY scripts/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
-# Default to gunicorn for production-like behavior; DEV_AUTORELOAD env var can switch to runserver
-CMD ["sh", "-lc", "if [ \"${DEV_AUTORELOAD:-0}\" = \"1\" ]; then python manage.py runserver 0.0.0.0:8000; else gunicorn core.wsgi:application --bind 0.0.0.0:8000 --workers 3; fi"]
+# Default to gunicorn for production-like behavior; respect $PORT (SquareCloud provides it)
+CMD ["sh", "-lc", "if [ \"${DEV_AUTORELOAD:-0}\" = \"1\" ]; then python manage.py runserver 0.0.0.0:${PORT:-8000}; else gunicorn core.wsgi:application --bind 0.0.0.0:${PORT:-8000} --workers 3; fi"]
