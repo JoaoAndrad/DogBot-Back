@@ -2,7 +2,7 @@ name: Backend CI Build & Push
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
     paths:
       - 'backend/**'
 
@@ -35,16 +35,3 @@ jobs:
           push: true
           tags: ${{ secrets.IMAGE_NAME }}
           platforms: linux/amd64,linux/arm64
-
-      - name: Optional: Trigger SquareCloud deploy
-        if: ${{ secrets.SQUARECLOUD_API_TOKEN != '' && secrets.SQUARECLOUD_PROJECT_ID != '' && secrets.IMAGE_NAME != '' }}
-        env:
-          SQUARECLOUD_API_TOKEN: ${{ secrets.SQUARECLOUD_API_TOKEN }}
-          SQUARECLOUD_PROJECT_ID: ${{ secrets.SQUARECLOUD_PROJECT_ID }}
-          IMAGE_NAME: ${{ secrets.IMAGE_NAME }}
-        run: |
-          echo "Triggering SquareCloud deploy for project ${SQUARECLOUD_PROJECT_ID}"
-          curl -s -X POST "https://api.squarecloud.app/v1/apps/${SQUARECLOUD_PROJECT_ID}/deploy" \
-            -H "Authorization: Bearer ${SQUARECLOUD_API_TOKEN}" \
-            -H "Content-Type: application/json" \
-            -d "{\"image\":\"${IMAGE_NAME}\"}" || true
