@@ -30,6 +30,13 @@ DEBUG = env("DEBUG", "true").lower() in ("1", "true", "yes")
 
 ALLOWED_HOSTS = env("ALLOWED_HOSTS", "localhost").split(",")
 
+# Optional canonical domain for the deployed DogBot (e.g. dogbot.squareweb.app)
+# If provided via `CANONICAL_DOMAIN`, ensure it's present in ALLOWED_HOSTS.
+CANONICAL_DOMAIN = env("CANONICAL_DOMAIN") or env("DOGBOT_DOMAIN")
+if CANONICAL_DOMAIN:
+    if CANONICAL_DOMAIN not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(CANONICAL_DOMAIN)
+
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -117,6 +124,11 @@ MEDIA_ROOT = BASE_DIR / "media"
 CORS_ALLOWED_ORIGINS = (
     env("CORS_ALLOWED_ORIGINS", "").split(",") if env("CORS_ALLOWED_ORIGINS") else []
 )
+# Ensure canonical domain is allowed for CORS (use https scheme)
+if CANONICAL_DOMAIN:
+    canonical_origin = f"https://{CANONICAL_DOMAIN}"
+    if canonical_origin not in CORS_ALLOWED_ORIGINS:
+        CORS_ALLOWED_ORIGINS.append(canonical_origin)
 
 # REST Framework minimal config: token auth for service-to-service calls
 REST_FRAMEWORK = {
