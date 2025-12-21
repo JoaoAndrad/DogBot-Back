@@ -1,6 +1,42 @@
 #!/bin/sh
 set -e
 
+# Prepare DB TLS certs if provided (base64 env vars) or copy local certs for dev
+DEST_DIR=/secrets/postgres
+mkdir -p "$DEST_DIR"
+decoded=0
+if [ -n "$PG_SSLROOTCERT_B64" ] || [ -n "$PG_SSLCERT_B64" ] || [ -n "$PG_SSLKEY_B64" ]; then
+  echo "[entrypoint] Decoding DB certificates from env vars..."
+  if [ -n "$PG_SSLROOTCERT_B64" ]; then
+    echo "$PG_SSLROOTCERT_B64" | base64 -d > "$DEST_DIR/root.crt" && chmod 600 "$DEST_DIR/root.crt"
+    echo "[entrypoint] Wrote $DEST_DIR/root.crt"
+  fi
+  if [ -n "$PG_SSLCERT_B64" ]; then
+    echo "$PG_SSLCERT_B64" | base64 -d > "$DEST_DIR/client.crt" && chmod 600 "$DEST_DIR/client.crt"
+    echo "[entrypoint] Wrote $DEST_DIR/client.crt"
+  fi
+  if [ -n "$PG_SSLKEY_B64" ]; then
+    echo "$PG_SSLKEY_B64" | base64 -d > "$DEST_DIR/client.key" && chmod 600 "$DEST_DIR/client.key"
+    echo "[entrypoint] Wrote $DEST_DIR/client.key"
+  fi
+  decoded=1
+fi
+
+# For local testing: if certs are placed under backend/certificados, copy them
+if [ "$decoded" -eq 0 ] && [ -d "./backend/certificados" ]; then
+  echo "[entrypoint] Copying local certs from ./backend/certificados (dev mode)"
+  cp ./backend/certificados/* "$DEST_DIR/" || true
+  chmod 600 "$DEST_DIR"/* || true
+  decoded=1
+fi
+
+if [ "$decoded" -eq 1 ]; then
+  export PG_SSLROOTCERT="$DEST_DIR/root.crt"
+  export PG_SSLCERT="$DEST_DIR/client.crt"
+  export PG_SSLKEY="$DEST_DIR/client.key"
+  echo "[entrypoint] Exported PG_SSLCERT/PG_SSLKEY/PG_SSLROOTCERT"
+fi
+
 # Run database migrations (no input) on container start
 echo "[entrypoint] Running migrations..."
 if [ -n "${DB_HOST}" ] && [ "${DB_HOST}" != "" ] || [ -n "${DATABASE_URL}" ]; then
@@ -61,7 +97,8 @@ fi
 
 echo "[entrypoint] Running service initializer (init_service)..."
 # run our startup checks which log DB, migrations, staticfiles, spotify, WSGI etc
-python manage.py init_service --wait-db || true
+# if init_service fails (critical), exit with error to avoid running app in degraded state
+python manage.py init_service --wait-db
 
 echo "[entrypoint] Starting command: $@"
 if [ "${DEV_AUTORELOAD:-0}" = "1" ] && command -v watchmedo >/dev/null 2>&1; then

@@ -205,3 +205,7 @@ class Command(BaseCommand):
             logger.info("Service initialization complete — ready to accept requests")
         else:
             logger.error("Service initialization incomplete — check above errors")
+            # Exit non-zero so callers (entrypoint) can abort startup when critical checks fail
+            sys.exit(1)
+        # normal exit
+        return
