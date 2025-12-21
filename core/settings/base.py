@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     "spotify_app.apps.SpotifyAppConfig",
     "academia_app.apps.AcademiaAppConfig",
     "polls.apps.PollsConfig",
+    "messages.apps.MessagesConfig",
     # REST
     "rest_framework",
     "rest_framework.authtoken",

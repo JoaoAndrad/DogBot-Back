@@ -75,7 +75,26 @@ class VoteCreateAPIView(APIView):
         poll = get_object_or_404(Poll, pk=msg_id)
         data = request.data.copy()
         data["poll"] = poll.id
-        serializer = VoteSerializer(data=data)
-        serializer.is_valid(raise_exception=True)
-        vote = serializer.save()
-        return Response(VoteSerializer(vote).data, status=status.HTTP_201_CREATED)
+
+        # implement last-vote-wins: if a Vote by this voter for this poll exists, update it
+        voter_id = data.get("voter_id")
+        if not voter_id:
+            return Response({"detail": "voter_id required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        existing = None
+        try:
+            existing = poll.votes.filter(voter_id=voter_id).first()
+        except Exception:
+            existing = None
+
+        if existing:
+            # update existing vote
+            serializer = VoteSerializer(existing, data=data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            vote = serializer.save()
+            return Response(VoteSerializer(vote).data, status=status.HTTP_200_OK)
+        else:
+            serializer = VoteSerializer(data=data)
+            serializer.is_valid(raise_exception=True)
+            vote = serializer.save()
+            return Response(VoteSerializer(vote).data, status=status.HTTP_201_CREATED)
