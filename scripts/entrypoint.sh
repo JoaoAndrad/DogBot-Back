@@ -59,6 +59,10 @@ if [ "${DISABLE_COLLECTSTATIC:-0}" != "1" ]; then
   python manage.py collectstatic --noinput || true
 fi
 
+echo "[entrypoint] Running service initializer (init_service)..."
+# run our startup checks which log DB, migrations, staticfiles, spotify, WSGI etc
+python manage.py init_service --wait-db || true
+
 echo "[entrypoint] Starting command: $@"
 if [ "${DEV_AUTORELOAD:-0}" = "1" ] && command -v watchmedo >/dev/null 2>&1; then
   echo "[entrypoint] DEV_AUTORELOAD enabled — starting watchmedo auto-restart"
