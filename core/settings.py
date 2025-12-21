@@ -117,6 +117,26 @@ else:
             }
         }
 
+        # If the environment provides Postgres SSL client certificates/paths (decoded
+        # by the entrypoint from base64 env vars), pass them to the DB driver's
+        # connection options so psycopg2 can use client certs for mTLS.
+        pg_sslmode = env("PG_SSLMODE") or env("PGSSLMODE")
+        pg_sslcert = env("PG_SSLCERT") or env("PGSSLCERT")
+        pg_sslkey = env("PG_SSLKEY") or env("PGSSLKEY")
+        pg_sslrootcert = env("PG_SSLROOTCERT") or env("PGSSLROOTCERT")
+        if "default" in DATABASES:
+            options = DATABASES["default"].get("OPTIONS", {})
+            if pg_sslmode:
+                options["sslmode"] = pg_sslmode
+            if pg_sslcert:
+                options["sslcert"] = pg_sslcert
+            if pg_sslkey:
+                options["sslkey"] = pg_sslkey
+            if pg_sslrootcert:
+                options["sslrootcert"] = pg_sslrootcert
+            if options:
+                DATABASES["default"]["OPTIONS"] = options
+
 AUTH_PASSWORD_VALIDATORS = []
 
 LANGUAGE_CODE = "en-us"
