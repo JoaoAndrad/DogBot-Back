@@ -11,6 +11,8 @@ from django.db.utils import OperationalError
 
 import requests
 from urllib.parse import urlparse
+import socket
+import traceback
 try:
     import psycopg2
 except Exception:
@@ -68,10 +70,25 @@ class Command(BaseCommand):
                         conn.close()
                         db_ok = True
                         break
-                    except Exception:
+                    except Exception as exc:
+                        logger.debug(f"psycopg2 connect exception (attempt {i+1}): {exc}")
                         time.sleep(1)
                 if not db_ok:
                     logger.error("Database (DATABASE_URL) did not become available (timeout)")
+                    # Add diagnostics: DNS resolution and raw socket attempt
+                    try:
+                        infos = socket.getaddrinfo(host, port)
+                        logger.error(f"DNS resolution for {host}:{port} returned {len(infos)} entries")
+                    except Exception as dex:
+                        logger.error(f"DNS resolution failed for host {host}: {dex}")
+                    try:
+                        s = socket.socket()
+                        s.settimeout(5)
+                        s.connect((host, int(port)))
+                        s.close()
+                        logger.error("Raw socket connect unexpectedly succeeded")
+                    except Exception as sex:
+                        logger.error(f"Raw socket connect to {host}:{port} failed: {sex}")
             else:
                 try:
                     conn = psycopg2.connect(host=host, port=port, database=dbname or 'postgres', user=user, password=password, connect_timeout=5)
@@ -79,6 +96,21 @@ class Command(BaseCommand):
                     db_ok = True
                 except Exception as exc:
                     logger.error(f"Database connection (DATABASE_URL) failed: {exc}")
+                    logger.debug(traceback.format_exc())
+                    # Diagnostics: DNS resolution and socket test
+                    try:
+                        infos = socket.getaddrinfo(host, port)
+                        logger.error(f"DNS resolution for {host}:{port} returned {len(infos)} entries")
+                    except Exception as dex:
+                        logger.error(f"DNS resolution failed for host {host}: {dex}")
+                    try:
+                        s = socket.socket()
+                        s.settimeout(5)
+                        s.connect((host, int(port)))
+                        s.close()
+                        logger.error("Raw socket connect unexpectedly succeeded")
+                    except Exception as sex:
+                        logger.error(f"Raw socket connect to {host}:{port} failed: {sex}")
 
         # Fallback: use Django connection settings
         if not db_ok:
