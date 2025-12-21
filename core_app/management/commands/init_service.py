@@ -10,6 +10,11 @@ from django.db import connections
 from django.db.utils import OperationalError
 
 import requests
+from urllib.parse import urlparse
+try:
+    import psycopg2
+except Exception:
+    psycopg2 = None
 
 logger = logging.getLogger("init_service")
 
@@ -44,25 +49,58 @@ class Command(BaseCommand):
         # 1) Database connectivity
         db_ok = False
         db_conn = connections['default']
-        if options.get('wait_db'):
-            logger.info("Waiting for database to accept connections...")
-            for i in range(60):
+
+        # Prefer connecting directly via DATABASE_URL using psycopg2 when available.
+        database_url = os.environ.get('DATABASE_URL')
+        if database_url and psycopg2 is not None:
+            parsed = urlparse(database_url)
+            host = parsed.hostname
+            port = parsed.port or 5432
+            dbname = parsed.path[1:] if parsed.path else None
+            user = parsed.username
+            password = parsed.password
+
+            if options.get('wait_db'):
+                logger.info("Waiting for database (DATABASE_URL) to accept connections...")
+                for i in range(60):
+                    try:
+                        conn = psycopg2.connect(host=host, port=port, database=dbname or 'postgres', user=user, password=password, connect_timeout=5)
+                        conn.close()
+                        db_ok = True
+                        break
+                    except Exception:
+                        time.sleep(1)
+                if not db_ok:
+                    logger.error("Database (DATABASE_URL) did not become available (timeout)")
+            else:
+                try:
+                    conn = psycopg2.connect(host=host, port=port, database=dbname or 'postgres', user=user, password=password, connect_timeout=5)
+                    conn.close()
+                    db_ok = True
+                except Exception as exc:
+                    logger.error(f"Database connection (DATABASE_URL) failed: {exc}")
+
+        # Fallback: use Django connection settings
+        if not db_ok:
+            if options.get('wait_db'):
+                logger.info("Waiting for database (Django settings) to accept connections...")
+                for i in range(60):
+                    try:
+                        with db_conn.cursor() as cur:
+                            cur.execute("SELECT 1;")
+                        db_ok = True
+                        break
+                    except OperationalError:
+                        time.sleep(1)
+                if not db_ok:
+                    logger.error("Database did not become available (timeout)")
+            else:
                 try:
                     with db_conn.cursor() as cur:
                         cur.execute("SELECT 1;")
                     db_ok = True
-                    break
-                except OperationalError:
-                    time.sleep(1)
-            if not db_ok:
-                logger.error("Database did not become available (timeout)")
-        else:
-            try:
-                with db_conn.cursor() as cur:
-                    cur.execute("SELECT 1;")
-                db_ok = True
-            except Exception as exc:
-                logger.error(f"Database connection failed: {exc}")
+                except Exception as exc:
+                    logger.error(f"Database connection failed: {exc}")
 
         logger.info(f"Database connection: {'OK' if db_ok else 'FAILED'}")
 
