@@ -11,6 +11,9 @@ class AdminSidebar extends HTMLElement {
     const tpl = document.createElement("template");
     tpl.innerHTML = `
       <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/icon?family=Material+Icons+Outlined');
+
         :host { display: block; height: 100vh; }
         .sidebar {
           width: 260px;
