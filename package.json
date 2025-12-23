@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "node src/server.js",
+    "start:prod": "bash ./scripts/start-prod.sh",
     "prisma:migrate": "prisma migrate deploy",
     "prisma:generate": "prisma generate",
     "postinstall": "prisma generate"

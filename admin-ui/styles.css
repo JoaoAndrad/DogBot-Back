@@ -1,0 +1,16 @@
+body {
+  font-family: system-ui, Segoe UI, Roboto, Helvetica, Arial;
+  margin: 20px;
+}
+#controls {
+  margin-bottom: 12px;
+}
+button {
+  padding: 8px 12px;
+  margin-right: 8px;
+}
+pre {
+  background: #f7f7f8;
+  border: 1px solid #eee;
+  padding: 12px;
+}
