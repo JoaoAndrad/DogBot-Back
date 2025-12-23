@@ -54,7 +54,7 @@ class AdminSidebar extends HTMLElement {
 
         <ul class="menu-list">
           <li class="menu-item"><a href="#" class="menu-link active"><span class="material-icons-outlined">dashboard</span>Dashboard</a></li>
-          <li class="menu-item"><a href="#" class="menu-link"><span class="material-icons-outlined">people</span>Usuários</a></li>
+          <li class="menu-item"><a href="/admin/static/src/pages/Users/index.html" class="menu-link"><span class="material-icons-outlined">people</span>Usuários</a></li>
           <li class="menu-item"><a href="#" class="menu-link"><span class="material-icons-outlined">music_note</span>Spotify</a></li>
           <li class="menu-item"><a href="#" class="menu-link"><span class="material-icons-outlined">fitness_center</span>DogFort <span class="material-icons-outlined chevron">chevron_right</span></a></li>
           <li class="menu-item"><a href="#" class="menu-link"><span class="material-icons-outlined">settings</span>Configurações</a></li>

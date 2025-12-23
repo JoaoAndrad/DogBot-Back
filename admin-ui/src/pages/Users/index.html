@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>DogBot Admin — Users</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined"
+      rel="stylesheet"
+    />
+    <style>
+      /* reuse main variables from Home */
+      :root {
+        --sidebar-bg: #3b76e1;
+        --main-bg: #f4f7fe;
+        --text-dark: #333;
+        --text-light: #888;
+        --white: #ffffff;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: "Poppins", sans-serif;
+      }
+      body {
+        display: flex;
+        min-height: 100vh;
+        background: var(--main-bg);
+      }
+      .main-content {
+        flex: 1;
+        padding: 20px 30px;
+      }
+      .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 18px;
+      }
+      .page-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--text-dark);
+      }
+
+      /* Controls */
+      .controls {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
+      .search-input {
+        padding: 10px 12px;
+        border-radius: 8px;
+        border: 1px solid #d7dbe8;
+        min-width: 240px;
+      }
+      select.per-page {
+        padding: 8px 10px;
+        border-radius: 8px;
+        border: 1px solid #d7dbe8;
+      }
+      .btn {
+        background: var(--card-blue, #3b76e1);
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+      .btn.ghost {
+        background: transparent;
+        color: var(--text-dark);
+        border: 1px solid #d7dbe8;
+      }
+
+      .table-card {
+        background: white;
+        padding: 16px;
+        border-radius: 12px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      }
+      table.users-table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      table.users-table thead th {
+        text-align: left;
+        padding: 10px 12px;
+        color: var(--text-dark);
+        font-weight: 600;
+        border-bottom: 1px solid #eef2fb;
+      }
+      table.users-table tbody td {
+        padding: 10px 12px;
+        border-bottom: 1px solid #f2f4fb;
+        vertical-align: middle;
+      }
+      .actions button {
+        margin-left: 6px;
+      }
+
+      .small-muted {
+        font-size: 0.85rem;
+        color: var(--text-light);
+      }
+
+      /* Responsive: stack into cards on small screens */
+      @media (max-width: 700px) {
+        table.users-table {
+          display: block;
+        }
+        table.users-table thead {
+          display: none;
+        }
+        table.users-table tbody tr {
+          display: block;
+          margin-bottom: 12px;
+          background: #fff;
+          border-radius: 8px;
+          padding: 10px;
+        }
+        table.users-table tbody td {
+          display: flex;
+          justify-content: space-between;
+          padding: 6px 0;
+          border-bottom: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <admin-sidebar></admin-sidebar>
+
+    <main class="main-content">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Users</h1>
+          <div class="small-muted">
+            Listagem de usuários do DogBot — leitura apenas por enquanto
+          </div>
+        </div>
+
+        <div class="controls">
+          <input
+            id="searchInput"
+            class="search-input"
+            placeholder="Buscar por nome ou número"
+          />
+          <label>
+            <select id="perPage" class="per-page">
+              <option value="10">10 / página</option>
+              <option value="20" selected>20 / página</option>
+              <option value="50">50 / página</option>
+            </select>
+          </label>
+          <button
+            id="bulkDelete"
+            class="btn ghost"
+            title="Excluir selecionados"
+          >
+            Delete Selected
+          </button>
+          <button id="exportCsv" class="btn ghost">Export CSV</button>
+        </div>
+      </div>
+
+      <div class="table-card">
+        <div
+          style="
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          "
+        >
+          <div>
+            <input id="selectAll" type="checkbox" />
+            <label for="selectAll">Selecionar todos</label>
+          </div>
+          <div id="paginationInfo" class="small-muted">—</div>
+        </div>
+
+        <div id="usersContainer">
+          <table class="users-table" id="usersTable">
+            <thead>
+              <tr>
+                <th></th>
+                <th>Name</th>
+                <th>Phone</th>
+                <th>Push name</th>
+                <th>Last seen</th>
+                <th>Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="usersTbody">
+              <tr>
+                <td colspan="7">Carregando...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div
+          style="
+            margin-top: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          "
+        >
+          <div>
+            <button id="prevPage" class="btn ghost">Anterior</button>
+            <button id="nextPage" class="btn ghost">Próxima</button>
+          </div>
+          <div class="small-muted" id="pageInfo">Página 1</div>
+        </div>
+      </div>
+    </main>
+
+    <script type="module" src="/admin/static/src/pages/Users/users.js"></script>
+    <script src="/admin/static/app.js"></script>
+  </body>
+</html>
