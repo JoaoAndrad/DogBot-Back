@@ -26,6 +26,15 @@ function buildSimpleAdminRouter() {
   router.use(basicAuthMiddleware);
 
   router.get('/', (req, res) => {
+    // Prefer static SPA index if present
+    try {
+      const indexPath = path.join(__dirname, '..', 'admin-ui', 'index.html');
+      if (fs.existsSync(indexPath)) return res.sendFile(indexPath);
+    } catch (e) {
+      // ignore
+    }
+
+    // Fallback simple HTML admin page
     res.send(`
       <html>
         <head><title>DogBot Admin</title></head>
@@ -45,6 +54,13 @@ function buildSimpleAdminRouter() {
         </body>
       </html>
     `);
+  });
+
+  // Serve the SPA index explicitly if requested
+  router.get('/static/index.html', (req, res) => {
+    const indexPath = path.join(__dirname, '..', 'admin-ui', 'index.html');
+    if (fs.existsSync(indexPath)) return res.sendFile(indexPath);
+    return res.status(404).send('Not found');
   });
 
   router.get('/db-status', async (req, res) => {
