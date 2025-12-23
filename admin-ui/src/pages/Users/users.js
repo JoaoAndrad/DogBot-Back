@@ -137,7 +137,13 @@ export async function initUsersPage() {
       actionsTd.className = "actions";
 
       const viewBtn = makeActionBtn("View", "btn ghost");
-      viewBtn.addEventListener("click", () => showDetail(id));
+      viewBtn.addEventListener("click", () => {
+        const url = `/admin/static/src/pages/Users/user_id/index.html?id=${encodeURIComponent(
+          id
+        )}`;
+        if (window && window.__admin_navigateTo) window.__admin_navigateTo(url);
+        else location.href = url;
+      });
       const editBtn = makeActionBtn("Edit", "btn ghost");
       editBtn.addEventListener("click", () => showEditModal(u));
       const delBtn = makeActionBtn("Delete", "btn ghost");
@@ -169,6 +175,15 @@ export async function initUsersPage() {
       tr.appendChild(createdTd);
       tr.appendChild(actionsTd);
       usersTbody.appendChild(tr);
+      // row click navigates to detail (ignore clicks on controls)
+      tr.addEventListener("click", (e) => {
+        if (e.target.closest("input,button,a")) return;
+        const url = `/admin/static/src/pages/Users/user_id/index.html?id=${encodeURIComponent(
+          id
+        )}`;
+        if (window && window.__admin_navigateTo) window.__admin_navigateTo(url);
+        else location.href = url;
+      });
     }
 
     pageInfo.textContent = `Página ${page}`;

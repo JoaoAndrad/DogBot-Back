@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>DogBot Admin — Carlos Silva</title>
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- Variáveis Globais (Consistentes com o projeto) --- */
+      :root {
+        --sidebar-bg: #3b76e1;
+        --main-bg: #f4f7fe;
+        --text-dark: #333;
+        --text-light: #888;
+        --text-lighter: #aaa;
+        --white: #ffffff;
+        --card-shadow: 0 5px 15px rgba(237, 237, 245, 0.8);
+        --border-color: #eef2fb;
+
+        --primary-color: #3b76e1;
+        --danger-color: #ff5b5b;
+        --success-color: #2ecc71;
+        --success-bg: #e0f7e9;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: "Poppins", sans-serif;
+      }
+
+      body {
+        display: flex;
+        min-height: 100vh;
+        background: var(--main-bg);
+        color: var(--text-dark);
+      }
+
+      /* Placeholder para o Web Component da sidebar */
+      admin-sidebar {
+        flex-shrink: 0;
+      }
+
+      .main-content {
+        flex: 1;
+        padding: 30px;
+        overflow-y: auto;
+      }
+
+      /* --- Classes Utilitárias de Card --- */
+      .card {
+        background: var(--white);
+        padding: 25px;
+        border-radius: 20px;
+        box-shadow: var(--card-shadow);
+      }
+
+      /* --- HEADER DO USUÁRIO --- */
+      .user-header-card {
+        display: flex;
+        align-items: center;
+        gap: 25px;
+        margin-bottom: 30px;
+      }
+
+      .user-header-avatar {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        overflow: hidden;
+        flex-shrink: 0;
+      }
+      .user-header-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .user-header-info {
+        flex: 1;
+      }
+
+      .user-header-info h1 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 5px;
+      }
+
+      .user-details-list p {
+        color: var(--text-light);
+        font-size: 0.95rem;
+        margin-bottom: 2px;
+      }
+
+      .user-header-actions {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 15px;
+      }
+
+      .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+      }
+      .status-badge.active {
+        background-color: var(--success-bg);
+        color: var(--success-color);
+      }
+      .status-dot {
+        width: 8px;
+        height: 8px;
+        background-color: currentColor;
+        border-radius: 50%;
+      }
+
+      .action-buttons-row {
+        display: flex;
+        gap: 10px;
+      }
+
+      /* Botões (Reutilizados/Adaptados) */
+      .btn {
+        padding: 10px 20px;
+        border-radius: 12px;
+        border: 1px solid transparent;
+        cursor: pointer;
+        font-size: 0.9rem;
+        font-weight: 500;
+        transition: 0.3s;
+      }
+      .btn-primary {
+        background: var(--primary-color);
+        color: white;
+      }
+      .btn-primary:hover {
+        background: #2a5db5;
+      }
+      .btn-danger-outline {
+        background: white;
+        color: var(--danger-color);
+        border-color: var(--danger-color);
+      }
+      .btn-danger-outline:hover {
+        background: #fff5f5;
+      }
+
+      /* --- LINHA DE ESTATÍSTICAS RÁPIDAS --- */
+      .quick-stats-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 25px;
+        margin-bottom: 30px;
+      }
+
+      .stat-small-card h3 {
+        font-size: 0.9rem;
+        color: var(--text-light);
+        font-weight: 500;
+        margin-bottom: 10px;
+      }
+      .stat-small-card p {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: var(--text-dark);
+      }
+
+      /* --- DIVISÃO DE CONTEÚDO PRINCIPAL (2 colunas) --- */
+      .content-split {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 25px;
+      }
+
+      /* --- Coluna da Esquerda (Tabs & Timeline) --- */
+      .tab-header {
+        display: flex;
+        border-bottom: 1px solid var(--border-color);
+        margin-bottom: 25px;
+        margin-left: -25px; /* Compensar padding do card */
+        margin-right: -25px;
+        padding: 0 25px;
+      }
+
+      .tab-btn {
+        padding: 15px 20px;
+        background: none;
+        border: none;
+        border-bottom: 3px solid transparent;
+        cursor: pointer;
+        font-weight: 600;
+        color: var(--text-light);
+        transition: 0.3s;
+      }
+      .tab-btn.active {
+        color: var(--primary-color);
+        border-bottom-color: var(--primary-color);
+      }
+
+      /* Timeline CSS */
+      .timeline-list {
+        list-style: none;
+        position: relative;
+        padding-left: 20px; /* Espaço para a linha */
+      }
+
+      .timeline-item {
+        position: relative;
+        padding-left: 25px; /* Espaço entre a bolinha e o texto */
+        padding-bottom: 25px;
+        border-left: 2px solid var(--border-color); /* A linha vertical */
+      }
+
+      .timeline-item:last-child {
+        border-left-color: transparent; /* Remove linha do último item */
+      }
+
+      /* A bolinha da timeline */
+      .timeline-item::before {
+        content: "";
+        position: absolute;
+        left: -7px; /* Centraliza a bolinha na linha */
+        top: 5px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background-color: var(--border-color); /* Cor padrão inativa */
+        transition: 0.3s;
+      }
+
+      /* Item mais recente (ativo) */
+      .timeline-item.latest::before {
+        background-color: var(--primary-color);
+        box-shadow: 0 0 0 4px #e3efff; /* Efeito de anel */
+      }
+
+      .timeline-content p.title {
+        font-weight: 500;
+        font-size: 0.95rem;
+        margin-bottom: 4px;
+      }
+      .timeline-content span.time {
+        font-size: 0.85rem;
+        color: var(--text-light);
+      }
+
+      /* --- Coluna da Direita (Info & Notes) --- */
+      .info-card h2 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 20px;
+      }
+
+      .info-field {
+        margin-bottom: 20px;
+      }
+      .info-label {
+        display: block;
+        font-size: 0.85rem;
+        color: var(--text-light);
+        margin-bottom: 5px;
+        font-weight: 500;
+      }
+      .info-value {
+        font-size: 1rem;
+        font-weight: 500;
+        color: var(--text-dark);
+      }
+
+      .admin-notes-area {
+        width: 100%;
+        padding: 15px;
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        resize: vertical;
+        min-height: 120px;
+        font-size: 0.9rem;
+        color: var(--text-dark);
+        background: #fafbff;
+        outline: none;
+      }
+      .admin-notes-area:focus {
+        border-color: var(--primary-color);
+        background: var(--white);
+      }
+
+      /* --- Responsividade --- */
+      @media (max-width: 900px) {
+        .content-split {
+          grid-template-columns: 1fr; /* Empilha as colunas */
+        }
+      }
+
+      @media (max-width: 768px) {
+        .user-header-card {
+          flex-direction: column;
+          text-align: center;
+        }
+        .user-header-actions {
+          align-items: center;
+          width: 100%;
+        }
+        .action-buttons-row {
+          width: 100%;
+        }
+        .action-buttons-row .btn {
+          flex: 1;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <admin-sidebar></admin-sidebar>
+
+    <main class="main-content">
+      <section class="card user-header-card">
+        <div class="user-header-avatar">
+          <img
+            src="https://i.pravatar.cc/150?img=8"
+            alt="Foto de Carlos Silva"
+          />
+        </div>
+        <div class="user-header-info">
+          <h1>Carlos Silva</h1>
+          <div class="user-details-list">
+            <p>+55 11 99876-5432</p>
+            <p>Joined Dec 10, 2023</p>
+          </div>
+        </div>
+        <div class="user-header-actions">
+          <div class="status-badge active">
+            <span class="status-dot"></span>
+            Active
+          </div>
+          <div class="action-buttons-row">
+            <button class="btn btn-danger-outline">Suspend User</button>
+            <button class="btn btn-primary">Edit Profile</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="quick-stats-row">
+        <div class="card stat-small-card">
+          <h3>Total Interactions</h3>
+          <p>1,450</p>
+        </div>
+        <div class="card stat-small-card">
+          <h3>Last Active</h3>
+          <p>2 hours ago</p>
+        </div>
+        <div class="card stat-small-card">
+          <h3>DogFort Plan</h3>
+          <p>Gold</p>
+        </div>
+      </section>
+
+      <section class="content-split">
+        <div class="card">
+          <div class="tab-header">
+            <button class="tab-btn active">Activity Log</button>
+            <button class="tab-btn">Spotify</button>
+            <button class="tab-btn">DogFort Data</button>
+          </div>
+
+          <div class="tab-content">
+            <ul class="timeline-list">
+              <li class="timeline-item latest">
+                <div class="timeline-content">
+                  <p class="title">Checked in at Gym</p>
+                  <span class="time">2 hours ago</span>
+                </div>
+              </li>
+              <li class="timeline-item">
+                <div class="timeline-content">
+                  <p class="title">Requested Playlist "Workout Jams"</p>
+                  <span class="time">2 hours ago</span>
+                </div>
+              </li>
+              <li class="timeline-item">
+                <div class="timeline-content">
+                  <p class="title">Requested Playlist "Workout Jams"</p>
+                  <span class="time">2 hours ago</span>
+                </div>
+              </li>
+              <li class="timeline-item">
+                <div class="timeline-content">
+                  <p class="title">Requested Playlist "Workout Jams"</p>
+                  <span class="time">2 hours ago</span>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="card info-card">
+          <h2>User Information</h2>
+
+          <div class="info-field">
+            <label class="info-label">Email</label>
+            <p class="info-value">carlossilvat@gmail.com</p>
+          </div>
+
+          <div class="info-field">
+            <label class="info-label">Device type</label>
+            <p class="info-value">Apple iPhone 14 Pro</p>
+          </div>
+
+          <div style="margin-top: 30px">
+            <label class="info-label" for="adminNotes">Admin Notes</label>
+            <textarea
+              id="adminNotes"
+              class="admin-notes-area"
+              placeholder="Adicione notas internas sobre este usuário..."
+            >
+Admin notes to #united</textarea
+            >
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script src="/admin/static/app.js"></script>
+  </body>
+</html>
