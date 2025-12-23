@@ -55,6 +55,8 @@ class AdminSidebar extends HTMLElement {
         <ul class="menu-list">
           <li class="menu-item"><a href="/admin/static/src/pages/Home/index.html" class="menu-link"><span class="material-icons-outlined">dashboard</span>Dashboard</a></li>
           <li class="menu-item"><a href="/admin/static/src/pages/Users/index.html" class="menu-link"><span class="material-icons-outlined">people</span>Usuários</a></li>
+          <li class="menu-item"><a href="#" id="remontarBtn" class="menu-link" title="Recriar Prisma client"><span class="material-icons-outlined">restart_alt</span>Remontar</a></li>
+          <li class="menu-item"><a href="#" id="studioBtn" class="menu-link" title="Abrir Prisma Studio"><span class="material-icons-outlined">open_in_new</span>Prisma Studio</a></li>
           <li class="menu-item"><a href="#" class="menu-link"><span class="material-icons-outlined">music_note</span>Spotify</a></li>
           <li class="menu-item"><a href="#" class="menu-link"><span class="material-icons-outlined">fitness_center</span>DogFort <span class="material-icons-outlined chevron">chevron_right</span></a></li>
           <li class="menu-item"><a href="#" class="menu-link"><span class="material-icons-outlined">settings</span>Configurações</a></li>
@@ -71,6 +73,56 @@ class AdminSidebar extends HTMLElement {
       // update on history navigation
       window.addEventListener("popstate", () => this.updateActive());
       window.addEventListener("hashchange", () => this.updateActive());
+      // maintenance button handler
+      const b = this.shadowRoot.getElementById("remontarBtn");
+      if (b) {
+        b.addEventListener("click", async (ev) => {
+          ev.preventDefault();
+          if (!confirm("Recriar o cliente Prisma agora?")) return;
+          try {
+            b.classList.add("disabled");
+            const r = await fetch("/admin/api/maintenance/recreate-prisma", {
+              method: "POST",
+              credentials: "same-origin",
+            });
+            if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
+            const data = await r.json();
+            alert(data && data.message ? data.message : "OK");
+          } catch (e) {
+            console.error("remontar error", e);
+            alert("Falha ao recriar Prisma client: " + (e.message || e));
+          } finally {
+            b.classList.remove("disabled");
+          }
+        });
+      }
+      const sbtn = this.shadowRoot.getElementById("studioBtn");
+      if (sbtn) {
+        sbtn.addEventListener("click", async (ev) => {
+          ev.preventDefault();
+          if (!confirm("Iniciar Prisma Studio no servidor (porta 5555)?"))
+            return;
+          try {
+            sbtn.classList.add("disabled");
+            const r = await fetch("/admin/api/maintenance/start-studio", {
+              method: "POST",
+              credentials: "same-origin",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ port: 5555 }),
+            });
+            if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
+            const data = await r.json();
+            alert(
+              `Studio iniciado na porta ${data.port}. Acesse: http://${location.hostname}:${data.port}/`
+            );
+          } catch (e) {
+            console.error("start-studio error", e);
+            alert("Falha ao iniciar Prisma Studio: " + (e.message || e));
+          } finally {
+            sbtn.classList.remove("disabled");
+          }
+        });
+      }
     } catch (e) {
       // ignore
     }

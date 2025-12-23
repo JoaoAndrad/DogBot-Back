@@ -56,6 +56,16 @@ try {
   );
 }
 
+// Admin maintenance endpoints (recreate Prisma client, etc.)
+try {
+  app.use("/admin/api/maintenance", require("./routes/adminMaintenance"));
+} catch (e) {
+  console.warn(
+    "Failed to mount admin maintenance routes:",
+    e && e.message ? e.message : e
+  );
+}
+
 app.get("/connected", async (req, res) => {
   try {
     await testConnection();
