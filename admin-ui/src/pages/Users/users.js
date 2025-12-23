@@ -234,9 +234,13 @@ export async function initUsersPage() {
   await fetchList();
 }
 
-// auto-init when loaded on the Users page
-document.addEventListener("DOMContentLoaded", () => {
-  if (document.getElementById("usersContainer")) {
-    initUsersPage().catch((e) => console.error(e));
-  }
-});
+// auto-init when loaded on the Users page (support dynamic import)
+if (
+  typeof document !== "undefined" &&
+  document.getElementById("usersContainer")
+) {
+  // call immediately if the container exists (initial load or after router replacement)
+  initUsersPage().catch((e) => console.error(e));
+}
+
+export default initUsersPage;
