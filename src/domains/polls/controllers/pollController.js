@@ -9,9 +9,15 @@ router.use(express.json());
 router.post("/", async (req, res) => {
   try {
     const payload = req.body || {};
+    console.info("[pollController] POST /api/polls/", payload && payload.id);
     const created = await service.createPoll(payload);
+    console.info("[pollController] created poll", created && created.id);
     res.status(201).json(created);
   } catch (err) {
+    console.error(
+      "[pollController] create error",
+      err && err.message ? err.message : err
+    );
     res
       .status(500)
       .json({
@@ -25,9 +31,14 @@ router.post("/", async (req, res) => {
 router.get("/", async (req, res) => {
   try {
     const { chat_id } = req.query || {};
+    console.info("[pollController] GET /api/polls/", { chat_id });
     const rows = await service.listPolls({ chat_id });
     res.json(rows);
   } catch (err) {
+    console.error(
+      "[pollController] list error",
+      err && err.message ? err.message : err
+    );
     res
       .status(500)
       .json({
@@ -41,10 +52,18 @@ router.get("/", async (req, res) => {
 router.get("/:id/", async (req, res) => {
   try {
     const id = req.params.id;
+    console.info("[pollController] GET /api/polls/:id", id);
     const p = await service.getPoll(id);
-    if (!p) return res.status(404).json({ error: "Not found" });
+    if (!p) {
+      console.info("[pollController] GET not found", id);
+      return res.status(404).json({ error: "Not found" });
+    }
     res.json(p);
   } catch (err) {
+    console.error(
+      "[pollController] get error",
+      err && err.message ? err.message : err
+    );
     res
       .status(500)
       .json({
@@ -58,9 +77,15 @@ router.get("/:id/", async (req, res) => {
 router.delete("/:id/", async (req, res) => {
   try {
     const id = req.params.id;
+    console.info("[pollController] DELETE /api/polls/:id", id);
     await service.removePoll(id);
+    console.info("[pollController] deleted", id);
     res.json({ ok: true });
   } catch (err) {
+    console.error(
+      "[pollController] delete error",
+      err && err.message ? err.message : err
+    );
     res
       .status(500)
       .json({
@@ -75,9 +100,19 @@ router.post("/:id/votes/", async (req, res) => {
   try {
     const id = req.params.id;
     const payload = req.body || {};
+    console.info(
+      "[pollController] POST /api/polls/:id/votes",
+      id,
+      payload && payload.voter_id
+    );
     const created = await service.recordVote(id, payload);
+    console.info("[pollController] vote created", created && created.id);
     res.status(201).json(created);
   } catch (err) {
+    console.error(
+      "[pollController] record vote error",
+      err && err.message ? err.message : err
+    );
     res
       .status(500)
       .json({

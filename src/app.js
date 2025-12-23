@@ -6,6 +6,16 @@ const apiRouter = require("./routes/api");
 
 const app = express();
 app.use(express.json());
+// Request logging (logs incoming requests and response status/duration)
+try {
+  const requestLogger = require("./middleware/requestLogger");
+  app.use(requestLogger);
+} catch (e) {
+  console.warn(
+    "Request logger failed to load:",
+    e && e.message ? e.message : e
+  );
+}
 
 // Serve admin static SPA assets
 app.use(
