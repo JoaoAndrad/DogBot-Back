@@ -19,6 +19,31 @@ async function getJson(url) {
   }
 }
 
+async function doFetch(url, method = "GET", body) {
+  try {
+    const opts = { method, cache: "no-store" };
+    if (body) {
+      opts.headers = { "Content-Type": "application/json" };
+      opts.body = JSON.stringify(body);
+    }
+    const r = await fetch(url, opts);
+    let data = null;
+    try {
+      data = await r.json();
+    } catch (e) {
+      /* ignore */
+    }
+    if (!r.ok) {
+      const err = (data && data.error) || r.statusText || "Request failed";
+      throw new Error(err);
+    }
+    return data;
+  } catch (e) {
+    console.error("doFetch error", e);
+    throw e;
+  }
+}
+
 function fmtDate(ts) {
   if (!ts) return "-";
   try {
@@ -113,13 +138,23 @@ export async function initUsersPage() {
       const viewBtn = makeActionBtn("View", "btn ghost");
       viewBtn.addEventListener("click", () => showDetail(id));
       const editBtn = makeActionBtn("Edit", "btn ghost");
-      editBtn.addEventListener("click", () =>
-        alert("Edit not implemented on server yet")
-      );
+      editBtn.addEventListener("click", () => showEditModal(u));
       const delBtn = makeActionBtn("Delete", "btn ghost");
-      delBtn.addEventListener("click", () =>
-        confirmDestructive(() => alert("Delete not implemented on server yet"))
-      );
+      delBtn.addEventListener("click", () => {
+        confirmDestructive(async () => {
+          try {
+            delBtn.disabled = true;
+            await doFetch(`${API_BASE}/${encodeURIComponent(id)}`, "DELETE");
+            alert("Usuário apagado com sucesso");
+            // refresh list
+            await fetchList();
+          } catch (e) {
+            alert("Falha ao apagar usuário: " + (e.message || e));
+          } finally {
+            delBtn.disabled = false;
+          }
+        });
+      });
 
       actionsTd.appendChild(viewBtn);
       actionsTd.appendChild(editBtn);
@@ -214,11 +249,130 @@ export async function initUsersPage() {
   bulkDelete.addEventListener("click", () => {
     if (!selected.size) return alert("Nenhum usuário selecionado");
     const ok = confirm(
-      "Bulk delete is a placeholder — endpoint not implemented. Show details?"
+      "Confirmar exclusão em massa dos usuários selecionados?"
     );
-    if (ok)
-      alert("Endpoint /admin/api/users/bulk not implemented on server yet");
+    if (!ok) return;
+    (async () => {
+      try {
+        bulkDelete.disabled = true;
+        const ids = Array.from(selected);
+        const res = await doFetch(`${API_BASE}/bulk`, "POST", {
+          ids,
+          action: "delete",
+        });
+        alert(`Bulk action completa — removidos: ${res.count || 0}`);
+        selected.clear();
+        await fetchList();
+      } catch (e) {
+        alert("Falha na ação em massa: " + (e.message || e));
+      } finally {
+        bulkDelete.disabled = false;
+      }
+    })();
   });
+
+  async function showEditModal(user) {
+    // If we only got an id, fetch full user
+    let u = user;
+    if (!u || !u.id) {
+      const data = await getJson(`${API_BASE}/${encodeURIComponent(user)}`);
+      if (!data) return alert("Falha ao carregar usuário");
+      u = data;
+    }
+    const modal = document.createElement("div");
+    modal.style.position = "fixed";
+    modal.style.left = 0;
+    modal.style.top = 0;
+    modal.style.right = 0;
+    modal.style.bottom = 0;
+    modal.style.background = "rgba(0,0,0,0.4)";
+    modal.style.display = "flex";
+    modal.style.alignItems = "center";
+    modal.style.justifyContent = "center";
+    const box = document.createElement("div");
+    box.style.background = "#fff";
+    box.style.padding = "18px";
+    box.style.borderRadius = "10px";
+    box.style.width = "90%";
+    box.style.maxWidth = "600px";
+    box.style.maxHeight = "80vh";
+    box.style.overflow = "auto";
+
+    const title = document.createElement("h3");
+    title.textContent = "Editar usuário";
+
+    const form = document.createElement("div");
+    form.style.display = "grid";
+    form.style.gridGap = "8px";
+
+    const nameLabel = document.createElement("label");
+    nameLabel.textContent = "Display name";
+    const nameInput = document.createElement("input");
+    nameInput.type = "text";
+    nameInput.value = u.display_name || u.push_name || "";
+
+    const pushLabel = document.createElement("label");
+    pushLabel.textContent = "Push name";
+    const pushInput = document.createElement("input");
+    pushInput.type = "text";
+    pushInput.value = u.push_name || "";
+
+    const btnRow = document.createElement("div");
+    btnRow.style.marginTop = "8px";
+
+    const saveBtn = document.createElement("button");
+    saveBtn.className = "btn primary";
+    saveBtn.textContent = "Salvar";
+
+    const cancelBtn = document.createElement("button");
+    cancelBtn.className = "btn ghost";
+    cancelBtn.textContent = "Cancelar";
+
+    cancelBtn.addEventListener("click", () => document.body.removeChild(modal));
+
+    saveBtn.addEventListener("click", async () => {
+      try {
+        saveBtn.disabled = true;
+        const payload = {
+          display_name: nameInput.value.trim(),
+          push_name: pushInput.value.trim(),
+        };
+        await doFetch(
+          `${API_BASE}/${encodeURIComponent(u.id || u.sender_number)}`,
+          "PATCH",
+          payload
+        );
+        alert("Usuário atualizado");
+        document.body.removeChild(modal);
+        await fetchList();
+      } catch (e) {
+        alert("Falha ao atualizar: " + (e.message || e));
+      } finally {
+        saveBtn.disabled = false;
+      }
+    });
+
+    btnRow.appendChild(saveBtn);
+    btnRow.appendChild(cancelBtn);
+
+    form.appendChild(nameLabel);
+    form.appendChild(nameInput);
+    form.appendChild(pushLabel);
+    form.appendChild(pushInput);
+    form.appendChild(btnRow);
+
+    const close = document.createElement("button");
+    close.textContent = "Close";
+    close.className = "btn ghost";
+    close.style.float = "right";
+    close.addEventListener("click", () => document.body.removeChild(modal));
+
+    box.appendChild(close);
+    box.appendChild(title);
+    box.appendChild(form);
+    modal.appendChild(box);
+    document.body.appendChild(modal);
+  }
   exportCsv.addEventListener("click", () => {
     alert("Export CSV placeholder — server-side export not implemented");
   });

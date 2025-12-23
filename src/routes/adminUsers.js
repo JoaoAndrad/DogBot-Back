@@ -32,4 +32,47 @@ router.get("/:id", async (req, res) => {
   }
 });
 
+// PATCH /admin/api/users/:id
+router.patch("/:id", express.json(), async (req, res) => {
+  try {
+    const id = req.params.id;
+    const allowed = ["display_name", "push_name", "metadata", "last_known_lid"];
+    const payload = {};
+    for (const k of allowed) if (k in req.body) payload[k] = req.body[k];
+    if (Object.keys(payload).length === 0)
+      return res.status(400).json({ error: "No updatable fields provided" });
+    const updated = await userService.updateUser(id, payload);
+    res.json(updated);
+  } catch (e) {
+    console.error("user update error", e && e.message ? e.message : e);
+    res.status(500).json({ error: "Failed to update user" });
+  }
+});
+
+// DELETE /admin/api/users/:id
+router.delete("/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+    await userService.deleteUser(id);
+    res.json({ success: true });
+  } catch (e) {
+    console.error("user delete error", e && e.message ? e.message : e);
+    res.status(500).json({ error: "Failed to delete user" });
+  }
+});
+
+// POST /admin/api/users/bulk
+router.post("/bulk", express.json(), async (req, res) => {
+  try {
+    const { ids, action } = req.body || {};
+    if (!Array.isArray(ids) || !ids.length)
+      return res.status(400).json({ error: "No ids provided" });
+    const result = await userService.bulkUsers({ ids, action });
+    res.json(result);
+  } catch (e) {
+    console.error("bulk users error", e && e.message ? e.message : e);
+    res.status(500).json({ error: "Failed to perform bulk action" });
+  }
+});
+
 module.exports = router;
