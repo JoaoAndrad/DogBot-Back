@@ -7,18 +7,62 @@
     <link rel="stylesheet" href="/admin/static/styles.css" />
   </head>
   <body>
-    <div id="app">
-      <h1>DogBot Admin (MVP)</h1>
-      <div id="controls">
-        <button id="btn-status">DB Status</button>
-        <button id="btn-polls">List Polls</button>
-        <button id="btn-dbdebug">DB Debug</button>
-        <button id="btn-test-introspect">Test Introspect</button>
-        <button id="btn-grant">Grant Permissions</button>
-        <button id="btn-reconnect">Reconnect Prisma</button>
-      </div>
-      <pre id="output"></pre>
+    <div class="dashboard">
+      <aside class="sidebar">
+        <div class="brand">Dogbot Admin</div>
+        <nav>
+          <a class="nav-item active" href="#">Dashboard</a>
+          <a class="nav-item" href="#users">User Management</a>
+          <a class="nav-item" href="#spotify">Spotify Integration</a>
+          <a class="nav-item" href="#group">Group Admin</a>
+          <a class="nav-item" href="#db">Database Status</a>
+        </nav>
+        <div class="logout">Logout</div>
+      </aside>
+
+      <main class="main">
+        <header class="main-header">
+          <h2>Dashboard Overview</h2>
+        </header>
+
+        <section class="cards">
+          <div class="card metric" id="totalUsers">
+            <div class="label">Total Users:</div>
+            <div class="value">—</div>
+          </div>
+          <div class="card metric" id="activeGroups">
+            <div class="label">Active Groups:</div>
+            <div class="value">—</div>
+          </div>
+          <div class="card metric" id="pollsCreated">
+            <div class="label">Polls Created:</div>
+            <div class="value">—</div>
+          </div>
+        </section>
+
+        <section class="content">
+          <div class="recent">
+            <h3>Recent Activity</h3>
+            <div id="recentList" class="activity-list">
+              <div class="empty">No recent activity</div>
+            </div>
+          </div>
+
+          <aside class="side-panel">
+            <div class="card small" id="dbCard">
+              <div class="label">Database Status</div>
+              <div id="dbStatus" class="status">—</div>
+            </div>
+            <div class="card small">
+              <button id="btn-grant" class="action">Grant Permissions</button>
+              <button id="btn-reconnect" class="action">Reconnect DB</button>
+              <button id="btn-dbdebug" class="action">DB Debug</button>
+            </div>
+          </aside>
+        </section>
+      </main>
     </div>
+
     <script src="/admin/static/app.js"></script>
   </body>
 </html>
