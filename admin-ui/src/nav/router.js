@@ -29,6 +29,45 @@ async function applyContentFromDoc(doc) {
   if (!newMain) return;
   const currentMain = document.querySelector("main.main-content");
   if (!currentMain) return;
+  // Copy styles from fetched document into current document head
+  try {
+    const existingLinks = new Set(
+      Array.from(document.querySelectorAll('link[rel="stylesheet"]')).map(
+        (l) => l.href
+      )
+    );
+
+    // External stylesheets
+    for (const link of Array.from(
+      doc.querySelectorAll('link[rel="stylesheet"]')
+    )) {
+      if (!link.href) continue;
+      if (!existingLinks.has(link.href)) {
+        const nl = document.createElement("link");
+        nl.rel = "stylesheet";
+        nl.href = link.href;
+        document.head.appendChild(nl);
+      }
+    }
+
+    // Inline <style> tags
+    for (const st of Array.from(doc.querySelectorAll("style"))) {
+      // avoid duplicating identical style blocks naively by comparing text
+      const text = st.textContent && st.textContent.trim();
+      if (!text) continue;
+      const exists = Array.from(document.querySelectorAll("style")).some(
+        (s) => s.textContent && s.textContent.trim() === text
+      );
+      if (!exists) {
+        const ns = document.createElement("style");
+        ns.textContent = text;
+        document.head.appendChild(ns);
+      }
+    }
+  } catch (e) {
+    console.warn("Error applying styles from fetched page", e);
+  }
+
   // Replace inner HTML
   currentMain.innerHTML = newMain.innerHTML;
 
