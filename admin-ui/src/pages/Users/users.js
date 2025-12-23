@@ -124,9 +124,45 @@ export async function initUsersPage() {
       chkTd.appendChild(cb);
 
       const nameTd = document.createElement("td");
-      nameTd.textContent = u.display_name || u.push_name || "-";
+      // build the same structure as the static placeholder so styles apply
+      const userCell = document.createElement("div");
+      userCell.className = "user-cell";
+
+      const avatarDiv = document.createElement("div");
+      avatarDiv.className = "user-avatar";
+      if (u.avatar_url) {
+        const img = document.createElement("img");
+        img.src = u.avatar_url;
+        img.alt = u.display_name || "avatar";
+        avatarDiv.appendChild(img);
+      } else {
+        const initials = (u.display_name || u.push_name || "")
+          .split(" ")
+          .map((s) => s[0])
+          .join("")
+          .slice(0, 2)
+          .toUpperCase();
+        avatarDiv.textContent = initials || "DB";
+      }
+
+      const infoDiv = document.createElement("div");
+      infoDiv.className = "user-info";
+      const nameSpan = document.createElement("span");
+      nameSpan.className = "name";
+      nameSpan.textContent = u.display_name || u.push_name || "-";
+      const phoneSpan = document.createElement("span");
+      phoneSpan.className = "phone";
+      phoneSpan.textContent = u.sender_number || "-";
+
+      infoDiv.appendChild(nameSpan);
+      infoDiv.appendChild(phoneSpan);
+      userCell.appendChild(avatarDiv);
+      userCell.appendChild(infoDiv);
+      nameTd.appendChild(userCell);
+
       const phoneTd = document.createElement("td");
-      phoneTd.textContent = u.sender_number || "-";
+      // keep phone column for compatibility but leave blank (info shown in name column)
+      phoneTd.textContent = "";
       const pushTd = document.createElement("td");
       pushTd.textContent = u.push_name || "-";
       const lastTd = document.createElement("td");
