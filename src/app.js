@@ -1,5 +1,15 @@
 const express = require("express");
 const path = require("path");
+// initialize log capture early so other modules' logs are recorded
+try {
+  require("./lib/logCapture");
+} catch (e) {
+  console.warn(
+    "logCapture failed to initialize:",
+    e && e.message ? e.message : e
+  );
+}
+
 const { testConnection } = require("./db");
 const { buildAdminRouter } = require("./admin");
 const apiRouter = require("./routes/api");

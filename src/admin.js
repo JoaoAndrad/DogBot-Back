@@ -160,12 +160,10 @@ function buildSimpleAdminRouter() {
       const rows = await prisma.testIntrospect.findMany();
       res.json(rows);
     } catch (err) {
-      res
-        .status(500)
-        .json({
-          error: "Failed to query test_introspect",
-          details: err.message,
-        });
+      res.status(500).json({
+        error: "Failed to query test_introspect",
+        details: err.message,
+      });
     }
   });
 
@@ -225,21 +223,17 @@ function buildSimpleAdminRouter() {
           );
           return res.json({ fallback: true, table: tbl, rows });
         }
-        return res
-          .status(500)
-          .json({
-            error: "Failed to query polls",
-            details: err.message,
-            tables,
-          });
+        return res.status(500).json({
+          error: "Failed to query polls",
+          details: err.message,
+          tables,
+        });
       } catch (e) {
-        return res
-          .status(500)
-          .json({
-            error: "Failed to query polls",
-            details: err.message,
-            fallback_error: e && e.message ? e.message : String(e),
-          });
+        return res.status(500).json({
+          error: "Failed to query polls",
+          details: err.message,
+          fallback_error: e && e.message ? e.message : String(e),
+        });
       }
     }
   });
@@ -259,6 +253,19 @@ function buildSimpleAdminRouter() {
     }
   });
 
+  // Return recent server logs (Basic Auth protected)
+  router.get("/logs", async (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit || "200", 10) || 200;
+      const logs = require("./lib/../lib/logCapture").getRecent(limit);
+      res.json({ ok: true, count: logs.length, logs });
+    } catch (e) {
+      res
+        .status(500)
+        .json({ ok: false, error: e && e.message ? e.message : String(e) });
+    }
+  });
+
   // Allow an authenticated admin to recreate the Prisma client and re-run connectivity checks
   router.post("/reconnect", async (req, res) => {
     try {
@@ -269,12 +276,10 @@ function buildSimpleAdminRouter() {
         message: "Recreated Prisma client and verified connection",
       });
     } catch (err) {
-      res
-        .status(500)
-        .json({
-          ok: false,
-          error: err && err.message ? err.message : String(err),
-        });
+      res.status(500).json({
+        ok: false,
+        error: err && err.message ? err.message : String(err),
+      });
     }
   });
 
