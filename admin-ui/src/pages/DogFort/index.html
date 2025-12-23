@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>DogBot Admin — DogFort (Academia)</title>
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- Variáveis Globais --- */
+      :root {
+        --sidebar-bg: #3b76e1;
+        --main-bg: #f4f7fe;
+        --text-dark: #333;
+        --text-light: #888;
+        --white: #ffffff;
+        --card-shadow: 0 5px 15px rgba(237, 237, 245, 0.8);
+        --border-color: #eef2fb;
+
+        --primary-color: #3b76e1;
+        --danger-color: #ff5b5b;
+        --success-color: #2ecc71;
+
+        /* Cor Tema do DogFort (Ciano Vibrante) */
+        --dogfort-cyan: #00c897;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: "Poppins", sans-serif;
+      }
+
+      body {
+        display: flex;
+        min-height: 100vh;
+        background: var(--main-bg);
+        color: var(--text-dark);
+        overflow-x: hidden;
+      }
+
+      /* --- Estrutura Básica (Sidebar Placeholder & Main) --- */
+      .sidebar {
+        width: 260px;
+        background: var(--sidebar-bg);
+        flex-shrink: 0;
+        padding: 20px;
+        color: white;
+        display: flex;
+        flex-direction: column;
+      }
+      .brand {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 40px;
+      }
+      .brand-logo {
+        width: 80px;
+        height: 80px;
+        background: #fff;
+        border-radius: 50%;
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: var(--sidebar-bg);
+        font-weight: bold;
+        font-size: 12px;
+      }
+      .menu-link {
+        display: flex;
+        align-items: center;
+        padding: 12px 15px;
+        text-decoration: none;
+        color: rgba(255, 255, 255, 0.8);
+        border-radius: 12px;
+        margin-bottom: 5px;
+        transition: 0.3s;
+      }
+      .menu-link:hover,
+      .menu-link.active {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+      }
+      .menu-link .material-icons-outlined {
+        margin-right: 15px;
+      }
+
+      .main-content {
+        flex: 1;
+        padding: 30px;
+        overflow-y: auto;
+      }
+
+      /* Header da Página */
+      .page-header-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+      }
+      .page-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+      }
+      .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        color: var(--text-light);
+      }
+      .header-icon-btn {
+        position: relative;
+        cursor: pointer;
+      }
+      .badge-notify {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background: var(--danger-color);
+        color: white;
+        font-size: 0.7rem;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .profile-avatar-small {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        overflow: hidden;
+      }
+      .profile-avatar-small img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      /* Classes Utilitárias */
+      .card {
+        background: var(--white);
+        padding: 25px;
+        border-radius: 20px;
+        box-shadow: var(--card-shadow);
+      }
+      .text-cyan {
+        color: var(--dogfort-cyan);
+      }
+      .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+      }
+      .section-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+      }
+      .section-counter {
+        font-size: 0.9rem;
+        color: var(--text-light);
+      }
+
+      /* --- 1. TOP STATUS CARDS (CYAN THEME) --- */
+      .status-cards-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 25px;
+        margin-bottom: 30px;
+      }
+
+      .card.cyan-theme {
+        background: var(--dogfort-cyan);
+        color: var(--white);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .status-info h3 {
+        font-size: 0.95rem;
+        font-weight: 500;
+        margin-bottom: 5px;
+        opacity: 0.9;
+      }
+      .status-info p.big-number {
+        font-size: 2rem;
+        font-weight: 700;
+      }
+      .status-info span.unit {
+        font-size: 1rem;
+        font-weight: 600;
+        opacity: 0.8;
+      }
+
+      .status-icon-large {
+        font-size: 3.5rem;
+        opacity: 0.3;
+      }
+
+      /* Layout específico para o card do Líder */
+      .leader-card-content {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-top: 10px;
+      }
+      .leader-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        border: 2px solid rgba(255, 255, 255, 0.5);
+        overflow: hidden;
+      }
+      .leader-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .leader-details .leader-name {
+        font-weight: 600;
+        font-size: 1.1rem;
+      }
+      .leader-details .leader-xp {
+        font-size: 0.9rem;
+        opacity: 0.9;
+      }
+
+      /* --- 2. MIDDLE SPLIT (Trend & Leaderboard) --- */
+      .middle-split-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 25px;
+        margin-bottom: 30px;
+      }
+
+      /* Placeholder para Gráficos */
+      .chart-placeholder-area {
+        width: 100%;
+        height: 250px;
+        background: #f8f9fc;
+        border-radius: 12px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: var(--text-light);
+        border: 1px dashed var(--border-color);
+        position: relative;
+      }
+      /* Simulando visualmente o gráfico da imagem (opcional, apenas para "look and feel") */
+      .chart-mockup-img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        opacity: 0.8;
+      }
+
+      /* Monthly Leaderboard List */
+      .leaderboard-list {
+        list-style: none;
+      }
+      .leaderboard-item {
+        display: flex;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--border-color);
+      }
+      .leaderboard-item:last-child {
+        border-bottom: none;
+      }
+
+      .rank-num {
+        font-weight: 700;
+        color: var(--text-light);
+        width: 30px;
+      }
+      .lb-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        overflow: hidden;
+        margin-right: 15px;
+      }
+      .lb-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .lb-name {
+        flex: 1;
+        font-weight: 600;
+        color: var(--text-dark);
+      }
+      .lb-xp {
+        font-weight: 700;
+        color: var(--text-dark);
+        margin-right: 10px;
+      }
+
+      .trend-icon {
+        font-size: 1.2rem;
+      }
+      .trend-up {
+        color: var(--success-color);
+      }
+      .trend-down {
+        color: var(--danger-color);
+      }
+
+      /* --- 3. BOTTOM SPLIT (Logs & Goals) --- */
+      .bottom-split-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 25px;
+      }
+
+      /* Workout Logs Timeline (Reutilizando conceito anterior com cor ciano) */
+      .workout-timeline {
+        list-style: none;
+        position: relative;
+        padding-left: 20px;
+      }
+      .workout-item {
+        position: relative;
+        padding-left: 25px;
+        padding-bottom: 25px;
+        border-left: 2px solid var(--border-color);
+      }
+      .workout-item:last-child {
+        border-left-color: transparent;
+        padding-bottom: 0;
+      }
+
+      .workout-item::before {
+        content: "";
+        position: absolute;
+        left: -7px;
+        top: 5px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background-color: var(--dogfort-cyan);
+        box-shadow: 0 0 0 3px rgba(0, 200, 151, 0.2);
+      }
+
+      .log-text {
+        font-weight: 500;
+        color: var(--text-dark);
+        margin-bottom: 4px;
+      }
+      .log-xp {
+        color: var(--dogfort-cyan);
+        font-weight: 700;
+        font-size: 0.9rem;
+      }
+
+      /* Goal Overview Legend */
+      .goal-legend {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        justify-content: center;
+        margin-left: 20px;
+      }
+      .legend-item {
+        display: flex;
+        align-items: center;
+        font-size: 0.9rem;
+        color: var(--text-dark);
+        font-weight: 500;
+      }
+      .legend-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        margin-right: 10px;
+      }
+
+      /* Responsividade */
+      @media (max-width: 1024px) {
+        .middle-split-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+      @media (max-width: 768px) {
+        body {
+          flex-direction: column;
+        }
+        .sidebar {
+          width: 100%;
+          padding: 10px;
+          flex-direction: row;
+          justify-content: space-between;
+          align-items: center;
+        }
+        .brand {
+          margin-bottom: 0;
+          flex-direction: row;
+          gap: 10px;
+        }
+        .brand-logo {
+          width: 40px;
+          height: 40px;
+          font-size: 10px;
+          margin-bottom: 0;
+        }
+        .brand h2,
+        .menu-list {
+          display: none;
+        }
+        .page-header-container {
+          flex-direction: row;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-logo">LOGO</div>
+        <h2>DogBot Admin</h2>
+      </div>
+      <div class="menu-list">
+        <a href="#" class="menu-link"
+          ><span class="material-icons-outlined">dashboard</span>Dashboard</a
+        >
+        <a href="#" class="menu-link"
+          ><span class="material-icons-outlined">people</span>Usuários</a
+        >
+        <a href="#" class="menu-link"
+          ><span class="material-icons-outlined">music_note</span>Spotify</a
+        >
+        <a
+          href="#"
+          class="menu-link active"
+          style="
+            background: rgba(0, 200, 151, 0.2);
+            color: var(--dogfort-cyan);
+            font-weight: 600;
+          "
+          ><span
+            class="material-icons-outlined"
+            style="color: var(--dogfort-cyan)"
+            >fitness_center</span
+          >DogFort</a
+        >
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="page-header-container">
+        <h1 class="page-title">DogFort (Academia)</h1>
+        <div class="header-actions">
+          <span class="material-icons-outlined header-icon-btn">search</span>
+          <div class="header-icon-btn">
+            <span class="material-icons-outlined">notifications</span>
+            <span class="badge-notify">1</span>
+          </div>
+          <div class="profile-avatar-small">
+            <img src="https://i.pravatar.cc/150?img=8" alt="Profile" />
+          </div>
+        </div>
+      </div>
+
+      <section class="status-cards-grid">
+        <div class="card cyan-theme">
+          <div class="status-info">
+            <h3>Workouts Today</h3>
+            <p class="big-number">124</p>
+          </div>
+          <span class="material-icons-outlined status-icon-large"
+            >fitness_center</span
+          >
+        </div>
+        <div class="card cyan-theme">
+          <div class="status-info">
+            <h3>Total Monthly Points</h3>
+            <p class="big-number">45,200 <span class="unit">XP</span></p>
+          </div>
+          <span class="material-icons-outlined status-icon-large">star</span>
+        </div>
+        <div class="card cyan-theme">
+          <div class="status-info">
+            <h3>Active Goals</h3>
+            <p class="big-number">85 <span class="unit">Users</span></p>
+          </div>
+          <span class="material-icons-outlined status-icon-large"
+            >track_changes</span
+          >
+        </div>
+        <div class="card cyan-theme">
+          <div style="flex: 1">
+            <div class="status-info">
+              <h3>Current Leader</h3>
+            </div>
+            <div class="leader-card-content">
+              <div class="leader-avatar">
+                <img src="https://i.pravatar.cc/150?img=47" alt="Leader" />
+              </div>
+              <div class="leader-details">
+                <p class="leader-name">Ana B.</p>
+                <p class="leader-xp">2,100 XP</p>
+              </div>
+            </div>
+          </div>
+          <span class="material-icons-outlined status-icon-large"
+            >emoji_events</span
+          >
+        </div>
+      </section>
+
+      <section class="middle-split-grid">
+        <div class="card">
+          <div class="section-header">
+            <h2 class="section-title">Workout Trend (30 Days)</h2>
+            <span class="section-counter">2/3</span>
+          </div>
+          <div class="chart-placeholder-area">
+            <img
+              src="https://placehold.co/600x250/f8f9fc/00c897?text=Chart.js+Area&font=poppins"
+              class="chart-mockup-img"
+              style="object-fit: cover; border-radius: 12px"
+              alt="Workout Chart Placeholder"
+            />
+            <div
+              style="
+                position: absolute;
+                bottom: 10px;
+                left: 0;
+                right: 0;
+                display: flex;
+                justify-content: space-between;
+                padding: 0 20px;
+                color: var(--text-light);
+                font-size: 0.8rem;
+              "
+            >
+              <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span
+              ><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="section-header">
+            <h2 class="section-title">Monthly Leaderboard</h2>
+            <span class="section-counter">1/3</span>
+          </div>
+          <ul class="leaderboard-list">
+            <li class="leaderboard-item">
+              <span class="rank-num">1.</span>
+              <div class="lb-avatar">
+                <img src="https://i.pravatar.cc/150?img=47" alt="Ana" />
+              </div>
+              <span class="lb-name">Ana B.</span>
+              <span class="lb-xp">2,100 XP</span>
+              <span class="material-icons-outlined trend-icon trend-up"
+                >arrow_drop_up</span
+              >
+            </li>
+            <li class="leaderboard-item">
+              <span class="rank-num">2.</span>
+              <div class="lb-avatar">
+                <img src="https://i.pravatar.cc/150?img=3" alt="Carlos" />
+              </div>
+              <span class="lb-name">Carlos S.</span>
+              <span class="lb-xp">1,950 XP</span>
+              <span class="material-icons-outlined trend-icon trend-down"
+                >arrow_drop_down</span
+              >
+            </li>
+            <li class="leaderboard-item">
+              <span class="rank-num">3.</span>
+              <div class="lb-avatar">
+                <img src="https://i.pravatar.cc/150?img=12" alt="Pedro" />
+              </div>
+              <span class="lb-name">Pedro</span>
+              <span class="lb-xp">1,250 XP</span>
+              <span class="material-icons-outlined trend-icon trend-up"
+                >arrow_drop_up</span
+              >
+            </li>
+            <li class="leaderboard-item">
+              <span class="rank-num">4.</span>
+              <div class="lb-avatar">
+                <img src="https://i.pravatar.cc/150?img=25" alt="Mariana K" />
+              </div>
+              <span class="lb-name">Mariana K.</span>
+              <span class="lb-xp">1,000 XP</span>
+              <span class="material-icons-outlined trend-icon trend-up"
+                >arrow_drop_up</span
+              >
+            </li>
+            <li class="leaderboard-item" style="border-bottom: none">
+              <span class="rank-num">5.</span>
+              <div class="lb-avatar">
+                <img src="https://i.pravatar.cc/150?img=32" alt="Mariana J" />
+              </div>
+              <span class="lb-name">Mariana J.</span>
+              <span class="lb-xp">600 XP</span>
+              <span class="material-icons-outlined trend-icon trend-up"
+                >arrow_drop_up</span
+              >
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="bottom-split-grid">
+        <div class="card">
+          <div class="section-header">
+            <h2 class="section-title">Recent Workout Logs</h2>
+          </div>
+          <ul class="workout-timeline">
+            <li class="workout-item">
+              <p class="log-text">Pedro registrou "Leg Day"</p>
+              <span class="log-xp">+50xp</span>
+            </li>
+            <li class="workout-item">
+              <p class="log-text">Mariana registrou "Corrida 5k"</p>
+              <span class="log-xp">+80xp</span>
+            </li>
+            <li class="workout-item">
+              <p class="log-text">Carlos S. registrou "Natação"</p>
+              <span class="log-xp">+65xp</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="card" style="display: flex; align-items: center">
+          <div style="flex: 1">
+            <div class="section-header">
+              <h2 class="section-title">Goal Overview</h2>
+            </div>
+            <div
+              class="chart-placeholder-area"
+              style="height: 180px; border: none; background: transparent"
+            >
+              <img
+                src="https://placehold.co/180x180/f8f9fc/00c897?text=Donut+Chart&font=poppins"
+                style="border-radius: 50%"
+                alt="Donut Chart Placeholder"
+              />
+            </div>
+          </div>
+          <div class="goal-legend">
+            <div class="legend-item">
+              <span class="legend-dot" style="background: #00c897"></span> 40%
+              Hypertrophy
+            </div>
+            <div class="legend-item">
+              <span class="legend-dot" style="background: #009e77"></span> 35%
+              Weight Loss
+            </div>
+            <div class="legend-item">
+              <span class="legend-dot" style="background: #2ecc71"></span> 25%
+              Endurance
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
