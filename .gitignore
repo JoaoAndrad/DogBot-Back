@@ -1,34 +1,15 @@
-# Python
-__pycache__/
-*.py[cod]
-*.pyo
-*.pyd
-*.sqlite3
-*.pyc
-.env
-.env.*
-venv/
-.venv/
-
-# Django
-staticfiles/
-media/
-
-# Node
 node_modules/
-frontend/node_modules/
+.env
+dev.db
+/.idea
+/.vscode
+npm-debug.log
+dist/
 
-# WhatsApp sessions
-.wwebjs_auth/
-.wwebjs_cache/
+# Ignore prisma certs (may be provided via env/base64)
+prisma/certs/
 
-# IDEs
-.vscode/
-.idea/
-.DS_Store
-
-# Docker
-.dockerignore
-
-# Logs
-*.log
+/prisma/certs/
+/certificados/
+*.p12
+*.pem
