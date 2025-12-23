@@ -1,34 +1,34 @@
 // Resilient admin module: try AdminJS at runtime, otherwise fallback to a
 // simple basic-auth admin UI that uses Prisma directly (no extra deps).
-const express = require('express');
-const fs = require('fs');
-const path = require('path');
-const db = require('./db');
+const express = require("express");
+const fs = require("fs");
+const path = require("path");
+const db = require("./db");
 
-const ADMIN_USER = process.env.ADMIN_USER || 'admin';
-const ADMIN_PASS = process.env.ADMIN_PASS || 'changeme';
+const ADMIN_USER = process.env.ADMIN_USER || "admin";
+const ADMIN_PASS = process.env.ADMIN_PASS || "changeme";
 
 function basicAuthMiddleware(req, res, next) {
   const auth = req.headers.authorization;
-  if (!auth || !auth.startsWith('Basic ')) {
-    res.set('WWW-Authenticate', 'Basic realm="Admin"');
-    return res.status(401).send('Authentication required');
+  if (!auth || !auth.startsWith("Basic ")) {
+    res.set("WWW-Authenticate", 'Basic realm="Admin"');
+    return res.status(401).send("Authentication required");
   }
-  const creds = Buffer.from(auth.split(' ')[1] || '', 'base64').toString();
-  const [user, pass] = creds.split(':');
+  const creds = Buffer.from(auth.split(" ")[1] || "", "base64").toString();
+  const [user, pass] = creds.split(":");
   if (user === ADMIN_USER && pass === ADMIN_PASS) return next();
-  res.set('WWW-Authenticate', 'Basic realm="Admin"');
-  return res.status(401).send('Invalid credentials');
+  res.set("WWW-Authenticate", 'Basic realm="Admin"');
+  return res.status(401).send("Invalid credentials");
 }
 
 function buildSimpleAdminRouter() {
   const router = express.Router();
   router.use(basicAuthMiddleware);
 
-  router.get('/', (req, res) => {
+  router.get("/", (req, res) => {
     // Prefer static SPA index if present
     try {
-      const indexPath = path.join(__dirname, '..', 'admin-ui', 'index.html');
+      const indexPath = path.join(__dirname, "..", "admin-ui", "index.html");
       if (fs.existsSync(indexPath)) return res.sendFile(indexPath);
     } catch (e) {
       // ignore
@@ -57,32 +57,32 @@ function buildSimpleAdminRouter() {
   });
 
   // Serve the SPA index explicitly if requested
-  router.get('/static/index.html', (req, res) => {
-    const indexPath = path.join(__dirname, '..', 'admin-ui', 'index.html');
+  router.get("/static/index.html", (req, res) => {
+    const indexPath = path.join(__dirname, "..", "admin-ui", "index.html");
     if (fs.existsSync(indexPath)) return res.sendFile(indexPath);
-    return res.status(404).send('Not found');
+    return res.status(404).send("Not found");
   });
 
-  router.get('/db-status', async (req, res) => {
+  router.get("/db-status", async (req, res) => {
     try {
       await db.testConnection();
-      res.json({ status: 'connected' });
+      res.json({ status: "connected" });
     } catch (err) {
-      res.status(500).json({ status: 'error', message: err.message });
+      res.status(500).json({ status: "error", message: err.message });
     }
   });
 
   // Diagnostic endpoint: shows presence and sizes of cert files and DB URL flags.
   // Protected by the same basic auth used for the admin UI.
-  router.get('/db-debug', (req, res) => {
+  router.get("/db-debug", (req, res) => {
     try {
-      const certDir = path.join(__dirname, '..', 'prisma', 'certs');
-      const p12 = path.join(certDir, 'client-identity.p12');
-      const certPem = path.join(certDir, 'client-cert.pem');
-      const keyPem = path.join(certDir, 'client-key.pem');
-      const caPem = path.join(certDir, 'ca-certificate.crt');
+      const certDir = path.join(__dirname, "..", "prisma", "certs");
+      const p12 = path.join(certDir, "client-identity.p12");
+      const certPem = path.join(certDir, "client-cert.pem");
+      const keyPem = path.join(certDir, "client-key.pem");
+      const caPem = path.join(certDir, "ca-certificate.crt");
 
-      const statSafe = p => {
+      const statSafe = (p) => {
         try {
           if (fs.existsSync(p)) {
             const s = fs.statSync(p);
@@ -100,7 +100,7 @@ function buildSimpleAdminRouter() {
       const caStat = statSafe(caPem);
 
       // Masked DATABASE_URL flags: show whether sslidentity/sslcert present, but don't return the URL itself
-      const dbUrl = process.env.DATABASE_URL || '';
+      const dbUrl = process.env.DATABASE_URL || "";
       const hasSslIdentity = /sslidentity=/i.test(dbUrl);
       const hasSslCert = /sslcert=/i.test(dbUrl);
       const hasSslKey = /sslkey=/i.test(dbUrl);
@@ -127,12 +127,14 @@ function buildSimpleAdminRouter() {
         },
       });
     } catch (e) {
-      res.status(500).json({ ok: false, error: e && e.message ? e.message : String(e) });
+      res
+        .status(500)
+        .json({ ok: false, error: e && e.message ? e.message : String(e) });
     }
   });
 
   // Return last Prisma error recorded in the running process (masked)
-  router.get('/last-prisma-error', (req, res) => {
+  router.get("/last-prisma-error", (req, res) => {
     try {
       const lastEntry = db.getLastPrismaError && db.getLastPrismaError();
       if (!lastEntry || (!lastEntry.error && !lastEntry.diag))
@@ -146,32 +148,39 @@ function buildSimpleAdminRouter() {
       };
       res.json({ ok: err ? false : true, last: out });
     } catch (e) {
-      res.status(500).json({ ok: false, error: e && e.message ? e.message : String(e) });
+      res
+        .status(500)
+        .json({ ok: false, error: e && e.message ? e.message : String(e) });
     }
   });
 
-  router.get('/test_introspect', async (req, res) => {
+  router.get("/test_introspect", async (req, res) => {
     try {
       const prisma = db.getPrisma();
       const rows = await prisma.testIntrospect.findMany();
       res.json(rows);
     } catch (err) {
-      res.status(500).json({ error: 'Failed to query test_introspect', details: err.message });
+      res
+        .status(500)
+        .json({
+          error: "Failed to query test_introspect",
+          details: err.message,
+        });
     }
   });
 
-  router.post('/test_introspect', express.json(), async (req, res) => {
+  router.post("/test_introspect", express.json(), async (req, res) => {
     try {
       const { name } = req.body || {};
       const prisma = db.getPrisma();
       const created = await prisma.testIntrospect.create({ data: { name } });
       res.status(201).json(created);
     } catch (err) {
-      res.status(500).json({ error: 'Failed to create', details: err.message });
+      res.status(500).json({ error: "Failed to create", details: err.message });
     }
   });
 
-  router.post('/grant-permissions', async (req, res) => {
+  router.post("/grant-permissions", async (req, res) => {
     try {
       const prisma = db.getPrisma();
       // Executar GRANTs necessários para o usuário squarecloud
@@ -182,30 +191,90 @@ function buildSimpleAdminRouter() {
       await prisma.$executeRaw`ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO squarecloud`;
       await prisma.$executeRaw`ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT USAGE, SELECT ON SEQUENCES TO squarecloud`;
 
-      res.json({ success: true, message: 'Permissões concedidas ao usuário squarecloud' });
+      res.json({
+        success: true,
+        message: "Permissões concedidas ao usuário squarecloud",
+      });
     } catch (err) {
-      res.status(500).json({ error: 'Falha ao conceder permissões', details: err.message });
+      res
+        .status(500)
+        .json({ error: "Falha ao conceder permissões", details: err.message });
     }
   });
 
-  router.get('/polls', async (req, res) => {
+  router.get("/polls", async (req, res) => {
     try {
       const prisma = db.getPrisma();
       const rows = await prisma.poll.findMany();
       res.json(rows);
     } catch (err) {
-      res.status(500).json({ error: 'Failed to query polls', details: err.message });
+      // Try to provide more diagnostics: list tables and attempt a raw select
+      try {
+        const prisma = db.getPrisma();
+        const tables = await prisma.$queryRawUnsafe(
+          `SELECT tablename FROM pg_tables WHERE schemaname = 'public'`
+        );
+        // find a table that case-insensitively matches 'poll'
+        const tbl = (tables || [])
+          .map((r) => r.tablename)
+          .find((n) => n && n.toLowerCase() === "poll");
+        if (tbl) {
+          // attempt raw select using the exact table name (may need quoting)
+          const rows = await prisma.$queryRawUnsafe(
+            `SELECT * FROM "${tbl}" LIMIT 100`
+          );
+          return res.json({ fallback: true, table: tbl, rows });
+        }
+        return res
+          .status(500)
+          .json({
+            error: "Failed to query polls",
+            details: err.message,
+            tables,
+          });
+      } catch (e) {
+        return res
+          .status(500)
+          .json({
+            error: "Failed to query polls",
+            details: err.message,
+            fallback_error: e && e.message ? e.message : String(e),
+          });
+      }
+    }
+  });
+
+  // Diagnostic: list tables in public schema to aid debugging of missing relations
+  router.get("/db-tables", async (req, res) => {
+    try {
+      const prisma = db.getPrisma();
+      const tables = await prisma.$queryRawUnsafe(
+        `SELECT tablename FROM pg_tables WHERE schemaname = 'public'`
+      );
+      res.json({ tables: (tables || []).map((r) => r.tablename) });
+    } catch (err) {
+      res
+        .status(500)
+        .json({ error: "Failed to list tables", details: err.message });
     }
   });
 
   // Allow an authenticated admin to recreate the Prisma client and re-run connectivity checks
-  router.post('/reconnect', async (req, res) => {
+  router.post("/reconnect", async (req, res) => {
     try {
       await db.recreatePrismaClient();
       await db.testConnection();
-      res.json({ ok: true, message: 'Recreated Prisma client and verified connection' });
+      res.json({
+        ok: true,
+        message: "Recreated Prisma client and verified connection",
+      });
     } catch (err) {
-      res.status(500).json({ ok: false, error: err && err.message ? err.message : String(err) });
+      res
+        .status(500)
+        .json({
+          ok: false,
+          error: err && err.message ? err.message : String(err),
+        });
     }
   });
 
@@ -215,11 +284,15 @@ function buildSimpleAdminRouter() {
 function buildAdminRouter() {
   try {
     // Load AdminJS lazily; if modules are installed this will succeed.
-    const AdminJS = require('@adminjs/core');
-    const AdminJSExpress = require('@adminjs/express');
+    const AdminJS = require("@adminjs/core");
+    const AdminJSExpress = require("@adminjs/express");
 
-    const adminJs = new AdminJS({ rootPath: '/admin', branding: { companyName: 'DogBot Admin' } });
-    const cookiePassword = process.env.SESSION_SECRET || 'session-secret-change-me';
+    const adminJs = new AdminJS({
+      rootPath: "/admin",
+      branding: { companyName: "DogBot Admin" },
+    });
+    const cookiePassword =
+      process.env.SESSION_SECRET || "session-secret-change-me";
 
     const router = AdminJSExpress.buildAuthenticatedRouter(
       adminJs,
@@ -228,7 +301,7 @@ function buildAdminRouter() {
           if (email === ADMIN_USER && password === ADMIN_PASS) return { email };
           return null;
         },
-        cookieName: 'adminjs',
+        cookieName: "adminjs",
         cookiePassword,
       },
       null,
@@ -240,16 +313,16 @@ function buildAdminRouter() {
       }
     );
 
-    router.get('/db-status', async (req, res) => {
+    router.get("/db-status", async (req, res) => {
       try {
         await db.testConnection();
-        res.json({ status: 'connected' });
+        res.json({ status: "connected" });
       } catch (err) {
-        res.status(500).json({ status: 'error', message: err.message });
+        res.status(500).json({ status: "error", message: err.message });
       }
     });
 
-    router.get('/last-prisma-error', (req, res) => {
+    router.get("/last-prisma-error", (req, res) => {
       try {
         const lastEntry = db.getLastPrismaError && db.getLastPrismaError();
         if (!lastEntry || (!lastEntry.error && !lastEntry.diag))
@@ -263,7 +336,9 @@ function buildAdminRouter() {
         };
         res.json({ ok: err ? false : true, last: out });
       } catch (e) {
-        res.status(500).json({ ok: false, error: e && e.message ? e.message : String(e) });
+        res
+          .status(500)
+          .json({ ok: false, error: e && e.message ? e.message : String(e) });
       }
     });
 
