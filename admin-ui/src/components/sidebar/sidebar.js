@@ -12,7 +12,7 @@ class AdminSidebar extends HTMLElement {
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
         @import url('https://fonts.googleapis.com/icon?family=Material+Icons+Outlined');
 
-        :host { display: block; }
+        :host { display: block; height: 100vh; }
         .sidebar {
           width: 260px;
           background-color: #3b76e1;
@@ -21,6 +21,9 @@ class AdminSidebar extends HTMLElement {
           display: flex;
           flex-direction: column;
           flex-shrink: 0;
+          height: 100vh; /* ensure full viewport height */
+          position: sticky;
+          top: 0; /* keep sidebar fixed to top when content scrolls */
         }
         .brand { display:flex; flex-direction:column; align-items:center; margin-bottom:40px; }
         .brand-logo-placeholder { width:80px; height:80px; border-radius:50%; margin-bottom:10px; overflow:hidden; display:block; }
