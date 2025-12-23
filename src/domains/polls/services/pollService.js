@@ -1,11 +1,26 @@
-// Service stub for poll business logic
+const repo = require("../repo/pollRepo");
+
 async function createPoll(payload) {
-  // implement persistence via repo
-  return payload;
+  if (!payload || !payload.id) throw new Error("payload.id is required");
+  return repo.insertPoll(payload);
 }
 
 async function getPoll(id) {
-  return null;
+  if (!id) return null;
+  return repo.findPollById(id);
 }
 
-module.exports = { createPoll, getPoll };
+async function listPolls(opts) {
+  return repo.listPolls(opts || {});
+}
+
+async function removePoll(id) {
+  return repo.deletePoll(id);
+}
+
+async function recordVote(pollId, votePayload) {
+  if (!pollId) throw new Error("pollId is required");
+  return repo.insertVote(pollId, votePayload || {});
+}
+
+module.exports = { createPoll, getPoll, listPolls, removePoll, recordVote };
