@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>DogBot Admin — DogFort (Academia)</title>
+    <title>DogBot Admin — DogFort</title>
 
     <link
       href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
@@ -428,9 +428,11 @@
     </style>
   </head>
   <body>
+    <admin-sidebar></admin-sidebar>
+
     <main class="main-content">
       <div class="page-header-container">
-        <h1 class="page-title">DogFort (Academia)</h1>
+        <h1 class="page-title">DogFort</h1>
         <div class="header-actions">
           <span class="material-icons-outlined header-icon-btn">search</span>
           <div class="header-icon-btn">
@@ -641,5 +643,11 @@
         </div>
       </section>
     </main>
+
+    <script
+      type="module"
+      src="/admin/static/src/components/sidebar/sidebar.js"
+    ></script>
+    <script src="/admin/static/app.js"></script>
   </body>
 </html>
