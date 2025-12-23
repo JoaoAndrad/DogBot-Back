@@ -53,7 +53,7 @@ class AdminSidebar extends HTMLElement {
         </div>
 
         <ul class="menu-list">
-          <li class="menu-item"><a href="#" class="menu-link active"><span class="material-icons-outlined">dashboard</span>Dashboard</a></li>
+          <li class="menu-item"><a href="/admin/static/src/pages/Home/index.html" class="menu-link"><span class="material-icons-outlined">dashboard</span>Dashboard</a></li>
           <li class="menu-item"><a href="/admin/static/src/pages/Users/index.html" class="menu-link"><span class="material-icons-outlined">people</span>Usuários</a></li>
           <li class="menu-item"><a href="#" class="menu-link"><span class="material-icons-outlined">music_note</span>Spotify</a></li>
           <li class="menu-item"><a href="#" class="menu-link"><span class="material-icons-outlined">fitness_center</span>DogFort <span class="material-icons-outlined chevron">chevron_right</span></a></li>
@@ -65,6 +65,41 @@ class AdminSidebar extends HTMLElement {
     `;
 
     this.shadowRoot.appendChild(tpl.content.cloneNode(true));
+    // mark active menu item based on current URL
+    try {
+      this.updateActive();
+      // update on history navigation
+      window.addEventListener("popstate", () => this.updateActive());
+      window.addEventListener("hashchange", () => this.updateActive());
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  updateActive() {
+    const anchors = Array.from(this.shadowRoot.querySelectorAll(".menu-link"));
+    const currentPath = window.location.pathname || window.location.href;
+    for (const a of anchors) {
+      try {
+        const href = a.getAttribute("href") || "";
+        // resolve relative href to absolute path
+        const url = new URL(
+          href,
+          window.location.origin + window.location.pathname
+        );
+        const linkPath = url.pathname;
+        // consider match if paths are equal, or if currentPath contains the linkPath (without index.html)
+        const linkBase = linkPath.replace(/index\.html$/, "");
+        const isActive =
+          currentPath === linkPath ||
+          currentPath === linkBase ||
+          currentPath.startsWith(linkBase);
+        if (isActive) a.classList.add("active");
+        else a.classList.remove("active");
+      } catch (e) {
+        // ignore
+      }
+    }
   }
 }
 
