@@ -22,8 +22,11 @@ async function findPollById(id) {
 
 async function listPolls({ chat_id, limit = 50 } = {}) {
   const prisma = db.getPrisma();
-  const where = chat_id ? { chatId: String(chat_id) } : {};
-  return prisma.poll.findMany({ where, orderBy: { created_at: "desc" }, take: limit });
+  const where = chat_id ? { chat_id: String(chat_id) } : {};
+  return prisma.poll.findMany({
+    where,
+    orderBy: { created_at: "desc" },
+    take: limit,
   });
 }
 
