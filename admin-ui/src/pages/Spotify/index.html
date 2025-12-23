@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>DogBot Admin — Spotify Management</title>
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons+Round"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- Variáveis Globais --- */
+      :root {
+        --sidebar-bg: #3b76e1;
+        --main-bg: #f4f7fe;
+        --text-dark: #333;
+        --text-light: #888;
+        --text-lighter: #aaa;
+        --white: #ffffff;
+        --card-shadow: 0 5px 15px rgba(237, 237, 245, 0.8);
+        --border-color: #eef2fb;
+
+        --primary-color: #3b76e1;
+        /* Nova variável para o verde Spotify */
+        --spotify-green: #1db954;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: "Poppins", sans-serif;
+      }
+
+      body {
+        display: flex;
+        min-height: 100vh;
+        background: var(--main-bg);
+        color: var(--text-dark);
+        overflow-x: hidden;
+      }
+
+      /* --- Estrutura Básica (Sidebar placeholder & Main) --- */
+      /* (Estilos simplificados da sidebar para contexto visual) */
+      .sidebar {
+        width: 260px;
+        background: var(--sidebar-bg);
+        flex-shrink: 0;
+        padding: 20px;
+        color: white;
+        display: flex;
+        flex-direction: column;
+      }
+      .brand {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 40px;
+      }
+      .brand-logo {
+        width: 80px;
+        height: 80px;
+        background: #fff;
+        border-radius: 50%;
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: var(--sidebar-bg);
+        font-weight: bold;
+      }
+      .menu-link {
+        display: flex;
+        align-items: center;
+        padding: 12px 15px;
+        text-decoration: none;
+        color: rgba(255, 255, 255, 0.8);
+        border-radius: 12px;
+        margin-bottom: 5px;
+        transition: 0.3s;
+      }
+      .menu-link:hover,
+      .menu-link.active {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+      }
+      .menu-link .material-icons-round {
+        margin-right: 15px;
+      }
+
+      .main-content {
+        flex: 1;
+        padding: 30px;
+        overflow-y: auto;
+      }
+
+      .page-title {
+        margin-bottom: 30px;
+        font-size: 1.75rem;
+        font-weight: 700;
+      }
+
+      /* Classes Utilitárias */
+      .card {
+        background: var(--white);
+        padding: 25px;
+        border-radius: 20px;
+        box-shadow: var(--card-shadow);
+      }
+      .text-spotify {
+        color: var(--spotify-green);
+      }
+
+      /* --- 1. TOP STATUS CARDS --- */
+      .status-cards-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 25px;
+        margin-bottom: 30px;
+      }
+
+      .status-card {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+      }
+
+      .status-info h3 {
+        font-size: 0.9rem;
+        color: var(--text-light);
+        font-weight: 500;
+        margin-bottom: 10px;
+      }
+      .status-info p.big-number {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--text-dark);
+      }
+
+      .api-status-box {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 5px;
+      }
+      .api-status-icon {
+        font-size: 2rem;
+        color: var(--spotify-green);
+      }
+      .api-status-text {
+        font-size: 0.9rem;
+        font-weight: 500;
+        line-height: 1.2;
+      }
+
+      .status-icon-right {
+        font-size: 2.5rem;
+        opacity: 0.3;
+        color: var(--text-light);
+      }
+      .status-icon-right.spotify {
+        color: var(--spotify-green);
+        opacity: 1;
+      }
+
+      /* --- 2. MAIN CONTENT SPLIT (Grid 2/3 - 1/3) --- */
+      .main-split-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 25px;
+      }
+
+      .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+      }
+      .section-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+      }
+      .section-counter {
+        font-size: 0.9rem;
+        color: var(--text-light);
+      }
+
+      /* --- ESQUERDA: BOT MANAGED PLAYLISTS --- */
+      .playlists-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 20px;
+      }
+
+      .playlist-card-item {
+        background: var(--white);
+        border-radius: 16px;
+        overflow: hidden;
+        border: 1px solid var(--border-color);
+        transition: transform 0.3s, box-shadow 0.3s;
+      }
+      .playlist-card-item:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--card-shadow);
+      }
+
+      /* Container da capa com efeito de overlay Spotify */
+      .playlist-cover-container {
+        position: relative;
+        width: 100%;
+        padding-top: 100%; /* Aspect Ratio 1:1 (Quadrado) */
+        overflow: hidden;
+      }
+      .playlist-cover-container img.cover-img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      /* Overlay gradiente verde no canto inferior direito */
+      .playlist-overlay {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 60%;
+        height: 60%;
+        background: linear-gradient(
+          to top left,
+          rgba(29, 185, 84, 0.8) 0%,
+          transparent 70%
+        );
+        display: flex;
+        justify-content: flex-end;
+        align-items: flex-end;
+        padding: 15px;
+        color: white;
+      }
+      .playlist-overlay .material-icons-round {
+        font-size: 2rem;
+      }
+
+      .playlist-details {
+        padding: 15px;
+      }
+      .playlist-title {
+        font-weight: 600;
+        font-size: 0.95rem;
+        margin-bottom: 5px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .playlist-tracks {
+        font-size: 0.8rem;
+        color: var(--text-light);
+        margin-bottom: 15px;
+      }
+
+      .playlist-actions {
+        display: flex;
+        gap: 10px;
+      }
+
+      /* Botão Spotify Verde */
+      .btn-spotify-sync {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 8px;
+        background-color: var(--spotify-green);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: 0.3s;
+      }
+      .btn-spotify-sync:hover {
+        background-color: #169c46;
+      }
+      .btn-spotify-sync .material-icons-round {
+        font-size: 1.1rem;
+      }
+
+      .btn-icon-settings {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        background: none;
+        color: var(--text-light);
+        cursor: pointer;
+        transition: 0.3s;
+      }
+      .btn-icon-settings:hover {
+        border-color: var(--text-dark);
+        color: var(--text-dark);
+      }
+
+      /* --- DIREITA: SIDEBAR WIDGETS --- */
+      .sidebar-widget-container {
+        display: flex;
+        flex-direction: column;
+        gap: 25px;
+      }
+
+      /* Live Request Feed (Timeline simplificada) */
+      .timeline-feed {
+        list-style: none;
+        position: relative;
+        padding-left: 20px;
+      }
+      .timeline-feed-item {
+        position: relative;
+        padding-left: 20px;
+        padding-bottom: 25px;
+        border-left: 2px solid var(--border-color);
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+      }
+      .timeline-feed-item:last-child {
+        border-left-color: transparent;
+        padding-bottom: 0;
+      }
+      .timeline-feed-item::before {
+        content: "";
+        position: absolute;
+        left: -6px;
+        top: 0;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background-color: var(--border-color);
+      }
+
+      .feed-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        overflow: hidden;
+        flex-shrink: 0;
+      }
+      .feed-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .feed-text {
+        font-size: 0.9rem;
+        color: var(--text-dark);
+      }
+      .feed-song {
+        font-weight: 600;
+        color: var(--spotify-green);
+      }
+
+      /* Top Trending Tracks List */
+      .trending-list {
+        list-style: none;
+      }
+      .trending-item {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 15px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid var(--border-color);
+      }
+      .trending-item:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+      }
+
+      .trending-rank {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--text-light);
+        width: 20px;
+      }
+      .trending-cover {
+        width: 48px;
+        height: 48px;
+        border-radius: 8px;
+        overflow: hidden;
+        flex-shrink: 0;
+      }
+      .trending-cover img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .trending-info {
+        flex: 1;
+      }
+      .trending-title {
+        font-weight: 600;
+        font-size: 0.95rem;
+        margin-bottom: 2px;
+      }
+      .trending-requests {
+        font-size: 0.8rem;
+        color: var(--text-light);
+      }
+
+      /* --- Responsividade --- */
+      @media (max-width: 1024px) {
+        .main-split-grid {
+          grid-template-columns: 1fr; /* Empilha em telas menores */
+        }
+        .sidebar-widget-container {
+          flex-direction: row;
+          flex-wrap: wrap;
+        }
+        .sidebar-widget-container > .card {
+          flex: 1 1 300px;
+        }
+      }
+      @media (max-width: 768px) {
+        body {
+          flex-direction: column;
+        }
+        .sidebar {
+          width: 100%;
+          padding: 10px;
+          flex-direction: row;
+          justify-content: space-between;
+          align-items: center;
+        }
+        .brand {
+          margin-bottom: 0;
+          flex-direction: row;
+          gap: 10px;
+        }
+        .brand-logo {
+          width: 40px;
+          height: 40px;
+          font-size: 10px;
+          margin-bottom: 0;
+        }
+        .brand h2 {
+          display: none;
+        }
+        .menu-list {
+          display: none;
+        }
+        .sidebar-widget-container {
+          flex-direction: column;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <admin-sidebar></admin-sidebar>
+
+    <main class="main-content">
+      <h1 class="page-title">Spotify Management</h1>
+
+      <section class="status-cards-grid">
+        <div class="card status-card">
+          <div class="status-info">
+            <h3>API Status</h3>
+            <div class="api-status-box">
+              <span class="material-icons-round api-status-icon"
+                >check_circle</span
+              >
+              <div class="api-status-text">Connected<br />Token Valid</div>
+            </div>
+          </div>
+        </div>
+        <div class="card status-card">
+          <div class="status-info">
+            <h3>Requests Today</h3>
+            <p class="big-number">3,450</p>
+          </div>
+          <span class="material-icons-round status-icon-right"
+            >person_outline</span
+          >
+        </div>
+        <div class="card status-card">
+          <div class="status-info">
+            <h3>Active DJ Sessions</h3>
+            <p class="big-number">52</p>
+          </div>
+          <span class="material-icons-round status-icon-right">headphones</span>
+        </div>
+        <div class="card status-card">
+          <div class="status-info">
+            <h3>Managed Playlists</h3>
+            <p class="big-number">15</p>
+          </div>
+          <span class="material-icons-round status-icon-right spotify"
+            >queue_music</span
+          >
+        </div>
+      </section>
+
+      <section class="main-split-grid">
+        <div class="card">
+          <div class="section-header">
+            <h2 class="section-title">Bot Managed Playlists</h2>
+            <span class="section-counter">2/3 width</span>
+          </div>
+
+          <div class="playlists-grid">
+            <div class="playlist-card-item">
+              <div class="playlist-cover-container">
+                <img
+                  src="https://placehold.co/300x300/333/FFF?text=Gym+Mix"
+                  alt="Cover"
+                  class="cover-img"
+                />
+                <div class="playlist-overlay">
+                  <span class="material-icons-round">music_note</span>
+                </div>
+              </div>
+              <div class="playlist-details">
+                <h3 class="playlist-title">Gym Motivation Mix</h3>
+                <p class="playlist-tracks">34 tracks</p>
+                <div class="playlist-actions">
+                  <button class="btn-spotify-sync">
+                    <span class="material-icons-round">sync</span> Sync
+                  </button>
+                  <button class="btn-icon-settings">
+                    <span class="material-icons-round">settings</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="playlist-card-item">
+              <div class="playlist-cover-container">
+                <img
+                  src="https://placehold.co/300x300/4a148c/FFF?text=Chill"
+                  alt="Cover"
+                  class="cover-img"
+                />
+                <div class="playlist-overlay">
+                  <span class="material-icons-round">music_note</span>
+                </div>
+              </div>
+              <div class="playlist-details">
+                <h3 class="playlist-title">DogFort Chill</h3>
+                <p class="playlist-tracks">42 tracks</p>
+                <div class="playlist-actions">
+                  <button class="btn-spotify-sync">
+                    <span class="material-icons-round">sync</span> Sync
+                  </button>
+                  <button class="btn-icon-settings">
+                    <span class="material-icons-round">settings</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="playlist-card-item">
+              <div class="playlist-cover-container">
+                <img
+                  src="https://placehold.co/300x300/b71c1c/FFF?text=Bangers"
+                  alt="Cover"
+                  class="cover-img"
+                />
+                <div class="playlist-overlay">
+                  <span class="material-icons-round">music_note</span>
+                </div>
+              </div>
+              <div class="playlist-details">
+                <h3 class="playlist-title">Workout Bangers</h3>
+                <p class="playlist-tracks">58 tracks</p>
+                <div class="playlist-actions">
+                  <button class="btn-spotify-sync">
+                    <span class="material-icons-round">sync</span> Sync
+                  </button>
+                  <button class="btn-icon-settings">
+                    <span class="material-icons-round">settings</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sidebar-widget-container">
+          <div class="card">
+            <div class="section-header">
+              <h2 class="section-title">Live Request Feed</h2>
+              <span class="section-counter">1/3 width</span>
+            </div>
+            <ul class="timeline-feed">
+              <li class="timeline-feed-item">
+                <div class="feed-avatar">
+                  <img src="https://i.pravatar.cc/150?img=12" alt="User" />
+                </div>
+                <p class="feed-text">
+                  User X requested <span class="feed-song">"Song Y"</span>
+                </p>
+              </li>
+              <li class="timeline-feed-item">
+                <div class="feed-avatar">
+                  <img src="https://i.pravatar.cc/150?img=33" alt="User" />
+                </div>
+                <p class="feed-text">
+                  User Z requested <span class="feed-song">"Song W"</span>
+                </p>
+              </li>
+              <li class="timeline-feed-item">
+                <div class="feed-avatar">
+                  <img src="https://i.pravatar.cc/150?img=5" alt="User" />
+                </div>
+                <p class="feed-text">
+                  User A requested <span class="feed-song">"Song B"</span>
+                </p>
+              </li>
+            </ul>
+          </div>
+
+          <div class="card">
+            <div class="section-header">
+              <h2 class="section-title">Top Trending Tracks</h2>
+            </div>
+            <ul class="trending-list">
+              <li class="trending-item">
+                <span class="trending-rank">1.</span>
+                <div class="trending-cover">
+                  <img
+                    src="https://placehold.co/50x50/222/FFF?text=T1"
+                    alt="Cover"
+                  />
+                </div>
+                <div class="trending-info">
+                  <h4 class="trending-title">The Drone</h4>
+                  <p class="trending-requests">27 requests</p>
+                </div>
+              </li>
+              <li class="trending-item">
+                <span class="trending-rank">2.</span>
+                <div class="trending-cover">
+                  <img
+                    src="https://placehold.co/50x50/444/FFF?text=T2"
+                    alt="Cover"
+                  />
+                </div>
+                <div class="trending-info">
+                  <h4 class="trending-title">The String-Garward</h4>
+                  <p class="trending-requests">18 requests</p>
+                </div>
+              </li>
+              <li class="trending-item">
+                <span class="trending-rank">3.</span>
+                <div class="trending-cover">
+                  <img
+                    src="https://placehold.co/50x50/666/FFF?text=T3"
+                    alt="Cover"
+                  />
+                </div>
+                <div class="trending-info">
+                  <h4 class="trending-title">Found the Ard</h4>
+                  <p class="trending-requests">12 requests</p>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script
+      type="module"
+      src="/admin/static/src/components/sidebar/sidebar.js"
+    ></script>
+    <script src="/admin/static/app.js"></script>
+  </body>
+</html>

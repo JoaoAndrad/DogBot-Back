@@ -57,7 +57,7 @@ class AdminSidebar extends HTMLElement {
           <li class="menu-item"><a href="/admin/static/src/pages/Users/index.html" class="menu-link"><span class="material-icons-outlined">people</span>Usuários</a></li>
           <li class="menu-item"><a href="#" id="remontarBtn" class="menu-link" title="Recriar Prisma client"><span class="material-icons-outlined">restart_alt</span>Remontar</a></li>
           <li class="menu-item"><a href="#" id="studioBtn" class="menu-link" title="Abrir Prisma Studio"><span class="material-icons-outlined">open_in_new</span>Prisma Studio</a></li>
-          <li class="menu-item"><a href="#" class="menu-link"><span class="material-icons-outlined">music_note</span>Spotify</a></li>
+          <li class="menu-item"><a href="/admin/static/src/pages/Spotify/index.html" class="menu-link"><span class="material-icons-outlined">music_note</span>Spotify</a></li>
           <li class="menu-item"><a href="#" class="menu-link"><span class="material-icons-outlined">fitness_center</span>DogFort <span class="material-icons-outlined chevron">chevron_right</span></a></li>
           <li class="menu-item"><a href="#" class="menu-link"><span class="material-icons-outlined">settings</span>Configurações</a></li>
           <li class="menu-item"><a href="#" class="menu-link"><span class="material-icons-outlined">description</span>Logs</a></li>
