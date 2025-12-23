@@ -105,8 +105,11 @@ class AdminSidebar extends HTMLElement {
         const href = a.getAttribute("href") || "";
         const linkPath = normalize(href);
         const isActive = linkPath === currentPath;
-        if (isActive) a.classList.add("active");
-        else a.classList.remove("active");
+        if (isActive) {
+          a.classList.add("active");
+        } else {
+          a.classList.remove("active");
+        }
       } catch (e) {
         // ignore
       }
