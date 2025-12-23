@@ -431,19 +431,7 @@
     <admin-sidebar></admin-sidebar>
 
     <main class="main-content">
-      <div class="page-header-container">
-        <h1 class="page-title">DogFort</h1>
-        <div class="header-actions">
-          <span class="material-icons-outlined header-icon-btn">search</span>
-          <div class="header-icon-btn">
-            <span class="material-icons-outlined">notifications</span>
-            <span class="badge-notify">1</span>
-          </div>
-          <div class="profile-avatar-small">
-            <img src="https://i.pravatar.cc/150?img=8" alt="Profile" />
-          </div>
-        </div>
-      </div>
+      <admin-header title="DogFort"></admin-header>
 
       <section class="status-cards-grid">
         <div class="card cyan-theme">
@@ -644,6 +632,10 @@
       </section>
     </main>
 
+    <script
+      type="module"
+      src="/admin/static/src/components/header/header.js"
+    ></script>
     <script
       type="module"
       src="/admin/static/src/components/sidebar/sidebar.js"

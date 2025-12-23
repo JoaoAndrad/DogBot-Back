@@ -58,9 +58,7 @@ class AdminSidebar extends HTMLElement {
           <li class="menu-item"><a href="/admin/static/src/pages/Home/index.html" class="menu-link"><span class="material-icons-outlined">dashboard</span>Dashboard</a></li>
           <li class="menu-item"><a href="/admin/static/src/pages/Users/index.html" class="menu-link"><span class="material-icons-outlined">people</span>Usuários</a></li>
           <li class="menu-item"><a href="/admin/static/src/pages/Spotify/index.html" class="menu-link"><span class="material-icons-outlined">music_note</span>Spotify</a></li>
-          <li class="menu-item"><a href="/admin/static/src/pages/DogFort/index.html" class="menu-link"><span class="material-icons-outlined">fitness_center</span>DogFort <span class="material-icons-outlined chevron">chevron_right</span></a></li>
-          <li class="menu-item"><a href="#" class="menu-link"><span class="material-icons-outlined">settings</span>Configurações</a></li>
-          <li class="menu-item"><a href="#" class="menu-link" style="align-items:flex-start"><span class="material-icons-outlined">storage</span><div style="display:flex;flex-direction:column"><span>Database Status</span><span style="font-size:0.75rem;opacity:0.7">(Prisma)</span></div><span class="material-icons-outlined chevron" style="margin-top:5px">chevron_right</span></a></li>
+          <li class="menu-item"><a href="/admin/static/src/pages/DogFort/index.html" class="menu-link"><span class="material-icons-outlined">fitness_center</span>DogFort</a></li>
         </ul>
       </aside>
     `;

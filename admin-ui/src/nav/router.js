@@ -105,6 +105,9 @@ async function applyContentFromDoc(doc) {
   const sidebar = document.querySelector("admin-sidebar");
   if (sidebar && typeof sidebar.updateActive === "function")
     sidebar.updateActive();
+  // update header if present
+  const header = document.querySelector("admin-header");
+  if (header && typeof header.update === "function") header.update();
 }
 
 export async function navigateTo(url, replace = false) {

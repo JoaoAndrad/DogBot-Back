@@ -386,21 +386,7 @@
     <admin-sidebar></admin-sidebar>
 
     <main class="main-content">
-      <div class="page-header">
-        <div class="page-title">
-          <h1>Usuários</h1>
-          <div class="breadcrumb">
-            Gerencie os acessos e cadastros do DogBot
-          </div>
-        </div>
-        <div style="display: flex; align-items: center; gap: 10px">
-          <span
-            class="material-icons-outlined"
-            style="color: #888; cursor: pointer"
-            >notifications</span
-          >
-        </div>
-      </div>
+      <admin-header title="Usuários"></admin-header>
 
       <div class="toolbar">
         <div class="search-wrapper">
@@ -558,6 +544,10 @@
       </div>
     </main>
 
+    <script
+      type="module"
+      src="/admin/static/src/components/header/header.js"
+    ></script>
     <script
       type="module"
       src="/admin/static/src/components/sidebar/sidebar.js"

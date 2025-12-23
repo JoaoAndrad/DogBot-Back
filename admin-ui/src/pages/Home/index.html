@@ -353,25 +353,7 @@
     <admin-sidebar></admin-sidebar>
 
     <main class="main-content">
-      <header class="top-navbar">
-        <h1 class="page-title">Dashboard</h1>
-        <div class="top-actions">
-          <button class="icon-btn">
-            <span class="material-icons-outlined">storefront</span>
-          </button>
-          <button class="icon-btn">
-            <span class="material-icons-outlined">notifications</span>
-            <span class="badge">1</span>
-          </button>
-          <div id="dbBadge" class="user-profile" title="DB status"></div>
-          <div class="user-profile">
-            <img
-              src="https://placehold.co/40x40/333/fff?text=User"
-              alt="User Profile"
-            />
-          </div>
-        </div>
-      </header>
+      <admin-header></admin-header>
 
       <section class="stats-grid">
         <div class="stat-card blue">
@@ -437,6 +419,10 @@
     </main>
 
     <script type="module" src="/admin/static/src/nav/router.js"></script>
+    <script
+      type="module"
+      src="/admin/static/src/components/header/header.js"
+    ></script>
     <script
       type="module"
       src="/admin/static/src/components/sidebar/sidebar.js"
