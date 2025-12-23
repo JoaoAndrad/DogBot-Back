@@ -77,35 +77,34 @@ class AdminSidebar extends HTMLElement {
   }
 
   updateActive() {
-    const anchors = Array.from(this.shadowRoot.querySelectorAll('.menu-link'));
+    const anchors = Array.from(this.shadowRoot.querySelectorAll(".menu-link"));
     // normalize path: remove index.html and trailing slash
     const normalize = (p) => {
       try {
-        const url = new URL(p, window.location.origin + window.location.pathname);
-        let path = url.pathname || '/';
-        path = path.replace(/index\.html$/, '').replace(/\/$/, '');
-        return path === '' ? '/' : path;
+        const url = new URL(
+          p,
+          window.location.origin + window.location.pathname
+        );
+        let path = url.pathname || "/";
+        path = path.replace(/index\.html$/, "").replace(/\/$/, "");
+        return path === "" ? "/" : path;
       } catch (e) {
         try {
-          return p.replace(/index\.html$/, '').replace(/\/$/, '') || '/';
+          return p.replace(/index\.html$/, "").replace(/\/$/, "") || "/";
         } catch (e2) {
-          return '/';
+          return "/";
         }
       }
     };
 
-    const currentPath = normalize(window.location.pathname || window.location.href);
+    const currentPath = normalize(
+      window.location.pathname || window.location.href
+    );
     for (const a of anchors) {
       try {
-        const href = a.getAttribute('href') || '';
+        const href = a.getAttribute("href") || "";
         const linkPath = normalize(href);
         const isActive = linkPath === currentPath;
-        if (isActive) a.classList.add('active'); else a.classList.remove('active');
-      } catch (e) {
-        // ignore
-      }
-    }
-  }
         if (isActive) a.classList.add("active");
         else a.classList.remove("active");
       } catch (e) {
