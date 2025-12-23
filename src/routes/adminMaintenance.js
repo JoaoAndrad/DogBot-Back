@@ -1,6 +1,6 @@
 const express = require("express");
 const basicAuth = require("../middleware/adminAuth");
-const { recreatePrismaClient } = require("../db");
+const { recreatePrismaClient, getPrisma } = require("../db");
 
 const router = express.Router();
 
@@ -18,6 +18,23 @@ router.post("/recreate-prisma", async (req, res) => {
 });
 
 module.exports = router;
+
+// GET /admin/api/maintenance/prisma-info
+// Returns diagnostic info about the Prisma client (keys, presence of models)
+router.get("/prisma-info", async (req, res) => {
+  try {
+    const prisma = getPrisma();
+    const keys = prisma ? Object.keys(prisma) : [];
+    return res.json({
+      hasClient: !!prisma,
+      keys,
+      hasUserModel: !!(prisma && prisma.user),
+    });
+  } catch (e) {
+    console.error("prisma-info error", e && e.message ? e.message : e);
+    return res.status(500).json({ error: "Failed to get prisma info" });
+  }
+});
 
 // POST /admin/api/maintenance/start-studio
 // Spawn `npx prisma studio --port <port> --browser none` in background.
@@ -67,12 +84,10 @@ router.post("/generate-prisma", async (req, res) => {
       async (err, stdout, stderr) => {
         if (err) {
           console.error("prisma generate failed", err, stderr);
-          return res
-            .status(500)
-            .json({
-              error: "prisma generate failed",
-              details: stderr || String(err),
-            });
+          return res.status(500).json({
+            error: "prisma generate failed",
+            details: stderr || String(err),
+          });
         }
         try {
           // recreate client after generate
@@ -83,12 +98,10 @@ router.post("/generate-prisma", async (req, res) => {
             "recreate after generate failed",
             e && e.message ? e.message : e
           );
-          return res
-            .status(500)
-            .json({
-              error: "recreate failed",
-              details: e && e.message ? e.message : String(e),
-            });
+          return res.status(500).json({
+            error: "recreate failed",
+            details: e && e.message ? e.message : String(e),
+          });
         }
       }
     );
