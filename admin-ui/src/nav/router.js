@@ -76,8 +76,11 @@ async function applyContentFromDoc(doc) {
   for (const s of scripts) {
     try {
       if (s.type === "module" && s.src) {
-        // dynamic import the module
-        await import(s.src);
+        // import module with cache-buster so top-level initialization runs on SPA navigation
+        const url = new URL(s.src, location.href).toString();
+        const busted =
+          url + (url.includes("?") ? "&" : "?") + "_=" + Date.now();
+        await import(busted);
       } else if (s.src) {
         // regular external script
         await new Promise((res, rej) => {
