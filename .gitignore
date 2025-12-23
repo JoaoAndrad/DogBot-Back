@@ -13,3 +13,5 @@ prisma/certs/
 /certificados/
 *.p12
 *.pem
+
+backend.zip
