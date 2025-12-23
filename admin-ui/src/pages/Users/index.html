@@ -3,7 +3,8 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>DogBot Admin — Users</title>
+    <title>DogBot Admin — Usuários</title>
+
     <link
       href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
       rel="stylesheet"
@@ -12,126 +13,372 @@
       href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined"
       rel="stylesheet"
     />
+
     <style>
-      /* reuse main variables from Home */
+      /* --- Variáveis Globais (Mesmas do Dashboard) --- */
       :root {
         --sidebar-bg: #3b76e1;
         --main-bg: #f4f7fe;
         --text-dark: #333;
         --text-light: #888;
         --white: #ffffff;
+        --card-shadow: 0 5px 15px rgba(237, 237, 245, 0.8);
+        --border-color: #eef2fb;
+
+        --primary-color: #3b76e1;
+        --danger-color: #ff5b5b;
+        --success-color: #2ecc71;
       }
+
       * {
         box-sizing: border-box;
         margin: 0;
         padding: 0;
         font-family: "Poppins", sans-serif;
       }
+
       body {
         display: flex;
         min-height: 100vh;
         background: var(--main-bg);
+        color: var(--text-dark);
       }
+
+      /* O Web Component da sidebar deve lidar com seu próprio estilo interno, 
+         mas garantimos que ele não quebre o flex do body */
+      admin-sidebar {
+        flex-shrink: 0;
+      }
+
       .main-content {
         flex: 1;
-        padding: 20px 30px;
+        padding: 30px;
+        overflow-y: auto;
       }
+
+      /* --- Cabeçalho da Página --- */
       .page-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        gap: 16px;
-        margin-bottom: 18px;
+        margin-bottom: 30px;
       }
-      .page-title {
-        font-size: 1.5rem;
-        font-weight: 600;
+
+      .page-title h1 {
+        font-size: 1.75rem;
+        font-weight: 700;
         color: var(--text-dark);
       }
 
-      /* Controls */
-      .controls {
+      .breadcrumb {
+        font-size: 0.9rem;
+        color: var(--text-light);
+        margin-top: 5px;
+      }
+
+      /* --- Barra de Ferramentas / Filtros --- */
+      .toolbar {
         display: flex;
-        gap: 12px;
+        justify-content: space-between;
         align-items: center;
-      }
-      .search-input {
-        padding: 10px 12px;
-        border-radius: 8px;
-        border: 1px solid #d7dbe8;
-        min-width: 240px;
-      }
-      select.per-page {
-        padding: 8px 10px;
-        border-radius: 8px;
-        border: 1px solid #d7dbe8;
-      }
-      .btn {
-        background: var(--card-blue, #3b76e1);
-        color: white;
-        border: none;
-        padding: 8px 12px;
-        border-radius: 8px;
-        cursor: pointer;
-      }
-      .btn.ghost {
-        background: transparent;
-        color: var(--text-dark);
-        border: 1px solid #d7dbe8;
+        margin-bottom: 25px;
+        flex-wrap: wrap;
+        gap: 15px;
       }
 
-      .table-card {
-        background: white;
-        padding: 16px;
-        border-radius: 12px;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      .search-wrapper {
+        position: relative;
+        flex: 1;
+        max-width: 400px;
       }
-      table.users-table {
+
+      .search-wrapper input {
         width: 100%;
-        border-collapse: collapse;
-      }
-      table.users-table thead th {
-        text-align: left;
-        padding: 10px 12px;
-        color: var(--text-dark);
-        font-weight: 600;
-        border-bottom: 1px solid #eef2fb;
-      }
-      table.users-table tbody td {
-        padding: 10px 12px;
-        border-bottom: 1px solid #f2f4fb;
-        vertical-align: middle;
-      }
-      .actions button {
-        margin-left: 6px;
+        padding: 12px 15px 12px 45px;
+        border-radius: 12px;
+        border: 1px solid transparent;
+        background-color: var(--white);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+        font-size: 0.9rem;
+        outline: none;
+        transition: 0.3s;
       }
 
-      .small-muted {
-        font-size: 0.85rem;
+      .search-wrapper input:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 2px 10px rgba(59, 118, 225, 0.1);
+      }
+
+      .search-wrapper .material-icons-outlined {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
         color: var(--text-light);
       }
 
-      /* Responsive: stack into cards on small screens */
-      @media (max-width: 700px) {
-        table.users-table {
-          display: block;
+      .actions-group {
+        display: flex;
+        gap: 10px;
+      }
+
+      /* --- Botões --- */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        border-radius: 12px;
+        border: none;
+        cursor: pointer;
+        font-size: 0.9rem;
+        font-weight: 500;
+        transition: 0.3s;
+      }
+
+      .btn-primary {
+        background-color: var(--primary-color);
+        color: var(--white);
+        box-shadow: 0 4px 10px rgba(59, 118, 225, 0.3);
+      }
+
+      .btn-primary:hover {
+        background-color: #2a5db5;
+        transform: translateY(-2px);
+      }
+
+      .btn-ghost {
+        background-color: var(--white);
+        color: var(--text-light);
+        border: 1px solid var(--border-color);
+      }
+
+      .btn-ghost:hover {
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+      }
+
+      .btn-danger-ghost {
+        background-color: var(--white);
+        color: var(--danger-color);
+        border: 1px solid var(--border-color);
+      }
+
+      .btn-danger-ghost:hover {
+        background-color: #fff5f5;
+        border-color: var(--danger-color);
+      }
+
+      /* --- Card da Tabela --- */
+      .table-card {
+        background: var(--white);
+        padding: 25px;
+        border-radius: 20px;
+        box-shadow: var(--card-shadow);
+      }
+
+      .table-header-control {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .select-wrapper select {
+        padding: 8px 12px;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        color: var(--text-dark);
+        outline: none;
+        cursor: pointer;
+      }
+
+      /* --- Tabela --- */
+      .table-responsive {
+        width: 100%;
+        overflow-x: auto;
+      }
+
+      table.users-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+      }
+
+      table.users-table th {
+        text-align: left;
+        padding: 15px;
+        color: var(--text-light);
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      table.users-table td {
+        padding: 15px;
+        vertical-align: middle;
+        border-bottom: 1px solid var(--border-color);
+        font-size: 0.95rem;
+        color: var(--text-dark);
+        transition: background 0.2s;
+      }
+
+      table.users-table tr:last-child td {
+        border-bottom: none;
+      }
+
+      table.users-table tr:hover td {
+        background-color: #fafbff;
+      }
+
+      /* Coluna de Usuário (Avatar + Nome) */
+      .user-cell {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .user-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: #e3efff;
+        color: var(--primary-color);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-weight: 600;
+        font-size: 1rem;
+        overflow: hidden;
+      }
+
+      .user-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .user-info {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .user-info .name {
+        font-weight: 500;
+        color: var(--text-dark);
+      }
+
+      .user-info .phone {
+        font-size: 0.8rem;
+        color: var(--text-light);
+      }
+
+      /* Actions Buttons in Table */
+      .table-actions {
+        display: flex;
+        gap: 8px;
+      }
+
+      .action-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        border: none;
+        background-color: transparent;
+        color: var(--text-light);
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: 0.2s;
+      }
+
+      .action-btn:hover {
+        background-color: #f0f2f5;
+        color: var(--primary-color);
+      }
+
+      .action-btn.delete:hover {
+        color: var(--danger-color);
+        background-color: #fff5f5;
+      }
+
+      /* --- Paginação --- */
+      .pagination-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 20px;
+        padding-top: 15px;
+        border-top: 1px solid var(--border-color);
+      }
+
+      .page-numbers {
+        font-size: 0.9rem;
+        color: var(--text-light);
+      }
+
+      .pagination-controls {
+        display: flex;
+        gap: 5px;
+      }
+
+      .pagination-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        background: var(--white);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        transition: 0.2s;
+        color: var(--text-dark);
+      }
+
+      .pagination-btn:hover:not(:disabled) {
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+      }
+
+      .pagination-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      /* Checkbox Customization (Simples) */
+      input[type="checkbox"] {
+        accent-color: var(--primary-color);
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+      }
+
+      /* Responsividade */
+      @media (max-width: 768px) {
+        .page-header {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 10px;
         }
-        table.users-table thead {
-          display: none;
+        .toolbar {
+          flex-direction: column;
+          align-items: stretch;
         }
-        table.users-table tbody tr {
-          display: block;
-          margin-bottom: 12px;
-          background: #fff;
-          border-radius: 8px;
-          padding: 10px;
+        .search-wrapper {
+          max-width: 100%;
         }
-        table.users-table tbody td {
-          display: flex;
+        .actions-group {
           justify-content: space-between;
-          padding: 6px 0;
-          border-bottom: none;
         }
+
+        /* Em mobile, mantemos o scroll horizontal na tabela ao invés de empilhar, 
+           pois tabelas de admin complexas ficam ruins empilhadas */
       }
     </style>
   </head>
@@ -140,88 +387,173 @@
 
     <main class="main-content">
       <div class="page-header">
-        <div>
-          <h1 class="page-title">Users</h1>
-          <div class="small-muted">
-            Listagem de usuários do DogBot — leitura apenas por enquanto
+        <div class="page-title">
+          <h1>Usuários</h1>
+          <div class="breadcrumb">
+            Gerencie os acessos e cadastros do DogBot
           </div>
         </div>
+        <div style="display: flex; align-items: center; gap: 10px">
+          <span
+            class="material-icons-outlined"
+            style="color: #888; cursor: pointer"
+            >notifications</span
+          >
+        </div>
+      </div>
 
-        <div class="controls">
+      <div class="toolbar">
+        <div class="search-wrapper">
+          <span class="material-icons-outlined">search</span>
           <input
             id="searchInput"
-            class="search-input"
-            placeholder="Buscar por nome ou número"
+            type="text"
+            placeholder="Buscar por nome, telefone ou ID..."
           />
-          <button id="newUserBtn" class="btn">Novo usuário</button>
-          <label>
-            <select id="perPage" class="per-page">
-              <option value="10">10 / página</option>
-              <option value="20" selected>20 / página</option>
-              <option value="50">50 / página</option>
-            </select>
-          </label>
+        </div>
+
+        <div class="actions-group">
+          <button id="exportCsv" class="btn btn-ghost">
+            <span class="material-icons-outlined">file_download</span>
+            Exportar
+          </button>
+
           <button
             id="bulkDelete"
-            class="btn ghost"
+            class="btn btn-danger-ghost"
             title="Excluir selecionados"
           >
-            Delete Selected
+            <span class="material-icons-outlined">delete</span>
+            Excluir
           </button>
-          <button id="exportCsv" class="btn ghost">Export CSV</button>
+
+          <button id="newUserBtn" class="btn btn-primary">
+            <span class="material-icons-outlined">add</span>
+            Novo Usuário
+          </button>
         </div>
       </div>
 
       <div class="table-card">
-        <div
-          style="
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-          "
-        >
+        <div class="table-header-control">
           <div>
             <input id="selectAll" type="checkbox" />
-            <label for="selectAll">Selecionar todos</label>
+            <label
+              for="selectAll"
+              style="margin-left: 8px; font-weight: 500; font-size: 0.9rem"
+              >Selecionar Todos</label
+            >
           </div>
-          <div id="paginationInfo" class="small-muted">—</div>
+          <div class="select-wrapper">
+            <label
+              for="perPage"
+              style="font-size: 0.85rem; margin-right: 5px; color: #888"
+              >Mostrar:</label
+            >
+            <select id="perPage">
+              <option value="10">10</option>
+              <option value="20" selected>20</option>
+              <option value="50">50</option>
+            </select>
+          </div>
         </div>
 
-        <div id="usersContainer">
-          <table class="users-table" id="usersTable">
-            <thead>
-              <tr>
-                <th></th>
-                <th>Name</th>
-                <th>Phone</th>
-                <th>Push name</th>
-                <th>Last seen</th>
-                <th>Created</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="usersTbody">
-              <tr>
-                <td colspan="7">Carregando...</td>
-              </tr>
-            </tbody>
-          </table>
+        <div class="table-responsive">
+          <div id="usersContainer">
+            <table class="users-table" id="usersTable">
+              <thead>
+                <tr>
+                  <th style="width: 40px"></th>
+                  <th>Usuário</th>
+                  <th>Push Name</th>
+                  <th>Status</th>
+                  <th>Última Atividade</th>
+                  <th>Criado em</th>
+                  <th style="text-align: right">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="usersTbody">
+                <tr>
+                  <td><input type="checkbox" class="row-checkbox" /></td>
+                  <td>
+                    <div class="user-cell">
+                      <div class="user-avatar">
+                        <span>DB</span>
+                      </div>
+                      <div class="user-info">
+                        <span class="name">DogBot User</span>
+                        <span class="phone">+55 11 99999-9999</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td>dogbot_fan</td>
+                  <td>
+                    <span
+                      style="
+                        background: #e0f7e9;
+                        color: #2ecc71;
+                        padding: 4px 8px;
+                        border-radius: 6px;
+                        font-size: 0.75rem;
+                        font-weight: 600;
+                      "
+                      >ATIVO</span
+                    >
+                  </td>
+                  <td>Há 2 horas</td>
+                  <td>20/12/2024</td>
+                  <td>
+                    <div
+                      class="table-actions"
+                      style="justify-content: flex-end"
+                    >
+                      <button class="action-btn" title="Editar">
+                        <span
+                          class="material-icons-outlined"
+                          style="font-size: 1.2rem"
+                          >edit</span
+                        >
+                      </button>
+                      <button class="action-btn delete" title="Excluir">
+                        <span
+                          class="material-icons-outlined"
+                          style="font-size: 1.2rem"
+                          >delete_outline</span
+                        >
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
 
-        <div
-          style="
-            margin-top: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-          "
-        >
-          <div>
-            <button id="prevPage" class="btn ghost">Anterior</button>
-            <button id="nextPage" class="btn ghost">Próxima</button>
+        <div class="pagination-footer">
+          <div class="page-numbers" id="paginationInfo">
+            Mostrando <strong>1-20</strong> de <strong>1542</strong>
           </div>
-          <div class="small-muted" id="pageInfo">Página 1</div>
+          <div class="pagination-controls">
+            <button id="prevPage" class="pagination-btn" disabled>
+              <span class="material-icons-outlined">chevron_left</span>
+            </button>
+            <button
+              class="pagination-btn"
+              style="
+                background-color: var(--primary-color);
+                color: white;
+                border-color: var(--primary-color);
+              "
+            >
+              1
+            </button>
+            <button class="pagination-btn">2</button>
+            <button class="pagination-btn">3</button>
+            <button class="pagination-btn">...</button>
+            <button id="nextPage" class="pagination-btn">
+              <span class="material-icons-outlined">chevron_right</span>
+            </button>
+          </div>
         </div>
       </div>
     </main>
