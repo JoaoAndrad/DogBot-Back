@@ -90,6 +90,24 @@ class AdminSidebar extends HTMLElement {
           }
         });
       }
+      // fallback: capture any clicks inside shadowRoot (covers clicks on nested elements)
+      this.shadowRoot.addEventListener("click", (ev) => {
+        try {
+          const target = ev.target;
+          const a = target.closest && target.closest("a");
+          if (!a) return;
+          const href = a.getAttribute("href");
+          if (!href || href === "#") return;
+          if (href.startsWith("/admin/static/src/pages/")) {
+            ev.preventDefault();
+            if (window && window.__admin_navigateTo)
+              window.__admin_navigateTo(href);
+            else location.href = href;
+          }
+        } catch (e) {
+          // ignore
+        }
+      });
       // update on history navigation
       window.addEventListener("popstate", () => this.updateActive());
       window.addEventListener("hashchange", () => this.updateActive());

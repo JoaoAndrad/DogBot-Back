@@ -14,6 +14,12 @@
       rel="stylesheet"
     />
 
+    <script type="module" src="/admin/static/src/nav/router.js"></script>
+    <script
+      type="module"
+      src="/admin/static/src/components/sidebar/sidebar.js"
+    ></script>
+
     <style>
       /* --- Variáveis Globais --- */
       :root {
@@ -428,37 +434,7 @@
     </style>
   </head>
   <body>
-    <aside class="sidebar">
-      <div class="brand">
-        <div class="brand-logo">LOGO</div>
-        <h2>DogBot Admin</h2>
-      </div>
-      <div class="menu-list">
-        <a href="#" class="menu-link"
-          ><span class="material-icons-outlined">dashboard</span>Dashboard</a
-        >
-        <a href="#" class="menu-link"
-          ><span class="material-icons-outlined">people</span>Usuários</a
-        >
-        <a href="#" class="menu-link"
-          ><span class="material-icons-outlined">music_note</span>Spotify</a
-        >
-        <a
-          href="#"
-          class="menu-link active"
-          style="
-            background: rgba(0, 200, 151, 0.2);
-            color: var(--dogfort-cyan);
-            font-weight: 600;
-          "
-          ><span
-            class="material-icons-outlined"
-            style="color: var(--dogfort-cyan)"
-            >fitness_center</span
-          >DogFort</a
-        >
-      </div>
-    </aside>
+    <admin-sidebar></admin-sidebar>
 
     <main class="main-content">
       <div class="page-header-container">
