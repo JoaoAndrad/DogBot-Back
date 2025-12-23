@@ -1,0 +1,43 @@
+const { getPrisma } = require("../../../db");
+
+async function findUsers({ page = 1, per_page = 20, q, platform, is_active }) {
+  const prisma = getPrisma();
+  const skip = (Math.max(1, page) - 1) * per_page;
+  const where = {};
+  if (q) {
+    where.OR = [
+      { display_name: { contains: q, mode: "insensitive" } },
+      { sender_number: { contains: q } },
+    ];
+  }
+  if (typeof is_active !== "undefined") {
+    where.metadata = { not: null };
+  }
+  const [items, total] = await Promise.all([
+    prisma.user.findMany({
+      where,
+      skip,
+      take: per_page,
+      orderBy: { created_at: "desc" },
+    }),
+    prisma.user.count({ where }),
+  ]);
+  return { items, total, page, per_page };
+}
+
+async function findUserById(id) {
+  const prisma = getPrisma();
+  return prisma.user.findUnique({ where: { id } });
+}
+
+async function upsertBySenderNumber(data) {
+  const prisma = getPrisma();
+  const { sender_number, ...rest } = data;
+  return prisma.user.upsert({
+    where: { sender_number },
+    update: rest,
+    create: { sender_number, ...rest },
+  });
+}
+
+module.exports = { findUsers, findUserById, upsertBySenderNumber };

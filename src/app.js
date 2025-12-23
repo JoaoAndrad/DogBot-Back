@@ -46,6 +46,16 @@ app.get("/admin/logo.svg", (req, res) => {
 // Mount API
 app.use("/api", apiRouter);
 
+// Admin users API (protected by basic auth middleware inside router)
+try {
+  app.use("/admin/api/users", require("./routes/adminUsers"));
+} catch (e) {
+  console.warn(
+    "Failed to mount admin users routes:",
+    e && e.message ? e.message : e
+  );
+}
+
 app.get("/connected", async (req, res) => {
   try {
     await testConnection();
