@@ -1,7 +1,22 @@
-const { getPrisma } = require("../../../db");
+const { getPrisma, recreatePrismaClient } = require("../../../db");
 
 async function findUsers({ page = 1, per_page = 20, q, platform, is_active }) {
-  const prisma = getPrisma();
+  let prisma = getPrisma();
+  if (!prisma || !prisma.user) {
+    console.warn(
+      "Prisma client missing 'user' model - attempting to recreate client"
+    );
+    try {
+      await recreatePrismaClient();
+      prisma = getPrisma();
+    } catch (e) {
+      console.error(
+        "recreatePrismaClient failed",
+        e && e.message ? e.message : e
+      );
+      throw e;
+    }
+  }
   const skip = (Math.max(1, page) - 1) * per_page;
   const where = {};
   if (q) {
@@ -26,12 +41,26 @@ async function findUsers({ page = 1, per_page = 20, q, platform, is_active }) {
 }
 
 async function findUserById(id) {
-  const prisma = getPrisma();
+  let prisma = getPrisma();
+  if (!prisma || !prisma.user) {
+    console.warn(
+      "Prisma client missing 'user' model on findUserById - attempting recreate"
+    );
+    await recreatePrismaClient();
+    prisma = getPrisma();
+  }
   return prisma.user.findUnique({ where: { id } });
 }
 
 async function upsertBySenderNumber(data) {
-  const prisma = getPrisma();
+  let prisma = getPrisma();
+  if (!prisma || !prisma.user) {
+    console.warn(
+      "Prisma client missing 'user' model on upsertBySenderNumber - attempting recreate"
+    );
+    await recreatePrismaClient();
+    prisma = getPrisma();
+  }
   const { sender_number, ...rest } = data;
   return prisma.user.upsert({
     where: { sender_number },
@@ -41,22 +70,50 @@ async function upsertBySenderNumber(data) {
 }
 
 async function createUser(data) {
-  const prisma = getPrisma();
+  let prisma = getPrisma();
+  if (!prisma || !prisma.user) {
+    console.warn(
+      "Prisma client missing 'user' model on createUser - attempting recreate"
+    );
+    await recreatePrismaClient();
+    prisma = getPrisma();
+  }
   return prisma.user.create({ data });
 }
 
 async function updateUserById(id, data) {
-  const prisma = getPrisma();
+  let prisma = getPrisma();
+  if (!prisma || !prisma.user) {
+    console.warn(
+      "Prisma client missing 'user' model on updateUserById - attempting recreate"
+    );
+    await recreatePrismaClient();
+    prisma = getPrisma();
+  }
   return prisma.user.update({ where: { id }, data });
 }
 
 async function deleteUserById(id) {
-  const prisma = getPrisma();
+  let prisma = getPrisma();
+  if (!prisma || !prisma.user) {
+    console.warn(
+      "Prisma client missing 'user' model on deleteUserById - attempting recreate"
+    );
+    await recreatePrismaClient();
+    prisma = getPrisma();
+  }
   return prisma.user.delete({ where: { id } });
 }
 
 async function bulkAction({ ids = [], action } = {}) {
-  const prisma = getPrisma();
+  let prisma = getPrisma();
+  if (!prisma || !prisma.user) {
+    console.warn(
+      "Prisma client missing 'user' model on bulkAction - attempting recreate"
+    );
+    await recreatePrismaClient();
+    prisma = getPrisma();
+  }
   if (!Array.isArray(ids) || !ids.length) return { count: 0 };
   if (action === "delete") {
     const res = await prisma.user.deleteMany({ where: { id: { in: ids } } });
