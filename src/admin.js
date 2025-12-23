@@ -26,10 +26,22 @@ function buildSimpleAdminRouter() {
   router.use(basicAuthMiddleware);
 
   router.get("/", (req, res) => {
-    // Prefer static SPA index if present
+    // Prefer SPA index in new source location, then fall back to root index
     try {
-      const indexPath = path.join(__dirname, "..", "admin-ui", "index.html");
-      if (fs.existsSync(indexPath)) return res.sendFile(indexPath);
+      const candidates = [
+        path.join(
+          __dirname,
+          "..",
+          "admin-ui",
+          "src",
+          "pages",
+          "Home",
+          "index.html"
+        ),
+      ];
+      for (const indexPath of candidates) {
+        if (fs.existsSync(indexPath)) return res.sendFile(indexPath);
+      }
     } catch (e) {
       // ignore
     }
@@ -56,10 +68,23 @@ function buildSimpleAdminRouter() {
     `);
   });
 
-  // Serve the SPA index explicitly if requested
+  // Serve the SPA index explicitly if requested (try new source path first)
   router.get("/static/index.html", (req, res) => {
-    const indexPath = path.join(__dirname, "..", "admin-ui", "index.html");
-    if (fs.existsSync(indexPath)) return res.sendFile(indexPath);
+    const candidates = [
+      path.join(
+        __dirname,
+        "..",
+        "admin-ui",
+        "src",
+        "pages",
+        "Home",
+        "index.html"
+      ),
+      path.join(__dirname, "..", "admin-ui", "index.html"),
+    ];
+    for (const indexPath of candidates) {
+      if (fs.existsSync(indexPath)) return res.sendFile(indexPath);
+    }
     return res.status(404).send("Not found");
   });
 
