@@ -12,6 +12,10 @@ async function upsertUserBySender(data) {
   return userRepo.upsertBySenderNumber(data);
 }
 
+async function createUser(data) {
+  return userRepo.createUser(data);
+}
+
 async function updateUser(id, data) {
   return userRepo.updateUserById(id, data);
 }
@@ -28,6 +32,7 @@ module.exports = {
   listUsers,
   getUser,
   upsertUserBySender,
+  createUser,
   updateUser,
   deleteUser,
   bulkUsers,

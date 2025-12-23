@@ -20,6 +20,20 @@ router.get("/", async (req, res) => {
   }
 });
 
+// POST /admin/api/users
+router.post("/", express.json(), async (req, res) => {
+  try {
+    const payload = req.body || {};
+    if (!payload.sender_number)
+      return res.status(400).json({ error: "sender_number is required" });
+    const created = await userService.createUser(payload);
+    res.status(201).json(created);
+  } catch (e) {
+    console.error("user create error", e && e.message ? e.message : e);
+    res.status(500).json({ error: "Failed to create user" });
+  }
+});
+
 // GET /admin/api/users/:id
 router.get("/:id", async (req, res) => {
   try {

@@ -71,6 +71,7 @@ export async function initUsersPage() {
   const selectAll = document.getElementById("selectAll");
   const bulkDelete = document.getElementById("bulkDelete");
   const exportCsv = document.getElementById("exportCsv");
+  const newUserBtn = document.getElementById("newUserBtn");
 
   let page = 1;
   let per_page = parseInt(perPageSelect.value, 10) || 20;
@@ -271,6 +272,13 @@ export async function initUsersPage() {
     })();
   });
 
+  if (newUserBtn) {
+    newUserBtn.addEventListener("click", (ev) => {
+      ev.preventDefault();
+      showCreateModal();
+    });
+  }
+
   async function showEditModal(user) {
     // If we only got an id, fetch full user
     let u = user;
@@ -355,6 +363,106 @@ export async function initUsersPage() {
     btnRow.appendChild(saveBtn);
     btnRow.appendChild(cancelBtn);
 
+    form.appendChild(nameLabel);
+    form.appendChild(nameInput);
+    form.appendChild(pushLabel);
+    form.appendChild(pushInput);
+    form.appendChild(btnRow);
+
+    const close = document.createElement("button");
+    close.textContent = "Close";
+    close.className = "btn ghost";
+    close.style.float = "right";
+    close.addEventListener("click", () => document.body.removeChild(modal));
+
+    box.appendChild(close);
+    box.appendChild(title);
+    box.appendChild(form);
+    modal.appendChild(box);
+    document.body.appendChild(modal);
+  }
+
+  async function showCreateModal() {
+    const modal = document.createElement("div");
+    modal.style.position = "fixed";
+    modal.style.left = 0;
+    modal.style.top = 0;
+    modal.style.right = 0;
+    modal.style.bottom = 0;
+    modal.style.background = "rgba(0,0,0,0.4)";
+    modal.style.display = "flex";
+    modal.style.alignItems = "center";
+    modal.style.justifyContent = "center";
+    const box = document.createElement("div");
+    box.style.background = "#fff";
+    box.style.padding = "18px";
+    box.style.borderRadius = "10px";
+    box.style.width = "90%";
+    box.style.maxWidth = "600px";
+    box.style.maxHeight = "80vh";
+    box.style.overflow = "auto";
+
+    const title = document.createElement("h3");
+    title.textContent = "Novo usuário";
+
+    const form = document.createElement("div");
+    form.style.display = "grid";
+    form.style.gridGap = "8px";
+
+    const phoneLabel = document.createElement("label");
+    phoneLabel.textContent = "Phone (sender_number) *";
+    const phoneInput = document.createElement("input");
+    phoneInput.type = "text";
+
+    const nameLabel = document.createElement("label");
+    nameLabel.textContent = "Display name";
+    const nameInput = document.createElement("input");
+    nameInput.type = "text";
+
+    const pushLabel = document.createElement("label");
+    pushLabel.textContent = "Push name";
+    const pushInput = document.createElement("input");
+    pushInput.type = "text";
+
+    const btnRow = document.createElement("div");
+    btnRow.style.marginTop = "8px";
+
+    const createBtn = document.createElement("button");
+    createBtn.className = "btn primary";
+    createBtn.textContent = "Criar";
+
+    const cancelBtn = document.createElement("button");
+    cancelBtn.className = "btn ghost";
+    cancelBtn.textContent = "Cancelar";
+
+    cancelBtn.addEventListener("click", () => document.body.removeChild(modal));
+
+    createBtn.addEventListener("click", async () => {
+      try {
+        if (!phoneInput.value.trim())
+          return alert("sender_number é obrigatório");
+        createBtn.disabled = true;
+        const payload = {
+          sender_number: phoneInput.value.trim(),
+          display_name: nameInput.value.trim() || null,
+          push_name: pushInput.value.trim() || null,
+        };
+        const res = await doFetch(API_BASE, "POST", payload);
+        alert("Usuário criado com sucesso");
+        document.body.removeChild(modal);
+        await fetchList();
+      } catch (e) {
+        alert("Falha ao criar usuário: " + (e.message || e));
+      } finally {
+        createBtn.disabled = false;
+      }
+    });
+
+    btnRow.appendChild(createBtn);
+    btnRow.appendChild(cancelBtn);
+
+    form.appendChild(phoneLabel);
+    form.appendChild(phoneInput);
     form.appendChild(nameLabel);
     form.appendChild(nameInput);
     form.appendChild(pushLabel);

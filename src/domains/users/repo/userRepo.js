@@ -40,7 +40,41 @@ async function upsertBySenderNumber(data) {
   });
 }
 
-module.exports = { findUsers, findUserById, upsertBySenderNumber };
+async function createUser(data) {
+  const prisma = getPrisma();
+  return prisma.user.create({ data });
+}
+
+async function updateUserById(id, data) {
+  const prisma = getPrisma();
+  return prisma.user.update({ where: { id }, data });
+}
+
+async function deleteUserById(id) {
+  const prisma = getPrisma();
+  return prisma.user.delete({ where: { id } });
+}
+
+async function bulkAction({ ids = [], action } = {}) {
+  const prisma = getPrisma();
+  if (!Array.isArray(ids) || !ids.length) return { count: 0 };
+  if (action === "delete") {
+    const res = await prisma.user.deleteMany({ where: { id: { in: ids } } });
+    return { count: res.count };
+  }
+  // future actions can be handled here
+  return { count: 0 };
+}
+
+module.exports = {
+  findUsers,
+  findUserById,
+  upsertBySenderNumber,
+  createUser,
+  updateUserById,
+  deleteUserById,
+  bulkAction,
+};
 
 async function updateUserById(id, data) {
   const prisma = getPrisma();
