@@ -52,3 +52,48 @@ router.post("/start-studio", async (req, res) => {
     return res.status(500).json({ error: "Failed to start Prisma Studio" });
   }
 });
+
+// POST /admin/api/maintenance/generate-prisma
+router.post("/generate-prisma", async (req, res) => {
+  try {
+    const cp = require("child_process");
+    const path = require("path");
+    const backendRoot = path.join(__dirname, "..", "..");
+    // run npx prisma generate in backend root
+    const cmd = "npx prisma generate";
+    cp.exec(
+      cmd,
+      { cwd: backendRoot, env: process.env },
+      async (err, stdout, stderr) => {
+        if (err) {
+          console.error("prisma generate failed", err, stderr);
+          return res
+            .status(500)
+            .json({
+              error: "prisma generate failed",
+              details: stderr || String(err),
+            });
+        }
+        try {
+          // recreate client after generate
+          await recreatePrismaClient();
+          return res.json({ success: true, output: stdout });
+        } catch (e) {
+          console.error(
+            "recreate after generate failed",
+            e && e.message ? e.message : e
+          );
+          return res
+            .status(500)
+            .json({
+              error: "recreate failed",
+              details: e && e.message ? e.message : String(e),
+            });
+        }
+      }
+    );
+  } catch (e) {
+    console.error("generate-prisma error", e && e.message ? e.message : e);
+    return res.status(500).json({ error: "Failed to run prisma generate" });
+  }
+});
