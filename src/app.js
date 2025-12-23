@@ -33,6 +33,16 @@ app.use(
   express.static(path.join(__dirname, "..", "admin-ui"))
 );
 
+// Serve a top-level admin logo at /admin/logo.svg for AdminJS or direct requests
+app.get("/admin/logo.svg", (req, res) => {
+  const logoPath = path.join(__dirname, "..", "admin-ui", "logo.svg");
+  return res.sendFile(logoPath, (err) => {
+    if (err) {
+      res.status(err.status || 500).end();
+    }
+  });
+});
+
 // Mount API
 app.use("/api", apiRouter);
 
