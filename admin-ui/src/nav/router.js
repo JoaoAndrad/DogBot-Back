@@ -1,5 +1,18 @@
 // Simple client-side router to load only <main class="main-content"> from internal pages
 const ROOT_PREFIX = "/admin/static/src/pages/";
+const GLOBAL_CSS = "/admin/static/src/styles/global.css";
+
+// ensure global stylesheet is loaded once
+try {
+  if (!document.head.querySelector(`link[href="${GLOBAL_CSS}"]`)) {
+    const gl = document.createElement("link");
+    gl.rel = "stylesheet";
+    gl.href = GLOBAL_CSS;
+    document.head.appendChild(gl);
+  }
+} catch (e) {
+  console.warn("Failed to ensure global css", e);
+}
 
 async function fetchPage(url) {
   const res = await fetch(url, { cache: "no-store" });
@@ -31,13 +44,19 @@ async function applyContentFromDoc(doc) {
   if (!currentMain) return;
   // Copy styles from fetched document into current document head
   try {
+    // Remove previously injected page-specific styles/links
+    document
+      .querySelectorAll("link[data-admin-page], style[data-admin-page]")
+      .forEach((n) => n.remove());
+
+    // Build set of existing (global) stylesheet hrefs to avoid duplicates
     const existingLinks = new Set(
       Array.from(document.querySelectorAll('link[rel="stylesheet"]')).map(
         (l) => l.href
       )
     );
 
-    // External stylesheets
+    // External stylesheets from fetched doc -> inject only if not present
     for (const link of Array.from(
       doc.querySelectorAll('link[rel="stylesheet"]')
     )) {
@@ -46,23 +65,27 @@ async function applyContentFromDoc(doc) {
         const nl = document.createElement("link");
         nl.rel = "stylesheet";
         nl.href = link.href;
+        // mark as page-injected so we can remove on next navigation
+        nl.setAttribute("data-admin-page", "1");
         document.head.appendChild(nl);
       }
     }
 
-    // Inline <style> tags
+    // Inline <style> tags: avoid duplicating global inline styles
+    const globalStyleTexts = new Set(
+      Array.from(document.querySelectorAll("style:not([data-admin-page])")).map(
+        (s) => (s.textContent || "").trim()
+      )
+    );
     for (const st of Array.from(doc.querySelectorAll("style"))) {
-      // avoid duplicating identical style blocks naively by comparing text
-      const text = st.textContent && st.textContent.trim();
+      const text = (st.textContent || "").trim();
       if (!text) continue;
-      const exists = Array.from(document.querySelectorAll("style")).some(
-        (s) => s.textContent && s.textContent.trim() === text
-      );
-      if (!exists) {
-        const ns = document.createElement("style");
-        ns.textContent = text;
-        document.head.appendChild(ns);
-      }
+      if (globalStyleTexts.has(text)) continue; // already present as global
+      // append as page-specific style so we can remove it later
+      const ns = document.createElement("style");
+      ns.textContent = text;
+      ns.setAttribute("data-admin-page", "1");
+      document.head.appendChild(ns);
     }
   } catch (e) {
     console.warn("Error applying styles from fetched page", e);

@@ -66,6 +66,16 @@ try {
   );
 }
 
+// Spotify OAuth routes (minimal)
+try {
+  app.use("/spotify", require("./routes/spotifyAuth"));
+} catch (e) {
+  console.warn(
+    "Failed to mount spotify routes:",
+    e && e.message ? e.message : e
+  );
+}
+
 app.get("/connected", async (req, res) => {
   try {
     await testConnection();

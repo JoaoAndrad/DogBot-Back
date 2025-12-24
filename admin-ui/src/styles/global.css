@@ -1,0 +1,71 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/icon?family=Material+Icons+Outlined");
+
+/* Global admin layout: fixed sidebar + scrollable main */
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+body {
+  font-family: "Poppins", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: var(--main-bg, #f4f7fe);
+  color: var(--text-dark, #333);
+}
+
+/* Make custom element host fixed so shadow DOM content stays visible */
+admin-sidebar,
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 260px;
+  z-index: 50;
+}
+
+/* Ensure internal sidebar uses full height of host (some components use 100vh internally) */
+admin-sidebar::part(container),
+admin-sidebar .sidebar,
+.sidebar {
+  height: 100%;
+}
+
+/* Main content sits to the right and scrolls independently */
+/* Reserve space for the fixed sidebar by adding left padding to the body.
+   This avoids layout shifts when some pages set `body { display:flex; }`.
+*/
+body {
+  padding-left: 60px;
+}
+
+/* Ensure main respects sidebar width even if page CSS resets body/layout */
+.main-content {
+  margin-left: 260px !important; /* reserve sidebar space */
+  height: 100vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  box-sizing: border-box;
+  padding: 30px;
+}
+
+/* When screen is small, make sidebar flow normally (stacked) */
+@media (max-width: 768px) {
+  admin-sidebar,
+  .sidebar {
+    position: relative;
+    width: 100%;
+    height: auto;
+  }
+  body {
+    padding-left: 0;
+  }
+  main.main-content {
+    margin-left: 0;
+    height: auto;
+    overflow: visible;
+    padding: 16px;
+  }
+}
