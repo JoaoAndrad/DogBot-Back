@@ -128,11 +128,38 @@ async function upsertDogfortForUser(userId, dogData) {
 
   // attempt upsert by user_id
   try {
-    return await prisma.dogFortStats.upsert({
+    const upsertRes = await prisma.dogFortStats.upsert({
       where: { user_id: userId },
       update: normalized,
       create: Object.assign({ user_id: userId }, normalized),
     });
+
+    // If a 'plan' was provided, also persist it into user.metadata.raw.plan
+    try {
+      if (typeof normalized.plan !== "undefined") {
+        const user = await prisma.user.findUnique({
+          where: { id: userId },
+          select: { metadata: true },
+        });
+        const existingMeta = (user && user.metadata) || {};
+        const existingRaw = existingMeta.raw || {};
+        existingRaw.plan = normalized.plan;
+        const newMeta = Object.assign({}, existingMeta, { raw: existingRaw });
+        await prisma.user.update({
+          where: { id: userId },
+          data: { metadata: newMeta },
+        });
+      }
+    } catch (e) {
+      console.error(
+        "Failed to persist plan into metadata.raw for user",
+        userId,
+        e && e.message ? e.message : e
+      );
+      // don't fail the overall operation if metadata update fails
+    }
+
+    return upsertRes;
   } catch (e) {
     console.error(
       "Failed to upsert DogFortStats",

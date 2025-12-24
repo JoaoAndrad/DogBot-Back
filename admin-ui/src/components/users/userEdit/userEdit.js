@@ -38,8 +38,20 @@ async function patchUser(id, data) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
   });
-  if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
-  return await r.json();
+  let bodyText = null;
+  try {
+    bodyText = await r.text();
+  } catch (e) {}
+  if (!r.ok) {
+    const err = new Error(`${r.status} ${r.statusText}`);
+    err.body = bodyText;
+    throw err;
+  }
+  try {
+    return JSON.parse(bodyText || "null");
+  } catch (e) {
+    return bodyText;
+  }
 }
 
 function setValue(id, v) {
@@ -251,8 +263,11 @@ export default async function initUserEdit() {
         },
       };
 
+      console.debug("[admin] userEdit outgoing payload:", payload);
+
       try {
-        await patchUser(id, payload);
+        const res = await patchUser(id, payload);
+        console.debug("[admin] userEdit patch result:", res);
         // simple feedback and close overlay then reload
         alert("User updated");
         const overlay = document.getElementById("userEditOverlay");
@@ -262,6 +277,7 @@ export default async function initUserEdit() {
         window.location.reload();
       } catch (e) {
         console.error("Failed to save user", e);
+        console.error("server response body:", e && e.body);
         alert("Failed to save user: " + (e && e.message));
       }
     });
