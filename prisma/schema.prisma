@@ -75,6 +75,13 @@ model User {
   pushNameHistory    PushNameHistory[]
   // DogFort/Academia stats (one-to-one)
   dogfort            DogFortStats?
+  // Spotify relations
+  spotifyAccounts    SpotifyAccount[]
+  trackPlaybacks     TrackPlayback[]
+  trackVotes         TrackVote[]
+  trackNotes         TrackNote[]
+  playlistEntriesAdded PlaylistEntry[]
+  listeningSummary   UserListeningSummary?
 
   @@map("User")
 }
@@ -105,3 +112,158 @@ model DogFortStats {
   user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
   @@map("DogFortStats")
 }
+
+// === Spotify models ===
+
+model SpotifyAccount {
+  id         String   @id @default(uuid())
+  userId     String?  // optional FK to User.id for per-user tokens
+  accountType String  @default("bot") // 'bot' | 'user'
+  clientId   String?
+  scope      String?
+  meta       Json?    @db.Json
+  createdAt  DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt  DateTime @updatedAt @db.Timestamptz(6)
+
+  tokens     SpotifyToken[]
+  playbacks  TrackPlayback[]
+  // reverse relations
+  user       User?     @relation(fields: [userId], references: [id])
+  currentPlayback CurrentPlayback?
+
+  @@index([userId])
+}
+
+model SpotifyToken {
+  id            String   @id @default(uuid())
+  accountId     String
+  accessToken   String
+  refreshToken  String
+  scope         String?
+  expiresAt     DateTime?
+  createdAt     DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt     DateTime @updatedAt @db.Timestamptz(6)
+
+  account       SpotifyAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([accountId])
+  @@index([expiresAt])
+}
+
+model Track {
+  id         String   @id // Spotify track id
+  name       String?
+  artists    Json?    @db.Json
+  album      String?
+  durationMs Int?
+  metadata   Json?    @db.Json
+
+  playbacks  TrackPlayback[]
+  stats      TrackStat?
+  votes      TrackVote[]
+  notes      TrackNote[]
+  playlistEntries PlaylistEntry[]
+
+  @@map("Track")
+}
+
+model TrackPlayback {
+  id         String   @id @default(uuid())
+  accountId  String
+  userId     String?
+  trackId    String
+  deviceId   String?
+  contextType String?
+  contextId  String?
+  startedAt  DateTime @default(now()) @db.Timestamptz(6)
+  endedAt    DateTime? @db.Timestamptz(6)
+  listenedMs BigInt?  @db.BigInt
+  percentPlayed Float?
+  metadata   Json?    @db.Json
+
+  account    SpotifyAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  track      Track          @relation(fields: [trackId], references: [id], onDelete: Cascade)
+  user       User?          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([trackId, startedAt])
+  @@index([userId])
+}
+
+model CurrentPlayback {
+  accountId  String   @id
+  trackId    String
+  startedAt  DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt  DateTime @updatedAt @db.Timestamptz(6)
+  metadata   Json?    @db.Json
+
+  account    SpotifyAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+}
+
+model TrackStat {
+  trackId     String   @id
+  playCount   Int      @default(0)
+  totalListenMs BigInt @default(0) @db.BigInt
+  avgSessionMs Int?
+  lastPlayedAt DateTime? @db.Timestamptz(6)
+
+  track        Track    @relation(fields: [trackId], references: [id], onDelete: Cascade)
+
+  @@index([lastPlayedAt])
+}
+
+model UserListeningSummary {
+  userId       String   @id
+  totalListenMs BigInt  @default(0) @db.BigInt
+  dailyListen  Json?    @db.Json
+  lastUpdatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model TrackVote {
+  id           String   @id @default(uuid())
+  trackId      String
+  userId       String
+  vote         Int
+  contextId    String?
+  createdAt    DateTime @default(now()) @db.Timestamptz(6)
+
+  track        Track    @relation(fields: [trackId], references: [id], onDelete: Cascade)
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([trackId])
+  @@index([userId])
+}
+
+model TrackNote {
+  id        String   @id @default(uuid())
+  trackId   String
+  userId    String
+  note      String?  @db.Text
+  rating    Int?
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+  track     Track    @relation(fields: [trackId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([trackId])
+  @@index([userId])
+}
+
+model PlaylistEntry {
+  id            String   @id @default(uuid())
+  playlistId    String
+  trackId       String
+  addedByUserId String?
+  addedAt       DateTime @default(now()) @db.Timestamptz(6)
+  position      Int?
+  metadata      Json?    @db.Json
+
+  track         Track?   @relation(fields: [trackId], references: [id], onDelete: Cascade)
+  addedBy       User?    @relation(fields: [addedByUserId], references: [id], onDelete: Cascade)
+
+  @@index([playlistId])
+  @@index([addedByUserId])
+}
+

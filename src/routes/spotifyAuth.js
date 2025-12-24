@@ -6,6 +6,11 @@ const SPOTIFY_CLIENT_ID = process.env.SPOTIFY_CLIENT_ID;
 const SPOTIFY_CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET;
 const SPOTIFY_REDIRECT_URI = process.env.SPOTIFY_REDIRECT_URI;
 
+const {
+  upsertAccountTokens,
+  upsertAccountForUser,
+} = require("../services/spotifyService");
+
 function base64ClientCreds() {
   return Buffer.from(`${SPOTIFY_CLIENT_ID}:${SPOTIFY_CLIENT_SECRET}`).toString(
     "base64"
@@ -49,6 +54,7 @@ router.get("/login", (req, res) => {
 // Callback: exchange code for tokens and return JSON (no DB persistence here)
 router.get("/callback", async (req, res) => {
   const code = req.query.code;
+  const userId = req.query.user_id || null; // optional: link token to a user
   if (!code) return res.status(400).json({ error: "Missing code" });
   try {
     const data = await postTokenForm({
@@ -56,8 +62,34 @@ router.get("/callback", async (req, res) => {
       code,
       redirect_uri: SPOTIFY_REDIRECT_URI,
     });
-    // return token info to caller (in production persist to DB)
-    return res.json(data);
+
+    // Persist tokens in DB
+    try {
+      // create or find account
+      const account = userId
+        ? await upsertAccountForUser({ userId, accountType: "user" })
+        : await upsertAccountForUser({ accountType: "bot" });
+      const result = await upsertAccountTokens({
+        accountId: account.id,
+        accessToken: data.access_token,
+        refreshToken: data.refresh_token,
+        expiresIn: data.expires_in,
+        scope: data.scope,
+      });
+      return res.json({
+        message: "Tokens saved",
+        account: account.id,
+        tokenId: result.token.id,
+        raw: data,
+      });
+    } catch (dbErr) {
+      console.error("Failed to persist Spotify tokens:", dbErr);
+      // still return tokens to caller but warn
+      return res.json({
+        warning: "Token exchange succeeded but persistence failed",
+        data,
+      });
+    }
   } catch (e) {
     console.error("spotify callback error", e.message || e);
     return res
@@ -68,8 +100,32 @@ router.get("/callback", async (req, res) => {
 
 // Refresh token: accepts ?refresh_token= or uses env SPOTIFY_REFRESH_TOKEN
 router.get("/refresh", async (req, res) => {
+  const accountId = req.query.account_id || null;
   const refresh_token =
     req.query.refresh_token || process.env.SPOTIFY_REFRESH_TOKEN;
+  if (accountId) {
+    try {
+      const result =
+        await require("../services/spotifyService").refreshTokenForAccount(
+          accountId
+        );
+      return res.json({
+        message: "refreshed",
+        accountId,
+        tokenId: result.token.id,
+        raw: result,
+      });
+    } catch (err) {
+      console.error("spotify refresh error", err.message || err);
+      return res
+        .status(500)
+        .json({
+          error: "Failed to refresh token for account",
+          details: String(err),
+        });
+    }
+  }
+
   if (!refresh_token)
     return res.status(400).json({ error: "Missing refresh_token" });
   try {
