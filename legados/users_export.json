@@ -1,0 +1,6350 @@
+[
+  {
+    "id": "Baltar",
+    "lastSeen": "2025-10-19T15:05:06.567Z",
+    "lastGroupActivity": "2025-10-19T15:05:06.567Z",
+    "pushNameHistory": [
+      {
+        "observedLid": null,
+        "ts": 1760843348624,
+        "observedFrom": "558182898740@c.us",
+        "pushName": "Gabriel Baltar"
+      },
+      {
+        "observedFrom": "558184800692-1542680001@g.us",
+        "ts": 1760886306223,
+        "observedLid": "81084721197281",
+        "pushName": "Gabriel Baltar"
+      }
+    ],
+    "mensal": 0,
+    "name": "Baltar",
+    "identifiers": [
+      "558182898740",
+      "81084721197281"
+    ],
+    "registerGrupamentos": true,
+    "confissoes": {
+      "saldo": 4,
+      "ultimaAtualizacao": "21/12/2025"
+    },
+    "senderNumber": "558182898740",
+    "lastPushName": "Gabriel Baltar",
+    "ultimoTreino": "02/10/2025",
+    "createdAt": "21/06/2025",
+    "anual": 11,
+    "trofeus": 0,
+    "lastKnownLid": "81084721197281"
+  },
+  {
+    "id": "Betão",
+    "lastSeen": "2025-10-16T18:02:45.634Z",
+    "createAt": "19/06/2025",
+    "registerGrupamentos": true,
+    "confissoes": {
+      "ultimaAtualizacao": "19/06/2025",
+      "saldo": 5
+    },
+    "anual": "14111111",
+    "senderNumber": "558199094623",
+    "name": "Betão",
+    "lastKnownLid": "14010267238548",
+    "lastPushName": "Humberto Neves",
+    "mensal": 0,
+    "ultimoTreino": "08/10/2025",
+    "trofeus": 6,
+    "lastGroupActivity": "2025-10-16T18:02:45.634Z",
+    "pushNameHistory": [
+      {
+        "ts": 1760637765151,
+        "pushName": "Humberto Neves",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "observedLid": "14010267238548"
+      }
+    ],
+    "identifiers": [
+      "14010267238548"
+    ]
+  },
+  {
+    "id": "Bruno Surfistinho",
+    "lastSeen": "2025-10-16T22:30:37.085Z",
+    "anual": 28,
+    "ultimoTreino": "01/09/2025",
+    "identifiers": [
+      "23755699032065"
+    ],
+    "pushNameHistory": [
+      {
+        "observedFrom": "558184800692-1542680001@g.us",
+        "ts": 1760653836599,
+        "pushName": "Bruno Nascimento",
+        "observedLid": "23755699032065"
+      }
+    ],
+    "lastGroupActivity": "2025-10-16T22:30:37.085Z",
+    "senderNumber": "558195162244",
+    "trofeus": 6,
+    "confissoes": {
+      "saldo": 4,
+      "ultimaAtualizacao": "23/09/2025"
+    },
+    "name": "Bruno Surfistinho",
+    "createdAt": "19/06/2025",
+    "lastPushName": "Bruno Nascimento",
+    "mensal": 0,
+    "lastKnownLid": "23755699032065",
+    "registerGrupamentos": true
+  },
+  {
+    "id": "CabTips 💶",
+    "name": "CabTips 💶",
+    "identifiers": [
+      "558179116178",
+      "558179116178",
+      "200502193209423"
+    ],
+    "trofeus": 15,
+    "anual": 173,
+    "metaAnual": null,
+    "senderNumber": "558179116178",
+    "lastPushName": "Rodrigo Almeida",
+    "mensal": 1,
+    "lastGroupActivity": "2025-10-17T00:31:06.928Z",
+    "lastKnownLid": "200502193209423",
+    "lastSeen": "2025-10-17T00:31:06.928Z",
+    "pushNameHistory": [
+      {
+        "observedLid": "200502193209423",
+        "pushName": "Rodrigo Almeida",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "ts": 1760661066510
+      }
+    ],
+    "confissoes": {
+      "ultimaAtualizacao": "10/10/2025",
+      "saldo": 4
+    },
+    "ultimoTreino": "21/11/2025",
+    "createdAt": "15/10/2025",
+    "registerGrupamentos": true
+  },
+  {
+    "id": "Capitão América",
+    "mensal": 0,
+    "confissoes": {
+      "saldo": 4,
+      "ultimaAtualizacao": "31/10/2025"
+    },
+    "lastPushName": "Gabriel",
+    "anual": 146,
+    "ultimoTreino": "01/11/2025",
+    "trofeus": 1,
+    "lastGroupActivity": "2025-10-16T18:44:30.886Z",
+    "identifiers": [
+      "130893658206380",
+      "558195781115"
+    ],
+    "name": "Capitão América",
+    "senderNumber": "558195781115",
+    "lastSeen": "2025-10-16T18:44:30.886Z",
+    "pushNameHistory": [
+      {
+        "pushName": "Gabriel",
+        "ts": 1760636389700,
+        "observedLid": "130893658206380",
+        "observedFrom": "558184800692-1542680001@g.us"
+      },
+      {
+        "observedLid": null,
+        "observedFrom": "558195781115@c.us",
+        "ts": 1760640270654,
+        "pushName": "Gabriel"
+      }
+    ],
+    "lastKnownLid": "130893658206380",
+    "registerGrupamentos": true
+  },
+  {
+    "id": "Drade 🦍",
+    "name": "Drade 🦍",
+    "senderNumber": "558182132346",
+    "lastPushName": "Andrade",
+    "pushNameHistory": [
+      {
+        "ts": 1760552182987,
+        "observedLid": "185495510364403",
+        "observedFrom": "120363384407603543@g.us",
+        "pushName": "Andrade"
+      },
+      {
+        "ts": 1760552183307,
+        "pushName": "Andrade",
+        "observedFrom": "120363384407603543@g.us",
+        "observedLid": "185495510364403"
+      },
+      {
+        "ts": 1760553415276,
+        "pushName": "Andrade",
+        "observedFrom": "120363384407603543@g.us",
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedLid": "185495510364403",
+        "observedFrom": "120363384407603543@g.us",
+        "ts": 1760553415460,
+        "pushName": "Andrade"
+      },
+      {
+        "observedLid": "185495510364403",
+        "observedFrom": "120363384407603543@g.us",
+        "ts": 1760553415643,
+        "pushName": "Andrade"
+      },
+      {
+        "ts": 1760553435511,
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760553435662,
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "observedLid": "185495510364403",
+        "ts": 1760553435828
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "ts": 1760553531594,
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedLid": "185495510364403",
+        "ts": 1760553531823,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade"
+      },
+      {
+        "observedLid": "185495510364403",
+        "ts": 1760553531978,
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedLid": "185495510364403",
+        "ts": 1760553995666,
+        "observedFrom": "120363384407603543@g.us",
+        "pushName": "Andrade"
+      },
+      {
+        "observedFrom": "120363384407603543@g.us",
+        "pushName": "Andrade",
+        "observedLid": "185495510364403",
+        "ts": 1760553996454
+      },
+      {
+        "ts": 1760553996621,
+        "pushName": "Andrade",
+        "observedLid": "185495510364403",
+        "observedFrom": "120363384407603543@g.us"
+      },
+      {
+        "ts": 1760554006548,
+        "pushName": "Andrade",
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "pushName": "Andrade",
+        "ts": 1760554006756,
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403"
+      },
+      {
+        "ts": 1760554006925,
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "pushName": "Andrade"
+      },
+      {
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "ts": 1760554374180
+      },
+      {
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760554374463,
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedLid": "185495510364403",
+        "ts": 1760554374793,
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760554575696,
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760554576041,
+        "pushName": "Andrade"
+      },
+      {
+        "ts": 1760554576259,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "observedLid": "185495510364403"
+      },
+      {
+        "ts": 1760555007907,
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "pushName": "Andrade"
+      },
+      {
+        "observedLid": "185495510364403",
+        "ts": 1760555008178,
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "ts": 1760555008415,
+        "pushName": "Andrade",
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "ts": 1760555082918
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "ts": 1760555083162,
+        "pushName": "Andrade"
+      },
+      {
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "ts": 1760555083319,
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "ts": 1760555265784,
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760555265961,
+        "observedLid": "185495510364403",
+        "pushName": "Andrade"
+      },
+      {
+        "pushName": "Andrade",
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760555266122
+      },
+      {
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "ts": 1760555270798
+      },
+      {
+        "pushName": "Andrade",
+        "ts": 1760555271038,
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "ts": 1760555271194,
+        "observedLid": "185495510364403"
+      },
+      {
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760555274438,
+        "observedLid": "185495510364403"
+      },
+      {
+        "ts": 1760555274586,
+        "pushName": "Andrade",
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "ts": 1760555274837
+      },
+      {
+        "ts": 1760555364839,
+        "observedFrom": "558182132346@c.us",
+        "observedLid": null,
+        "pushName": "Andrade"
+      },
+      {
+        "ts": 1760555364995,
+        "observedLid": null,
+        "pushName": "Andrade",
+        "observedFrom": "558182132346@c.us"
+      },
+      {
+        "ts": 1760555378641,
+        "observedFrom": "558182132346@c.us",
+        "observedLid": null,
+        "pushName": "Andrade"
+      },
+      {
+        "observedFrom": "558182132346@c.us",
+        "ts": 1760555378786,
+        "observedLid": null,
+        "pushName": "Andrade"
+      },
+      {
+        "ts": 1760555413689,
+        "observedLid": null,
+        "pushName": "Andrade",
+        "observedFrom": "558182132346@c.us"
+      },
+      {
+        "pushName": "Andrade",
+        "observedFrom": "558182132346@c.us",
+        "ts": 1760555413836,
+        "observedLid": null
+      },
+      {
+        "observedLid": "185495510364403",
+        "ts": 1760555513834,
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedLid": "185495510364403",
+        "ts": 1760555514754,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade"
+      },
+      {
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "ts": 1760555514999
+      },
+      {
+        "ts": 1760555772154,
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade"
+      },
+      {
+        "pushName": "Andrade",
+        "ts": 1760555772390,
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "ts": 1760555772604,
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "pushName": "Andrade"
+      },
+      {
+        "pushName": "Andrade",
+        "ts": 1760555837006,
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760555837206,
+        "pushName": "Andrade"
+      },
+      {
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760555837545
+      },
+      {
+        "ts": 1760555850109,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "ts": 1760555850374,
+        "pushName": "Andrade"
+      },
+      {
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760555850585,
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "ts": 1760555858775
+      },
+      {
+        "ts": 1760555858997,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "observedLid": "185495510364403"
+      },
+      {
+        "ts": 1760555859198,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "observedLid": "185495510364403"
+      },
+      {
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760555875494,
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "ts": 1760555875702,
+        "pushName": "Andrade"
+      },
+      {
+        "ts": 1760555875925,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "observedLid": "185495510364403"
+      },
+      {
+        "ts": 1760555880680,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "observedLid": "185495510364403"
+      },
+      {
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "ts": 1760555880902
+      },
+      {
+        "ts": 1760555881103,
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "pushName": "Andrade"
+      },
+      {
+        "observedLid": "185495510364403",
+        "ts": 1760555886343,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade"
+      },
+      {
+        "pushName": "Andrade",
+        "ts": 1760555886551,
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "pushName": "Andrade",
+        "observedLid": "185495510364403",
+        "ts": 1760555886739,
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "ts": 1760555888119,
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "pushName": "Andrade"
+      },
+      {
+        "ts": 1760555888316,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "observedLid": "185495510364403"
+      },
+      {
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760555888535,
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "ts": 1760556594608,
+        "pushName": "Andrade"
+      },
+      {
+        "ts": 1760556594846,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "ts": 1760556595089
+      },
+      {
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760556651492,
+        "observedLid": "185495510364403"
+      },
+      {
+        "pushName": "Andrade",
+        "ts": 1760556651793,
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "ts": 1760556652063
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "observedLid": "185495510364403",
+        "ts": 1760556898196
+      },
+      {
+        "ts": 1760556898488,
+        "pushName": "Andrade",
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "ts": 1760556898723
+      },
+      {
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760556920161,
+        "pushName": "Andrade"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "ts": 1760556920392
+      },
+      {
+        "pushName": "Andrade",
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760556920610
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "observedLid": "185495510364403",
+        "ts": 1760556967168
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "ts": 1760556967385,
+        "pushName": "Andrade"
+      },
+      {
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760556967625,
+        "pushName": "Andrade"
+      },
+      {
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760556979112,
+        "observedLid": "185495510364403"
+      },
+      {
+        "ts": 1760556979299,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "observedLid": "185495510364403"
+      },
+      {
+        "ts": 1760556979501,
+        "pushName": "Andrade",
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "ts": 1760556995925,
+        "observedLid": "185495510364403"
+      },
+      {
+        "ts": 1760556996133,
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "pushName": "Andrade"
+      },
+      {
+        "pushName": "Andrade",
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760556996311
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "ts": 1760556996640,
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "ts": 1760556996830
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760556997042,
+        "pushName": "Andrade",
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedLid": "185495510364403",
+        "ts": 1760557010120,
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "ts": 1760557010303,
+        "observedLid": "185495510364403"
+      },
+      {
+        "ts": 1760557010522,
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "ts": 1760557012363,
+        "pushName": "Andrade"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "observedLid": "185495510364403",
+        "ts": 1760557012614
+      },
+      {
+        "observedLid": "185495510364403",
+        "ts": 1760557012829,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade"
+      },
+      {
+        "observedLid": "185495510364403",
+        "ts": 1760557017854,
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "pushName": "Andrade",
+        "ts": 1760557018031,
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "ts": 1760557018265
+      },
+      {
+        "ts": 1760557033197,
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "pushName": "Andrade"
+      },
+      {
+        "pushName": "Andrade",
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760557033404
+      },
+      {
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760557033616
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "ts": 1760557054229,
+        "pushName": "Andrade"
+      },
+      {
+        "ts": 1760557054772,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "observedLid": "185495510364403"
+      },
+      {
+        "ts": 1760557055008,
+        "pushName": "Andrade",
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "ts": 1760557060294,
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "pushName": "Andrade"
+      },
+      {
+        "pushName": "Andrade",
+        "observedLid": "185495510364403",
+        "ts": 1760557060460,
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760557060685
+      },
+      {
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760557070620,
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "ts": 1760557070799
+      },
+      {
+        "ts": 1760557070975,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "observedLid": "185495510364403"
+      },
+      {
+        "pushName": "Andrade",
+        "ts": 1760557084993,
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "ts": 1760557085178,
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "ts": 1760557085381
+      },
+      {
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "ts": 1760557472170,
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760557472383,
+        "observedLid": "185495510364403"
+      },
+      {
+        "ts": 1760557472579,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedLid": "185495510364403",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "ts": 1760557524833,
+        "pushName": "Andrade"
+      },
+      {
+        "pushName": "Andrade",
+        "observedLid": "185495510364403",
+        "ts": 1760557525100,
+        "observedFrom": "558184800692-1542680001@g.us"
+      },
+      {
+        "observedFrom": "558184800692-1542680001@g.us",
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "ts": 1760557525306
+      },
+      {
+        "observedFrom": "558184800692-1542680001@g.us",
+        "ts": 1760557529310,
+        "observedLid": "185495510364403",
+        "pushName": "Andrade"
+      },
+      {
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "ts": 1760557529423
+      },
+      {
+        "pushName": "Andrade",
+        "ts": 1760557529533,
+        "observedFrom": "558184800692-1542680001@g.us",
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedFrom": "558184800692-1542680001@g.us",
+        "pushName": "Andrade",
+        "ts": 1760557703244,
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedFrom": "558184800692-1542680001@g.us",
+        "ts": 1760557703403,
+        "observedLid": "185495510364403",
+        "pushName": "Andrade"
+      },
+      {
+        "observedLid": "185495510364403",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "pushName": "Andrade",
+        "ts": 1760557703584
+      },
+      {
+        "ts": 1760557740811,
+        "pushName": "Andrade",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedLid": "185495510364403",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "pushName": "Andrade",
+        "ts": 1760557740962
+      },
+      {
+        "observedFrom": "558184800692-1542680001@g.us",
+        "ts": 1760557741110,
+        "pushName": "Andrade",
+        "observedLid": "185495510364403"
+      },
+      {
+        "pushName": "Andrade",
+        "ts": 1760557866275,
+        "observedFrom": "558184800692-1542680001@g.us",
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedLid": "185495510364403",
+        "ts": 1760557866547,
+        "observedFrom": "558184800692-1542680001@g.us",
+        "pushName": "Andrade"
+      },
+      {
+        "observedFrom": "558184800692-1542680001@g.us",
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "ts": 1760557866729
+      },
+      {
+        "observedFrom": "558184800692-1542680001@g.us",
+        "observedLid": "185495510364403",
+        "ts": 1760557912182,
+        "pushName": "Andrade"
+      },
+      {
+        "observedFrom": "558184800692-1542680001@g.us",
+        "ts": 1760557912378,
+        "observedLid": "185495510364403",
+        "pushName": "Andrade"
+      },
+      {
+        "pushName": "Andrade",
+        "ts": 1760557912518,
+        "observedLid": "185495510364403",
+        "observedFrom": "558184800692-1542680001@g.us"
+      },
+      {
+        "ts": 1760558166597,
+        "observedLid": "185495510364403",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "pushName": "Andrade"
+      },
+      {
+        "observedLid": "185495510364403",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "ts": 1760558166789,
+        "pushName": "Andrade"
+      },
+      {
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "ts": 1760558166962,
+        "observedFrom": "558184800692-1542680001@g.us"
+      },
+      {
+        "ts": 1760558202141,
+        "observedFrom": "558184800692-1542680001@g.us",
+        "pushName": "Andrade",
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedFrom": "558184800692-1542680001@g.us",
+        "ts": 1760558202300,
+        "observedLid": "185495510364403",
+        "pushName": "Andrade"
+      },
+      {
+        "pushName": "Andrade",
+        "ts": 1760558202469,
+        "observedLid": "185495510364403",
+        "observedFrom": "558184800692-1542680001@g.us"
+      },
+      {
+        "pushName": "Andrade",
+        "observedLid": "185495510364403",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "ts": 1760558217647
+      },
+      {
+        "pushName": "Andrade",
+        "ts": 1760558217779,
+        "observedLid": "185495510364403",
+        "observedFrom": "558184800692-1542680001@g.us"
+      },
+      {
+        "ts": 1760558217905,
+        "pushName": "Andrade",
+        "observedLid": "185495510364403",
+        "observedFrom": "558184800692-1542680001@g.us"
+      },
+      {
+        "observedLid": "185495510364403",
+        "ts": 1760558223735,
+        "pushName": "Andrade",
+        "observedFrom": "558184800692-1542680001@g.us"
+      },
+      {
+        "ts": 1760558223894,
+        "observedLid": "185495510364403",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "pushName": "Andrade"
+      },
+      {
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "ts": 1760558224038
+      },
+      {
+        "pushName": "Andrade",
+        "observedLid": null,
+        "ts": 1760558524564,
+        "observedFrom": "558182132346@c.us"
+      },
+      {
+        "observedLid": null,
+        "ts": 1760558524873,
+        "observedFrom": "558182132346@c.us",
+        "pushName": "Andrade"
+      },
+      {
+        "ts": 1760558992659,
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "pushName": "Andrade"
+      },
+      {
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760558993014,
+        "observedLid": "185495510364403"
+      },
+      {
+        "ts": 1760558993297,
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "pushName": "Andrade"
+      },
+      {
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760561672681,
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "ts": 1760561672895
+      },
+      {
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760561673138
+      },
+      {
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760561678469,
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "ts": 1760561678713,
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "pushName": "Andrade",
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760561678955
+      },
+      {
+        "pushName": "Andrade",
+        "ts": 1760561683651,
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760561683884,
+        "pushName": "Andrade",
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760561684068
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "ts": 1760561922690,
+        "pushName": "Andrade"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "ts": 1760561922899,
+        "pushName": "Andrade"
+      },
+      {
+        "observedLid": "185495510364403",
+        "ts": 1760561923121,
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "pushName": "Andrade",
+        "ts": 1760561931697,
+        "observedLid": "185495510364403",
+        "observedFrom": "558184800692-1542680001@g.us"
+      },
+      {
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "ts": 1760561931925
+      },
+      {
+        "ts": 1760561932115,
+        "observedFrom": "558184800692-1542680001@g.us",
+        "observedLid": "185495510364403",
+        "pushName": "Andrade"
+      },
+      {
+        "pushName": "Andrade",
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760562047895
+      },
+      {
+        "ts": 1760562048067,
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "pushName": "Andrade"
+      },
+      {
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760562048244,
+        "observedLid": "185495510364403"
+      },
+      {
+        "ts": 1760562091723,
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade"
+      },
+      {
+        "ts": 1760562091966,
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "ts": 1760562092195
+      },
+      {
+        "pushName": "Andrade",
+        "observedLid": "185495510364403",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "ts": 1760562317509
+      },
+      {
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "ts": 1760562317777
+      },
+      {
+        "observedFrom": "558184800692-1542680001@g.us",
+        "pushName": "Andrade",
+        "ts": 1760562317993,
+        "observedLid": "185495510364403"
+      },
+      {
+        "ts": 1760565045577,
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403"
+      },
+      {
+        "ts": 1760565045751,
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "pushName": "Andrade"
+      },
+      {
+        "ts": 1760565045946,
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "pushName": "Andrade"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "ts": 1760565333391,
+        "pushName": "Andrade"
+      },
+      {
+        "pushName": "Andrade",
+        "ts": 1760565334570,
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "ts": 1760565334809,
+        "pushName": "Andrade"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "ts": 1760565337462
+      },
+      {
+        "ts": 1760565337655,
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "pushName": "Andrade",
+        "ts": 1760565337832,
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "ts": 1760565338108,
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760565338250,
+        "observedLid": "185495510364403",
+        "pushName": "Andrade"
+      },
+      {
+        "ts": 1760565338410,
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "pushName": "Andrade"
+      },
+      {
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "ts": 1760565909785
+      },
+      {
+        "ts": 1760565909978,
+        "observedFrom": "558184800692-1542680001@g.us",
+        "observedLid": "185495510364403",
+        "pushName": "Andrade"
+      },
+      {
+        "observedLid": "185495510364403",
+        "ts": 1760565910155,
+        "observedFrom": "558184800692-1542680001@g.us",
+        "pushName": "Andrade"
+      },
+      {
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "ts": 1760567214539
+      },
+      {
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "ts": 1760567215234
+      },
+      {
+        "observedFrom": "558184800692-1542680001@g.us",
+        "ts": 1760567215401,
+        "observedLid": "185495510364403",
+        "pushName": "Andrade"
+      },
+      {
+        "observedFrom": "558184800692-1542680001@g.us",
+        "pushName": "Andrade",
+        "ts": 1760567273169,
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedFrom": "558184800692-1542680001@g.us",
+        "pushName": "Andrade",
+        "observedLid": "185495510364403",
+        "ts": 1760567273329
+      },
+      {
+        "observedFrom": "558184800692-1542680001@g.us",
+        "observedLid": "185495510364403",
+        "ts": 1760567273512,
+        "pushName": "Andrade"
+      },
+      {
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "ts": 1760568611966
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "observedLid": "185495510364403",
+        "ts": 1760568612284
+      },
+      {
+        "pushName": "Andrade",
+        "ts": 1760568612478,
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "ts": 1760568621415,
+        "pushName": "Andrade"
+      },
+      {
+        "observedLid": "185495510364403",
+        "ts": 1760568621585,
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "ts": 1760568621766,
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760568625003,
+        "pushName": "Andrade",
+        "observedLid": "185495510364403"
+      },
+      {
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "ts": 1760568625185
+      },
+      {
+        "ts": 1760568625357,
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403"
+      },
+      {
+        "ts": 1760568626337,
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "pushName": "Andrade"
+      },
+      {
+        "ts": 1760568626507,
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade"
+      },
+      {
+        "ts": 1760568626721,
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade"
+      },
+      {
+        "ts": 1760568635890,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "ts": 1760568636044
+      },
+      {
+        "pushName": "Andrade",
+        "ts": 1760568636222,
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760568647152
+      },
+      {
+        "pushName": "Andrade",
+        "ts": 1760568647301,
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403"
+      },
+      {
+        "pushName": "Andrade",
+        "ts": 1760568647496,
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedLid": "185495510364403",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "pushName": "Andrade",
+        "ts": 1760573705000
+      },
+      {
+        "pushName": "Andrade",
+        "observedLid": "185495510364403",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "ts": 1760573705187
+      },
+      {
+        "observedLid": "185495510364403",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "ts": 1760573705353,
+        "pushName": "Andrade"
+      },
+      {
+        "observedFrom": "558184800692-1542680001@g.us",
+        "observedLid": "185495510364403",
+        "ts": 1760573707453,
+        "pushName": "Andrade"
+      },
+      {
+        "ts": 1760573707629,
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "observedFrom": "558184800692-1542680001@g.us"
+      },
+      {
+        "ts": 1760573707764,
+        "observedLid": "185495510364403",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "pushName": "Andrade"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "ts": 1760577938468,
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "ts": 1760577938652,
+        "observedLid": "185495510364403"
+      },
+      {
+        "ts": 1760577938819,
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403"
+      },
+      {
+        "ts": 1760577940634,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "ts": 1760577940805
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760577941039,
+        "pushName": "Andrade",
+        "observedLid": "185495510364403"
+      },
+      {
+        "pushName": "Andrade",
+        "observedLid": "185495510364403",
+        "ts": 1760579297673,
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "ts": 1760579297840
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "ts": 1760579298029,
+        "observedLid": "185495510364403"
+      },
+      {
+        "ts": 1760579530394,
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "pushName": "Andrade"
+      },
+      {
+        "pushName": "Andrade",
+        "ts": 1760579530541,
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403"
+      },
+      {
+        "pushName": "Andrade",
+        "ts": 1760579530665,
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "ts": 1760579531927,
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade"
+      },
+      {
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "ts": 1760579532079
+      },
+      {
+        "ts": 1760579532225,
+        "pushName": "Andrade",
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "ts": 1760579581156,
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "pushName": "Andrade"
+      },
+      {
+        "pushName": "Andrade",
+        "ts": 1760579581309,
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "ts": 1760579581475,
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "pushName": "Andrade"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "ts": 1760579603990,
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760579604131,
+        "pushName": "Andrade"
+      },
+      {
+        "ts": 1760579604311,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "observedLid": "185495510364403"
+      },
+      {
+        "ts": 1760579610993,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "ts": 1760579611166,
+        "pushName": "Andrade"
+      },
+      {
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760579611327,
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedLid": "185495510364403",
+        "ts": 1760579615052,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade"
+      },
+      {
+        "ts": 1760579615210,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "observedLid": "185495510364403",
+        "ts": 1760579615416
+      },
+      {
+        "pushName": "Andrade",
+        "observedLid": "185495510364403",
+        "ts": 1760579615559,
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "pushName": "Andrade",
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760579615715
+      },
+      {
+        "ts": 1760579615867,
+        "pushName": "Andrade",
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "ts": 1760579639809
+      },
+      {
+        "ts": 1760579639963,
+        "pushName": "Andrade",
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "ts": 1760579640333,
+        "observedLid": "185495510364403"
+      },
+      {
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "ts": 1760579648077
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760579648235,
+        "pushName": "Andrade",
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "ts": 1760579648396
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "ts": 1760579650777
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "ts": 1760579650914
+      },
+      {
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "ts": 1760579651133
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "ts": 1760579658290
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "ts": 1760579658429,
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "observedLid": "185495510364403",
+        "ts": 1760579658600
+      },
+      {
+        "ts": 1760579662152,
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade"
+      },
+      {
+        "ts": 1760579662307,
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade"
+      },
+      {
+        "ts": 1760579662470,
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "ts": 1760579670008,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "observedLid": "185495510364403",
+        "ts": 1760579670162
+      },
+      {
+        "ts": 1760579670320,
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "pushName": "Andrade"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "ts": 1760579686035,
+        "observedLid": "185495510364403"
+      },
+      {
+        "ts": 1760579686178,
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "pushName": "Andrade"
+      },
+      {
+        "observedLid": "185495510364403",
+        "ts": 1760579686366,
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760579687681,
+        "pushName": "Andrade"
+      },
+      {
+        "ts": 1760579687824,
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "ts": 1760579687984
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "ts": 1760579691659,
+        "pushName": "Andrade"
+      },
+      {
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760579691805,
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedLid": "185495510364403",
+        "ts": 1760579691947,
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "pushName": "Andrade",
+        "observedLid": "185495510364403",
+        "ts": 1760579695378,
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "ts": 1760579695548
+      },
+      {
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760579695708,
+        "observedLid": "185495510364403"
+      },
+      {
+        "ts": 1760579700577,
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "pushName": "Andrade"
+      },
+      {
+        "ts": 1760579700738,
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403"
+      },
+      {
+        "pushName": "Andrade",
+        "ts": 1760579700895,
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "ts": 1760579701496,
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "pushName": "Andrade"
+      },
+      {
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760579701628
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "observedLid": "185495510364403",
+        "ts": 1760579701778
+      },
+      {
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760579720774
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760579720925,
+        "pushName": "Andrade",
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "ts": 1760579721089,
+        "pushName": "Andrade"
+      },
+      {
+        "ts": 1760579774675,
+        "pushName": "Andrade",
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760579774829,
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "ts": 1760579774995
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "ts": 1760579789143,
+        "pushName": "Andrade"
+      },
+      {
+        "observedLid": "185495510364403",
+        "ts": 1760579789283,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade"
+      },
+      {
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760579789297,
+        "pushName": "Andrade"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760579789484,
+        "observedLid": "185495510364403",
+        "pushName": "Andrade"
+      },
+      {
+        "ts": 1760579789518,
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "ts": 1760579789661
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760579791872,
+        "observedLid": "185495510364403",
+        "pushName": "Andrade"
+      },
+      {
+        "pushName": "Andrade",
+        "ts": 1760579792018,
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "pushName": "Andrade",
+        "ts": 1760579792188,
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "ts": 1760579797131,
+        "pushName": "Andrade"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "observedLid": "185495510364403",
+        "ts": 1760579797297
+      },
+      {
+        "pushName": "Andrade",
+        "observedLid": "185495510364403",
+        "ts": 1760579797460,
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "pushName": "Andrade",
+        "ts": 1760579810648,
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403"
+      },
+      {
+        "ts": 1760579810820,
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "ts": 1760579810988
+      },
+      {
+        "observedLid": "185495510364403",
+        "ts": 1760579821573,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "ts": 1760579821739
+      },
+      {
+        "pushName": "Andrade",
+        "ts": 1760579821932,
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403"
+      },
+      {
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760579824320,
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "ts": 1760579824458
+      },
+      {
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760579824631
+      },
+      {
+        "pushName": "Andrade",
+        "ts": 1760579878195,
+        "observedFrom": "558184800692-1542680001@g.us",
+        "observedLid": "185495510364403"
+      },
+      {
+        "ts": 1760579878361,
+        "observedFrom": "558184800692-1542680001@g.us",
+        "observedLid": "185495510364403",
+        "pushName": "Andrade"
+      },
+      {
+        "ts": 1760579878510,
+        "observedLid": "185495510364403",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "pushName": "Andrade"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "observedLid": "185495510364403",
+        "ts": 1760579890644
+      },
+      {
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760579890802,
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "ts": 1760579891035
+      },
+      {
+        "ts": 1760579974688,
+        "observedFrom": "558184800692-1542680001@g.us",
+        "observedLid": "185495510364403",
+        "pushName": "Andrade"
+      },
+      {
+        "ts": 1760579974815,
+        "pushName": "Andrade",
+        "observedLid": "185495510364403",
+        "observedFrom": "558184800692-1542680001@g.us"
+      },
+      {
+        "ts": 1760579975178,
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "observedFrom": "558184800692-1542680001@g.us"
+      },
+      {
+        "ts": 1760579980156,
+        "observedFrom": "558184800692-1542680001@g.us",
+        "pushName": "Andrade",
+        "observedLid": "185495510364403"
+      },
+      {
+        "pushName": "Andrade",
+        "ts": 1760579980324,
+        "observedFrom": "558184800692-1542680001@g.us",
+        "observedLid": "185495510364403"
+      },
+      {
+        "ts": 1760579980489,
+        "pushName": "Andrade",
+        "observedLid": "185495510364403",
+        "observedFrom": "558184800692-1542680001@g.us"
+      },
+      {
+        "pushName": "Andrade",
+        "observedLid": "185495510364403",
+        "ts": 1760579989658,
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "ts": 1760579989810,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedLid": "185495510364403",
+        "ts": 1760579989961,
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "pushName": "Andrade",
+        "ts": 1760579993732,
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760579993871,
+        "pushName": "Andrade"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "ts": 1760579994013,
+        "pushName": "Andrade"
+      },
+      {
+        "pushName": "Andrade",
+        "ts": 1760579995824,
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "ts": 1760579995990
+      },
+      {
+        "pushName": "Andrade",
+        "ts": 1760579996148,
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403"
+      },
+      {
+        "pushName": "Andrade",
+        "observedLid": "185495510364403",
+        "ts": 1760580023713,
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedLid": "185495510364403",
+        "ts": 1760580023883,
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760580024051,
+        "pushName": "Andrade"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "ts": 1760580124712,
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "ts": 1760580124886
+      },
+      {
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "ts": 1760580125054,
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "ts": 1760580296169,
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760580296454
+      },
+      {
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "ts": 1760580296658
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "ts": 1760580297772
+      },
+      {
+        "pushName": "Andrade",
+        "ts": 1760580298000,
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedLid": "185495510364403",
+        "ts": 1760580298152,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade"
+      },
+      {
+        "observedLid": "185495510364403",
+        "ts": 1760580311167,
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "ts": 1760580311319,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "ts": 1760580311517
+      },
+      {
+        "ts": 1760580378162,
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade"
+      },
+      {
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "ts": 1760580378368,
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "observedLid": "185495510364403",
+        "ts": 1760580378536
+      },
+      {
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760580382858,
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "ts": 1760580383032,
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760580383185,
+        "pushName": "Andrade"
+      },
+      {
+        "ts": 1760580385089,
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "ts": 1760580385264,
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "ts": 1760580385417,
+        "observedLid": "185495510364403"
+      },
+      {
+        "pushName": "Andrade",
+        "ts": 1760580432656,
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403"
+      },
+      {
+        "ts": 1760580432818,
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "ts": 1760580432997,
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "ts": 1760580451230,
+        "observedLid": "185495510364403"
+      },
+      {
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760580451404,
+        "observedLid": "185495510364403"
+      },
+      {
+        "pushName": "Andrade",
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760580451556
+      },
+      {
+        "ts": 1760580453036,
+        "pushName": "Andrade",
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "ts": 1760580453188,
+        "pushName": "Andrade"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "observedLid": "185495510364403",
+        "ts": 1760580453362
+      },
+      {
+        "observedLid": "185495510364403",
+        "ts": 1760580456443,
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "ts": 1760580456617
+      },
+      {
+        "observedLid": "185495510364403",
+        "ts": 1760580456784,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade"
+      },
+      {
+        "ts": 1760580465132,
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade"
+      },
+      {
+        "ts": 1760580465294,
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "ts": 1760580465447,
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "ts": 1760580468195,
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403"
+      },
+      {
+        "pushName": "Andrade",
+        "ts": 1760580468372,
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedLid": "185495510364403",
+        "ts": 1760580468532,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade"
+      },
+      {
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "ts": 1760580477996,
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "ts": 1760580478178,
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760580478323
+      },
+      {
+        "pushName": "Andrade",
+        "ts": 1760580486387,
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403"
+      },
+      {
+        "ts": 1760580486524,
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "pushName": "Andrade",
+        "ts": 1760580486689,
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760581757475,
+        "observedLid": "185495510364403",
+        "pushName": "Andrade"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "ts": 1760581757682,
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760581757877,
+        "observedLid": "185495510364403",
+        "pushName": "Andrade"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "ts": 1760581759948,
+        "pushName": "Andrade"
+      },
+      {
+        "ts": 1760581760303,
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "pushName": "Andrade"
+      },
+      {
+        "pushName": "Andrade",
+        "observedLid": "185495510364403",
+        "ts": 1760581760495,
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760581770316
+      },
+      {
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760581770521
+      },
+      {
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "ts": 1760581770777,
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "ts": 1760581784087,
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "ts": 1760581784289,
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedLid": "185495510364403",
+        "ts": 1760581784445,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade"
+      },
+      {
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "ts": 1760581827202,
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "ts": 1760581827471
+      },
+      {
+        "pushName": "Andrade",
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760581827717
+      },
+      {
+        "pushName": "Andrade",
+        "ts": 1760581858525,
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760581859839,
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760581860080
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "ts": 1760584121089,
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "ts": 1760584121406
+      },
+      {
+        "pushName": "Andrade",
+        "ts": 1760584121661,
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760584124069
+      },
+      {
+        "pushName": "Andrade",
+        "ts": 1760584124330,
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403"
+      },
+      {
+        "ts": 1760584124539,
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760584152459,
+        "pushName": "Andrade",
+        "observedLid": "185495510364403"
+      },
+      {
+        "ts": 1760584152760,
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "pushName": "Andrade"
+      },
+      {
+        "pushName": "Andrade",
+        "observedLid": "185495510364403",
+        "ts": 1760584152997,
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "pushName": "Andrade",
+        "ts": 1760584978571,
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "ts": 1760584978880
+      },
+      {
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760584979135,
+        "observedLid": "185495510364403"
+      },
+      {
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760585178986,
+        "observedLid": "185495510364403"
+      },
+      {
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "ts": 1760585179388
+      },
+      {
+        "ts": 1760585179752,
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "pushName": "Andrade"
+      },
+      {
+        "pushName": "Andrade",
+        "observedLid": null,
+        "ts": 1760619969895,
+        "observedFrom": "558182132346@c.us"
+      },
+      {
+        "observedLid": null,
+        "ts": 1760619970304,
+        "observedFrom": "558182132346@c.us",
+        "pushName": "Andrade"
+      },
+      {
+        "pushName": "Andrade",
+        "ts": 1760620056281,
+        "observedFrom": "558184800692-1542680001@g.us",
+        "observedLid": "185495510364403"
+      },
+      {
+        "pushName": "Andrade",
+        "ts": 1760620056804,
+        "observedFrom": "558184800692-1542680001@g.us",
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "ts": 1760620057171,
+        "observedFrom": "558184800692-1542680001@g.us"
+      },
+      {
+        "ts": 1760620061869,
+        "observedFrom": "558184800692-1542680001@g.us",
+        "pushName": "Andrade",
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedFrom": "558184800692-1542680001@g.us",
+        "pushName": "Andrade",
+        "ts": 1760620062125,
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedLid": "185495510364403",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "pushName": "Andrade",
+        "ts": 1760620062371
+      },
+      {
+        "observedFrom": "558184800692-1542680001@g.us",
+        "observedLid": "185495510364403",
+        "ts": 1760620519950,
+        "pushName": "Andrade"
+      },
+      {
+        "ts": 1760620520274,
+        "observedLid": "185495510364403",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "pushName": "Andrade"
+      },
+      {
+        "ts": 1760620520512,
+        "pushName": "Andrade",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "observedLid": "185495510364403"
+      },
+      {
+        "pushName": "Andrade",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "observedLid": "185495510364403",
+        "ts": 1760620622802
+      },
+      {
+        "pushName": "Andrade",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "observedLid": "185495510364403",
+        "ts": 1760620623062
+      },
+      {
+        "pushName": "Andrade",
+        "ts": 1760620623300,
+        "observedLid": "185495510364403",
+        "observedFrom": "558184800692-1542680001@g.us"
+      },
+      {
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "ts": 1760620627893
+      },
+      {
+        "observedLid": "185495510364403",
+        "ts": 1760620628543,
+        "pushName": "Andrade",
+        "observedFrom": "558184800692-1542680001@g.us"
+      },
+      {
+        "observedFrom": "558184800692-1542680001@g.us",
+        "pushName": "Andrade",
+        "ts": 1760620628802,
+        "observedLid": "185495510364403"
+      },
+      {
+        "ts": 1760620629574,
+        "pushName": "Andrade",
+        "observedLid": "185495510364403",
+        "observedFrom": "558184800692-1542680001@g.us"
+      },
+      {
+        "observedLid": "185495510364403",
+        "ts": 1760620629801,
+        "observedFrom": "558184800692-1542680001@g.us",
+        "pushName": "Andrade"
+      },
+      {
+        "pushName": "Andrade",
+        "ts": 1760620630021,
+        "observedLid": "185495510364403",
+        "observedFrom": "558184800692-1542680001@g.us"
+      },
+      {
+        "observedFrom": "558184800692-1542680001@g.us",
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "ts": 1760620647879
+      },
+      {
+        "observedFrom": "558184800692-1542680001@g.us",
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "ts": 1760620648494
+      },
+      {
+        "observedLid": "185495510364403",
+        "ts": 1760620648711,
+        "pushName": "Andrade",
+        "observedFrom": "558184800692-1542680001@g.us"
+      },
+      {
+        "pushName": "Andrade",
+        "observedLid": "185495510364403",
+        "ts": 1760620653133,
+        "observedFrom": "558184800692-1542680001@g.us"
+      },
+      {
+        "observedFrom": "558184800692-1542680001@g.us",
+        "observedLid": "185495510364403",
+        "ts": 1760620653373,
+        "pushName": "Andrade"
+      },
+      {
+        "ts": 1760620653607,
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "observedFrom": "558184800692-1542680001@g.us"
+      },
+      {
+        "observedLid": "185495510364403",
+        "ts": 1760620825789,
+        "observedFrom": "558184800692-1542680001@g.us",
+        "pushName": "Andrade"
+      },
+      {
+        "observedFrom": "558184800692-1542680001@g.us",
+        "ts": 1760620826115,
+        "pushName": "Andrade",
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedLid": "185495510364403",
+        "ts": 1760620826395,
+        "observedFrom": "558184800692-1542680001@g.us",
+        "pushName": "Andrade"
+      },
+      {
+        "observedLid": "185495510364403",
+        "ts": 1760620844200,
+        "pushName": "Andrade",
+        "observedFrom": "558184800692-1542680001@g.us"
+      },
+      {
+        "ts": 1760620844470,
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "observedFrom": "558184800692-1542680001@g.us"
+      },
+      {
+        "ts": 1760620844726,
+        "pushName": "Andrade",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "observedLid": "185495510364403"
+      },
+      {
+        "pushName": "Andrade",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "observedLid": "185495510364403",
+        "ts": 1760621485808
+      },
+      {
+        "observedFrom": "558184800692-1542680001@g.us",
+        "pushName": "Andrade",
+        "observedLid": "185495510364403",
+        "ts": 1760621486173
+      },
+      {
+        "observedLid": "185495510364403",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "pushName": "Andrade",
+        "ts": 1760621486492
+      },
+      {
+        "ts": 1760621503226,
+        "observedLid": "185495510364403",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "pushName": "Andrade"
+      },
+      {
+        "pushName": "Andrade",
+        "ts": 1760621503588,
+        "observedFrom": "558184800692-1542680001@g.us",
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedFrom": "558184800692-1542680001@g.us",
+        "pushName": "Andrade",
+        "observedLid": "185495510364403",
+        "ts": 1760621503816
+      },
+      {
+        "observedLid": "185495510364403",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "ts": 1760621505353,
+        "pushName": "Andrade"
+      },
+      {
+        "observedLid": "185495510364403",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "ts": 1760621505599,
+        "pushName": "Andrade"
+      },
+      {
+        "observedFrom": "558184800692-1542680001@g.us",
+        "ts": 1760621505864,
+        "pushName": "Andrade",
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedFrom": "558182132346@c.us",
+        "pushName": "Andrade",
+        "ts": 1760622712199,
+        "observedLid": null
+      },
+      {
+        "observedFrom": "558182132346@c.us",
+        "ts": 1760622712522,
+        "pushName": "Andrade",
+        "observedLid": null
+      },
+      {
+        "ts": 1760622870064,
+        "observedLid": null,
+        "pushName": "Andrade",
+        "observedFrom": "558182132346@c.us"
+      },
+      {
+        "pushName": "Andrade",
+        "observedFrom": "558182132346@c.us",
+        "observedLid": null,
+        "ts": 1760622870278
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760623164866,
+        "pushName": "Andrade",
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760623165169,
+        "pushName": "Andrade"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760623165471,
+        "pushName": "Andrade",
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedLid": "185495510364403",
+        "ts": 1760624016804,
+        "observedFrom": "558184800692-1542680001@g.us",
+        "pushName": "Andrade"
+      },
+      {
+        "ts": 1760624017142,
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "observedFrom": "558184800692-1542680001@g.us"
+      },
+      {
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "ts": 1760624017423
+      },
+      {
+        "observedLid": "185495510364403",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "pushName": "Andrade",
+        "ts": 1760624046081
+      },
+      {
+        "ts": 1760624046394,
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "observedFrom": "558184800692-1542680001@g.us"
+      },
+      {
+        "observedFrom": "558184800692-1542680001@g.us",
+        "pushName": "Andrade",
+        "ts": 1760624046692,
+        "observedLid": "185495510364403"
+      },
+      {
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760624355471,
+        "observedLid": "185495510364403"
+      },
+      {
+        "ts": 1760624355856,
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403"
+      },
+      {
+        "ts": 1760624356139,
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "ts": 1760624356245,
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760624356494,
+        "pushName": "Andrade",
+        "observedLid": "185495510364403"
+      },
+      {
+        "ts": 1760624356768,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade",
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760624359022
+      },
+      {
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "ts": 1760624359364,
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760624359634,
+        "pushName": "Andrade"
+      },
+      {
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "ts": 1760624531701,
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "pushName": "Andrade",
+        "observedLid": "185495510364403",
+        "ts": 1760624532182,
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "ts": 1760624532471
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "ts": 1760624534540
+      },
+      {
+        "observedLid": "185495510364403",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760624534783,
+        "pushName": "Andrade"
+      },
+      {
+        "observedLid": "185495510364403",
+        "ts": 1760624535028,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Andrade"
+      },
+      {
+        "observedFrom": "558184800692-1542680001@g.us",
+        "ts": 1760628743117,
+        "observedLid": "185495510364403",
+        "pushName": "Andrade"
+      },
+      {
+        "observedFrom": "558184800692-1542680001@g.us",
+        "ts": 1760628743535,
+        "observedLid": "185495510364403",
+        "pushName": "Andrade"
+      },
+      {
+        "observedFrom": "558184800692-1542680001@g.us",
+        "observedLid": "185495510364403",
+        "ts": 1760628743882,
+        "pushName": "Andrade"
+      },
+      {
+        "pushName": "Andrade",
+        "ts": 1760628746803,
+        "observedFrom": "558184800692-1542680001@g.us",
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedFrom": "558184800692-1542680001@g.us",
+        "pushName": "Andrade",
+        "observedLid": "185495510364403",
+        "ts": 1760628747052
+      },
+      {
+        "observedFrom": "558184800692-1542680001@g.us",
+        "pushName": "Andrade",
+        "ts": 1760628747299,
+        "observedLid": "185495510364403"
+      },
+      {
+        "ts": 1760629408855,
+        "pushName": "Andrade",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "observedLid": "185495510364403"
+      },
+      {
+        "pushName": "Andrade",
+        "ts": 1760629409233,
+        "observedFrom": "558184800692-1542680001@g.us",
+        "observedLid": "185495510364403"
+      },
+      {
+        "ts": 1760629409463,
+        "pushName": "Andrade",
+        "observedLid": "185495510364403",
+        "observedFrom": "558184800692-1542680001@g.us"
+      },
+      {
+        "observedFrom": "558184800692-1542680001@g.us",
+        "observedLid": "185495510364403",
+        "ts": 1760629410403,
+        "pushName": "Andrade"
+      },
+      {
+        "pushName": "Andrade",
+        "ts": 1760629410650,
+        "observedFrom": "558184800692-1542680001@g.us",
+        "observedLid": "185495510364403"
+      },
+      {
+        "pushName": "Andrade",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "ts": 1760629410942,
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedFrom": "558184800692-1542680001@g.us",
+        "ts": 1760629506051,
+        "observedLid": "185495510364403",
+        "pushName": "Andrade"
+      },
+      {
+        "observedFrom": "558184800692-1542680001@g.us",
+        "pushName": "Andrade",
+        "ts": 1760629506375,
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedFrom": "558184800692-1542680001@g.us",
+        "ts": 1760629506639,
+        "observedLid": "185495510364403",
+        "pushName": "Andrade"
+      },
+      {
+        "pushName": "Andrade",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "ts": 1760629509195,
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedFrom": "558184800692-1542680001@g.us",
+        "observedLid": "185495510364403",
+        "pushName": "Andrade",
+        "ts": 1760629509440
+      },
+      {
+        "ts": 1760629509687,
+        "pushName": "Andrade",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "observedLid": "185495510364403"
+      },
+      {
+        "ts": 1760629511634,
+        "pushName": "Andrade",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedLid": "185495510364403",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "pushName": "Andrade",
+        "ts": 1760629511853
+      },
+      {
+        "pushName": "Andrade",
+        "ts": 1760629512087,
+        "observedFrom": "558184800692-1542680001@g.us",
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedLid": "185495510364403",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "ts": 1760629518953,
+        "pushName": "Andrade"
+      },
+      {
+        "ts": 1760629519218,
+        "observedFrom": "558184800692-1542680001@g.us",
+        "pushName": "Andrade",
+        "observedLid": "185495510364403"
+      },
+      {
+        "pushName": "Andrade",
+        "ts": 1760629519420,
+        "observedLid": "185495510364403",
+        "observedFrom": "558184800692-1542680001@g.us"
+      },
+      {
+        "pushName": "Andrade",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "ts": 1760629568810,
+        "observedLid": "185495510364403"
+      },
+      {
+        "observedFrom": "558184800692-1542680001@g.us",
+        "pushName": "Andrade",
+        "ts": 1760629569196,
+        "observedLid": "185495510364403"
+      }
+    ],
+    "identifiers": [
+      "558182132346",
+      "185495510364403"
+    ],
+    "metaAnual": 200,
+    "lastSeen": "2025-10-16T16:03:10.958Z",
+    "ultimoTreino": "09/12/2025",
+    "anual": 118,
+    "lastGroupActivity": "2025-10-16T16:03:10.958Z",
+    "registerGrupamentos": true,
+    "lastKnownLid": "185495510364403",
+    "createdAt": "01/07/2025",
+    "mensal": 1,
+    "trofeus": 3,
+    "confissoes": {
+      "saldo": 5,
+      "ultimaAtualizacao": "18/06/2025"
+    }
+  },
+  {
+    "id": "Felipão",
+    "lastSeen": "2025-10-29T17:33:09.340Z",
+    "registerGrupamentos": true,
+    "confissoes": {
+      "ultimaAtualizacao": "29/10/2025",
+      "saldo": 4
+    },
+    "anual": 19,
+    "senderNumber": "558191230396",
+    "name": "Felipão",
+    "lastKnownLid": "16741799317625",
+    "createdAt": "25/06/2025",
+    "mensal": 0,
+    "lastPushName": "Felipe Labio",
+    "ultimoTreino": "09/09/2025",
+    "trofeus": 0,
+    "lastGroupActivity": "2025-10-29T17:33:09.340Z",
+    "pushNameHistory": [
+      {
+        "ts": 1761067407924,
+        "observedLid": "16741799317625",
+        "pushName": "Felipe Labio",
+        "observedFrom": "558184800692-1542680001@g.us"
+      },
+      {
+        "ts": 1761759189200,
+        "observedLid": null,
+        "observedFrom": "558191230396@c.us",
+        "pushName": "Felipe Labio"
+      }
+    ],
+    "identifiers": [
+      "16741799317625",
+      "558191230396"
+    ]
+  },
+  {
+    "id": "Lelo",
+    "name": "Lelo",
+    "senderNumber": "558184800692",
+    "mensal": 2,
+    "createdAt": "18/06/2025",
+    "pushNameHistory": [
+      {
+        "ts": 1760560631995,
+        "observedFrom": "558184800692@c.us",
+        "observedLid": null,
+        "pushName": "Leo"
+      },
+      {
+        "observedLid": null,
+        "observedFrom": "558184800692@c.us",
+        "pushName": "Leo",
+        "ts": 1760560632107
+      },
+      {
+        "ts": 1760560636582,
+        "observedFrom": "558184800692@c.us",
+        "observedLid": null,
+        "pushName": "Leo"
+      },
+      {
+        "observedLid": null,
+        "observedFrom": "558184800692@c.us",
+        "ts": 1760560636726,
+        "pushName": "Leo"
+      },
+      {
+        "observedLid": null,
+        "observedFrom": "558184800692@c.us",
+        "ts": 1760566161196,
+        "pushName": "Leo"
+      },
+      {
+        "observedFrom": "558184800692@c.us",
+        "observedLid": null,
+        "ts": 1760566161414,
+        "pushName": "Leo"
+      },
+      {
+        "pushName": "Leo",
+        "observedLid": "56315711856839",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "ts": 1760634940059
+      }
+    ],
+    "confissoes": {
+      "saldo": 3,
+      "ultimaAtualizacao": "05/12/2025"
+    },
+    "lastSeen": "2025-10-18T15:58:44.549Z",
+    "registerGrupamentos": true,
+    "trofeus": 1,
+    "anual": 108,
+    "lastPushName": "Leo",
+    "lastGroupActivity": "2025-10-18T15:58:44.549Z",
+    "identifiers": [
+      "56315711856839",
+      "558184800692"
+    ],
+    "ultimoTreino": "23/12/2025",
+    "lastKnownLid": "56315711856839"
+  },
+  {
+    "id": "Lucas",
+    "pushNameHistory": [
+      {
+        "observedLid": "184202691608754",
+        "pushName": "Lucas Salles",
+        "ts": 1761003510638,
+        "observedFrom": "558184800692-1542680001@g.us"
+      }
+    ],
+    "lastKnownLid": "184202691608754",
+    "registerGrupamentos": true,
+    "lastGroupActivity": "2025-10-20T23:38:31.071Z",
+    "mensal": 0,
+    "identifiers": [
+      "184202691608754"
+    ],
+    "trofeus": 0,
+    "lastPushName": "Lucas Salles",
+    "lastSeen": "2025-10-20T23:38:31.071Z",
+    "anual": 8,
+    "createdAt": "23/06/2025",
+    "name": "Lucas",
+    "confissoes": {
+      "ultimaAtualizacao": "23/06/2025",
+      "saldo": 3
+    },
+    "senderNumber": "558194147250",
+    "ultimoTreino": "01/09/2025",
+    "metaAnual": 60
+  },
+  {
+    "id": "Mc",
+    "trofeus": 14,
+    "lastKnownLid": "138989570904068",
+    "senderNumber": "558185251791",
+    "lastPushName": "Matheus Carvalho",
+    "registerGrupamentos": true,
+    "confissoes": {
+      "ultimaAtualizacao": "18/06/2025",
+      "saldo": 5
+    },
+    "anual": 237,
+    "name": "Mc",
+    "createdAt": "18/06/2025",
+    "ultimoTreino": "18/11/2025",
+    "identifiers": [
+      "558185251791",
+      "138989570904068"
+    ],
+    "mensal": 0,
+    "pushNameHistory": [
+      {
+        "ts": 1760553457955,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068"
+      },
+      {
+        "ts": 1760553458085,
+        "observedLid": "138989570904068",
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Matheus Carvalho"
+      },
+      {
+        "ts": 1760553458256,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068"
+      },
+      {
+        "observedLid": "138989570904068",
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760553536503
+      },
+      {
+        "observedLid": "138989570904068",
+        "ts": 1760553536626,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Matheus Carvalho"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "138989570904068",
+        "ts": 1760553536813,
+        "pushName": "Matheus Carvalho"
+      },
+      {
+        "ts": 1760553545192,
+        "observedLid": "138989570904068",
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedLid": "138989570904068",
+        "ts": 1760553545328,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Matheus Carvalho"
+      },
+      {
+        "ts": 1760553545508,
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "138989570904068",
+        "pushName": "Matheus Carvalho"
+      },
+      {
+        "observedLid": "138989570904068",
+        "ts": 1760555750134,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Matheus Carvalho"
+      },
+      {
+        "pushName": "Matheus Carvalho",
+        "ts": 1760555750438,
+        "observedLid": "138989570904068",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "ts": 1760555750677,
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "138989570904068",
+        "pushName": "Matheus Carvalho"
+      },
+      {
+        "observedLid": "138989570904068",
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Matheus Carvalho",
+        "ts": 1760555830588
+      },
+      {
+        "ts": 1760555830814,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068"
+      },
+      {
+        "ts": 1760555831027,
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "ts": 1760555837731,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068"
+      },
+      {
+        "ts": 1760555837945,
+        "observedLid": "138989570904068",
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Matheus Carvalho"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068",
+        "ts": 1760555838133
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Matheus Carvalho",
+        "ts": 1760555849619,
+        "observedLid": "138989570904068"
+      },
+      {
+        "ts": 1760555849862,
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "138989570904068"
+      },
+      {
+        "observedLid": "138989570904068",
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Matheus Carvalho",
+        "ts": 1760555850084
+      },
+      {
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068",
+        "ts": 1760555853619,
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "ts": 1760555854739,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068"
+      },
+      {
+        "observedLid": "138989570904068",
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760555854962
+      },
+      {
+        "pushName": "Matheus Carvalho",
+        "ts": 1760555873156,
+        "observedLid": "138989570904068",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068",
+        "ts": 1760555873363
+      },
+      {
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068",
+        "ts": 1760555874652,
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068",
+        "ts": 1760555877814
+      },
+      {
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068",
+        "ts": 1760555878031,
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "ts": 1760555878209,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068"
+      },
+      {
+        "ts": 1760556959974,
+        "observedLid": "138989570904068",
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "138989570904068",
+        "ts": 1760556960201,
+        "pushName": "Matheus Carvalho"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Matheus Carvalho",
+        "ts": 1760556960425,
+        "observedLid": "138989570904068"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760556974512,
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068"
+      },
+      {
+        "ts": 1760556974908,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068"
+      },
+      {
+        "observedLid": "138989570904068",
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Matheus Carvalho",
+        "ts": 1760556975102
+      },
+      {
+        "ts": 1760556977118,
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "138989570904068"
+      },
+      {
+        "observedLid": "138989570904068",
+        "ts": 1760556977278,
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "ts": 1760556977590,
+        "observedLid": "138989570904068",
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Matheus Carvalho"
+      },
+      {
+        "ts": 1760556984800,
+        "observedLid": "138989570904068",
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "138989570904068",
+        "ts": 1760556985008
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "138989570904068",
+        "ts": 1760556985226,
+        "pushName": "Matheus Carvalho"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "138989570904068",
+        "ts": 1760557041144,
+        "pushName": "Matheus Carvalho"
+      },
+      {
+        "observedLid": "138989570904068",
+        "ts": 1760557041352,
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760557041560,
+        "observedLid": "138989570904068",
+        "pushName": "Matheus Carvalho"
+      },
+      {
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760557049398
+      },
+      {
+        "ts": 1760557049592,
+        "observedLid": "138989570904068",
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Matheus Carvalho"
+      },
+      {
+        "ts": 1760557049788,
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "138989570904068",
+        "pushName": "Matheus Carvalho"
+      },
+      {
+        "observedLid": "138989570904068",
+        "pushName": "Matheus Carvalho",
+        "ts": 1760557054113,
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068",
+        "ts": 1760557054754,
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "ts": 1760557054946,
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "138989570904068",
+        "pushName": "Matheus Carvalho"
+      },
+      {
+        "ts": 1760557060673,
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "138989570904068"
+      },
+      {
+        "pushName": "Matheus Carvalho",
+        "ts": 1760557060853,
+        "observedLid": "138989570904068",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068",
+        "ts": 1760557061040,
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "ts": 1760557405355,
+        "pushName": "Matheus Carvalho",
+        "observedLid": null,
+        "observedFrom": "558185251791@c.us"
+      },
+      {
+        "observedFrom": "558185251791@c.us",
+        "ts": 1760557405573,
+        "observedLid": null,
+        "pushName": "Matheus Carvalho"
+      },
+      {
+        "ts": 1760557435793,
+        "observedLid": "138989570904068",
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Matheus Carvalho"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "138989570904068",
+        "ts": 1760557436041,
+        "pushName": "Matheus Carvalho"
+      },
+      {
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "138989570904068",
+        "ts": 1760557436238
+      },
+      {
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760557456175
+      },
+      {
+        "observedLid": "138989570904068",
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760557456438
+      },
+      {
+        "ts": 1760557456760,
+        "observedLid": "138989570904068",
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "138989570904068",
+        "ts": 1760557481075
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Matheus Carvalho",
+        "ts": 1760557481269,
+        "observedLid": "138989570904068"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "138989570904068",
+        "pushName": "Matheus Carvalho",
+        "ts": 1760557481448
+      },
+      {
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "ts": 1760557770275
+      },
+      {
+        "observedLid": "138989570904068",
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "ts": 1760557770505
+      },
+      {
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "ts": 1760557770689,
+        "observedLid": "138989570904068"
+      },
+      {
+        "observedFrom": "558184800692-1542680001@g.us",
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068",
+        "ts": 1760557790789
+      },
+      {
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "ts": 1760557790950
+      },
+      {
+        "observedLid": "138989570904068",
+        "ts": 1760557791098,
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "558184800692-1542680001@g.us"
+      },
+      {
+        "observedLid": "138989570904068",
+        "pushName": "Matheus Carvalho",
+        "ts": 1760558013315,
+        "observedFrom": "558184800692-1542680001@g.us"
+      },
+      {
+        "observedLid": "138989570904068",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "pushName": "Matheus Carvalho",
+        "ts": 1760558013502
+      },
+      {
+        "ts": 1760558013655,
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "observedLid": "138989570904068"
+      },
+      {
+        "observedFrom": "558184800692-1542680001@g.us",
+        "ts": 1760558017871,
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068"
+      },
+      {
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068",
+        "ts": 1760558018014,
+        "observedFrom": "558184800692-1542680001@g.us"
+      },
+      {
+        "observedLid": "138989570904068",
+        "pushName": "Matheus Carvalho",
+        "ts": 1760558018161,
+        "observedFrom": "558184800692-1542680001@g.us"
+      },
+      {
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068",
+        "ts": 1760558662237,
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760558662480
+      },
+      {
+        "observedLid": "138989570904068",
+        "ts": 1760558662641,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Matheus Carvalho"
+      },
+      {
+        "observedLid": "138989570904068",
+        "pushName": "Matheus Carvalho",
+        "ts": 1760558667834,
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "ts": 1760558667991,
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "pushName": "Matheus Carvalho",
+        "ts": 1760558669289,
+        "observedLid": "138989570904068",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "ts": 1760561647664,
+        "observedLid": "138989570904068",
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "ts": 1760561647889,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068"
+      },
+      {
+        "ts": 1760561648045,
+        "observedLid": "138989570904068",
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedLid": "138989570904068",
+        "ts": 1760561652455,
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068",
+        "ts": 1760561652625,
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "ts": 1760561652784,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Matheus Carvalho",
+        "ts": 1760561666826,
+        "observedLid": "138989570904068"
+      },
+      {
+        "observedLid": "138989570904068",
+        "ts": 1760561667071,
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "138989570904068",
+        "pushName": "Matheus Carvalho",
+        "ts": 1760561667228
+      },
+      {
+        "observedLid": "138989570904068",
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760564998904
+      },
+      {
+        "observedLid": "138989570904068",
+        "ts": 1760564999109,
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "ts": 1760564999265,
+        "observedLid": "138989570904068",
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068",
+        "ts": 1760565004956
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760565005188,
+        "observedLid": "138989570904068",
+        "pushName": "Matheus Carvalho"
+      },
+      {
+        "observedLid": "138989570904068",
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760565005338
+      },
+      {
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760566777430
+      },
+      {
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "138989570904068",
+        "ts": 1760566777696
+      },
+      {
+        "ts": 1760566777860,
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "138989570904068",
+        "pushName": "Matheus Carvalho"
+      },
+      {
+        "observedFrom": "558184800692-1542680001@g.us",
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068",
+        "ts": 1760567179023
+      },
+      {
+        "ts": 1760567179233,
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068",
+        "observedFrom": "558184800692-1542680001@g.us"
+      },
+      {
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068",
+        "ts": 1760567179399,
+        "observedFrom": "558184800692-1542680001@g.us"
+      },
+      {
+        "pushName": "",
+        "ts": 1760567182266,
+        "observedLid": null,
+        "observedFrom": "138989570904068@c.us"
+      },
+      {
+        "observedFrom": "138989570904068@c.us",
+        "observedLid": null,
+        "pushName": "Unknown",
+        "ts": 1760567182520
+      },
+      {
+        "observedLid": "138989570904068",
+        "ts": 1760567198299,
+        "observedFrom": "558184800692-1542680001@g.us",
+        "pushName": "Matheus Carvalho"
+      },
+      {
+        "observedLid": "138989570904068",
+        "pushName": "Matheus Carvalho",
+        "ts": 1760567198444,
+        "observedFrom": "558184800692-1542680001@g.us"
+      },
+      {
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "ts": 1760567198578,
+        "observedLid": "138989570904068"
+      },
+      {
+        "observedLid": "138989570904068",
+        "ts": 1760572560283,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Matheus Carvalho"
+      },
+      {
+        "pushName": "Matheus Carvalho",
+        "ts": 1760572560788,
+        "observedLid": "138989570904068",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "138989570904068",
+        "ts": 1760572560982
+      },
+      {
+        "pushName": "Matheus Carvalho",
+        "ts": 1760577886064,
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "138989570904068"
+      },
+      {
+        "observedLid": "138989570904068",
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Matheus Carvalho",
+        "ts": 1760577886714
+      },
+      {
+        "ts": 1760577886891,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068"
+      },
+      {
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068",
+        "ts": 1760577893049,
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "ts": 1760577893224,
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "138989570904068"
+      },
+      {
+        "ts": 1760577893393,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068"
+      },
+      {
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "138989570904068",
+        "ts": 1760577894916
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Matheus Carvalho",
+        "ts": 1760577895051,
+        "observedLid": "138989570904068"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760577895221,
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068"
+      },
+      {
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "138989570904068",
+        "ts": 1760579201002
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Matheus Carvalho",
+        "ts": 1760579201367,
+        "observedLid": "138989570904068"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "138989570904068",
+        "ts": 1760579201544,
+        "pushName": "Matheus Carvalho"
+      },
+      {
+        "observedLid": "138989570904068",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760579492416,
+        "pushName": "Matheus Carvalho"
+      },
+      {
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760579492590
+      },
+      {
+        "ts": 1760579492740,
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "138989570904068"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068",
+        "ts": 1760579493093
+      },
+      {
+        "observedLid": "138989570904068",
+        "ts": 1760579493264,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Matheus Carvalho"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068",
+        "ts": 1760579493408
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068",
+        "ts": 1760579498243
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760579498616,
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068"
+      },
+      {
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760579498758
+      },
+      {
+        "observedLid": "138989570904068",
+        "ts": 1760579521580,
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "ts": 1760579521699,
+        "observedLid": "138989570904068",
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Matheus Carvalho"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "138989570904068",
+        "ts": 1760579521888,
+        "pushName": "Matheus Carvalho"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760579524969,
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068",
+        "ts": 1760579525124
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760579525285,
+        "observedLid": "138989570904068",
+        "pushName": "Matheus Carvalho"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "138989570904068",
+        "ts": 1760579528104,
+        "pushName": "Matheus Carvalho"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Matheus Carvalho",
+        "ts": 1760579528231,
+        "observedLid": "138989570904068"
+      },
+      {
+        "pushName": "Matheus Carvalho",
+        "ts": 1760579528396,
+        "observedLid": "138989570904068",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "pushName": "Matheus Carvalho",
+        "ts": 1760579541023,
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "138989570904068"
+      },
+      {
+        "observedLid": "138989570904068",
+        "pushName": "Matheus Carvalho",
+        "ts": 1760579541162,
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760579541337,
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068"
+      },
+      {
+        "observedLid": "138989570904068",
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760579545362
+      },
+      {
+        "observedLid": "138989570904068",
+        "pushName": "Matheus Carvalho",
+        "ts": 1760579545490,
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760579545637,
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068"
+      },
+      {
+        "ts": 1760579563754,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068",
+        "ts": 1760579563897
+      },
+      {
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760579564026,
+        "observedLid": "138989570904068"
+      },
+      {
+        "ts": 1760579565636,
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760579565783
+      },
+      {
+        "ts": 1760579565931,
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "138989570904068"
+      },
+      {
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760579567872,
+        "observedLid": "138989570904068"
+      },
+      {
+        "ts": 1760579568007,
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "pushName": "Matheus Carvalho",
+        "ts": 1760579568149,
+        "observedLid": "138989570904068",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "138989570904068",
+        "ts": 1760579571910
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "138989570904068",
+        "ts": 1760579572044,
+        "pushName": "Matheus Carvalho"
+      },
+      {
+        "observedLid": "138989570904068",
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760579572206
+      },
+      {
+        "observedLid": "138989570904068",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760579640972,
+        "pushName": "Matheus Carvalho"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760579641136,
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068"
+      },
+      {
+        "ts": 1760579641293,
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "138989570904068",
+        "pushName": "Matheus Carvalho"
+      },
+      {
+        "ts": 1760579643452,
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "138989570904068"
+      },
+      {
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760579643599
+      },
+      {
+        "ts": 1760579643756,
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760579653649,
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "138989570904068",
+        "pushName": "Matheus Carvalho",
+        "ts": 1760579653816
+      },
+      {
+        "observedLid": "138989570904068",
+        "ts": 1760579653983,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Matheus Carvalho"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760579655847,
+        "observedLid": "138989570904068",
+        "pushName": "Matheus Carvalho"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Matheus Carvalho",
+        "ts": 1760579656005,
+        "observedLid": "138989570904068"
+      },
+      {
+        "ts": 1760579656146,
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "138989570904068"
+      },
+      {
+        "ts": 1760579661654,
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "138989570904068"
+      },
+      {
+        "observedLid": "138989570904068",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760579661831,
+        "pushName": "Matheus Carvalho"
+      },
+      {
+        "ts": 1760579661951,
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "138989570904068"
+      },
+      {
+        "pushName": "Matheus Carvalho",
+        "ts": 1760579666686,
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "138989570904068"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "138989570904068",
+        "pushName": "Matheus Carvalho",
+        "ts": 1760579666839
+      },
+      {
+        "ts": 1760579667087,
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "138989570904068"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068",
+        "ts": 1760579724372
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "138989570904068",
+        "ts": 1760579724518,
+        "pushName": "Matheus Carvalho"
+      },
+      {
+        "ts": 1760579724686,
+        "observedLid": "138989570904068",
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760579725439,
+        "observedLid": "138989570904068"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760579725580,
+        "observedLid": "138989570904068",
+        "pushName": "Matheus Carvalho"
+      },
+      {
+        "observedLid": "138989570904068",
+        "ts": 1760579725732,
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedLid": "138989570904068",
+        "pushName": "Matheus Carvalho",
+        "ts": 1760579736791,
+        "observedFrom": "558184800692-1542680001@g.us"
+      },
+      {
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "observedLid": "138989570904068",
+        "ts": 1760579736917
+      },
+      {
+        "observedFrom": "558184800692-1542680001@g.us",
+        "ts": 1760579737078,
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068"
+      },
+      {
+        "observedLid": "138989570904068",
+        "ts": 1760579766177,
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedLid": "138989570904068",
+        "ts": 1760579766317,
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068",
+        "ts": 1760579766490
+      },
+      {
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "138989570904068",
+        "ts": 1760579776179
+      },
+      {
+        "observedLid": "138989570904068",
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760579776307
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "138989570904068",
+        "ts": 1760579776444,
+        "pushName": "Matheus Carvalho"
+      },
+      {
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760579781050,
+        "observedLid": "138989570904068"
+      },
+      {
+        "pushName": "Matheus Carvalho",
+        "ts": 1760579781207,
+        "observedLid": "138989570904068",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760579781336
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760579843650,
+        "observedLid": "138989570904068",
+        "pushName": "Matheus Carvalho"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760579843793,
+        "observedLid": "138989570904068",
+        "pushName": "Matheus Carvalho"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "138989570904068",
+        "pushName": "Matheus Carvalho",
+        "ts": 1760579843969
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760579867243,
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068"
+      },
+      {
+        "pushName": "Matheus Carvalho",
+        "ts": 1760579867408,
+        "observedLid": "138989570904068",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Matheus Carvalho",
+        "ts": 1760579867581,
+        "observedLid": "138989570904068"
+      },
+      {
+        "observedLid": "138989570904068",
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "ts": 1760579994974
+      },
+      {
+        "ts": 1760579995144,
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "observedLid": "138989570904068"
+      },
+      {
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "observedLid": "138989570904068",
+        "ts": 1760579995331
+      },
+      {
+        "observedLid": "138989570904068",
+        "pushName": "Matheus Carvalho",
+        "ts": 1760580015456,
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "ts": 1760580015612,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068"
+      },
+      {
+        "pushName": "Matheus Carvalho",
+        "ts": 1760580015783,
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "138989570904068"
+      },
+      {
+        "observedLid": "138989570904068",
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Matheus Carvalho",
+        "ts": 1760580328118
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "138989570904068",
+        "ts": 1760580328242,
+        "pushName": "Matheus Carvalho"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760580328430,
+        "observedLid": "138989570904068",
+        "pushName": "Matheus Carvalho"
+      },
+      {
+        "pushName": "Matheus Carvalho",
+        "ts": 1760580414437,
+        "observedLid": "138989570904068",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "ts": 1760580414618,
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "138989570904068"
+      },
+      {
+        "observedLid": "138989570904068",
+        "ts": 1760580414779,
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "pushName": "Matheus Carvalho",
+        "ts": 1760580434560,
+        "observedLid": "138989570904068",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedLid": "138989570904068",
+        "ts": 1760580434720,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Matheus Carvalho"
+      },
+      {
+        "observedLid": "138989570904068",
+        "pushName": "Matheus Carvalho",
+        "ts": 1760580434873,
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "ts": 1760580445498,
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "138989570904068",
+        "pushName": "Matheus Carvalho"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068",
+        "ts": 1760580445646
+      },
+      {
+        "ts": 1760580445790,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068"
+      },
+      {
+        "observedLid": "138989570904068",
+        "ts": 1760580455252,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Matheus Carvalho"
+      },
+      {
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "138989570904068",
+        "ts": 1760580455390
+      },
+      {
+        "pushName": "Matheus Carvalho",
+        "ts": 1760580455542,
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "138989570904068"
+      },
+      {
+        "observedLid": "138989570904068",
+        "pushName": "Matheus Carvalho",
+        "ts": 1760580459055,
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760580459198,
+        "observedLid": "138989570904068"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068",
+        "ts": 1760580459364
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "138989570904068",
+        "ts": 1760584804110,
+        "pushName": "Matheus Carvalho"
+      },
+      {
+        "ts": 1760584804350,
+        "observedLid": "138989570904068",
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Matheus Carvalho"
+      },
+      {
+        "observedLid": "138989570904068",
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760584804524
+      },
+      {
+        "ts": 1760584817203,
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "138989570904068",
+        "pushName": "Matheus Carvalho",
+        "ts": 1760584817382
+      },
+      {
+        "ts": 1760584817556,
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "138989570904068",
+        "pushName": "Matheus Carvalho",
+        "ts": 1760585048491
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760585048739,
+        "observedLid": "138989570904068",
+        "pushName": "Matheus Carvalho"
+      },
+      {
+        "ts": 1760585048912,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068"
+      },
+      {
+        "observedLid": "138989570904068",
+        "pushName": "Matheus Carvalho",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "ts": 1760623498555
+      },
+      {
+        "ts": 1760623498860,
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068",
+        "observedFrom": "558184800692-1542680001@g.us"
+      },
+      {
+        "pushName": "Matheus Carvalho",
+        "observedLid": "138989570904068",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "ts": 1760623499055
+      }
+    ],
+    "lastSeen": "2025-10-16T14:04:59.140Z",
+    "lastGroupActivity": "2025-10-16T14:04:59.140Z",
+    "metaAnual": 275
+  },
+  {
+    "id": "Pi",
+    "mensal": 0,
+    "registerGrupamentos": true,
+    "lastGroupActivity": "2025-10-20T12:51:52.762Z",
+    "senderNumber": "558197606289",
+    "trofeus": 0,
+    "name": "Pi",
+    "lastPushName": "Pedro Moura",
+    "identifiers": [
+      "38049182392558"
+    ],
+    "lastKnownLid": "38049182392558",
+    "pushNameHistory": [
+      {
+        "observedFrom": "558184800692-1542680001@g.us",
+        "ts": 1760964712420,
+        "observedLid": "38049182392558",
+        "pushName": "Pedro Moura"
+      }
+    ],
+    "confissoes": {
+      "ultimaAtualizacao": "04/10/2025",
+      "saldo": 4
+    },
+    "lastSeen": "2025-10-20T12:51:52.762Z",
+    "anual": 58,
+    "ultimoTreino": "11/10/2025",
+    "createdAt": "21/06/2025"
+  },
+  {
+    "id": "Pv",
+    "trofeus": 0,
+    "confissoes": {
+      "saldo": 4,
+      "ultimaAtualizacao": "13/10/2025"
+    },
+    "createdAt": "30/07/2025",
+    "anual": 0,
+    "mensal": 0,
+    "registerGrupamentos": false,
+    "senderNumber": "558193657501",
+    "name": "Pv",
+    "ultimoTreino": null
+  },
+  {
+    "id": "Rafael dos Reis de Labio",
+    "lastSeen": "2025-10-17T13:44:01.443Z",
+    "pushNameHistory": [
+      {
+        "pushName": "Rafinha",
+        "observedLid": "186517695791286",
+        "ts": 1760661756522,
+        "observedFrom": "558184800692-1542680001@g.us"
+      },
+      {
+        "observedFrom": "558191430975@c.us",
+        "observedLid": null,
+        "ts": 1760708641375,
+        "pushName": "Rafinha"
+      }
+    ],
+    "metaAnual": 100,
+    "mensal": 0,
+    "trofeus": 0,
+    "ultimoTreino": "01/11/2025",
+    "name": "Rafael dos Reis de Labio",
+    "createdAt": "23/06/2025",
+    "lastGroupActivity": "2025-10-17T13:44:01.443Z",
+    "registerGrupamentos": true,
+    "senderNumber": "558191430975",
+    "lastKnownLid": "186517695791286",
+    "lastPushName": "Rafinha",
+    "confissoes": {
+      "saldo": 4,
+      "ultimaAtualizacao": "31/10/2025"
+    },
+    "anual": 25,
+    "identifiers": [
+      "186517695791286",
+      "558191430975"
+    ]
+  },
+  {
+    "id": "Rafael nigro",
+    "name": "Rafael nigro",
+    "trofeus": 0,
+    "createdAt": "14/08/2025",
+    "ultimoTreino": null,
+    "mensal": 0,
+    "registerGrupamentos": false,
+    "anual": 0,
+    "confissoes": {
+      "ultimaAtualizacao": "14/08/2025",
+      "saldo": 4
+    },
+    "senderNumber": "558198500533"
+  },
+  {
+    "id": "Real Madrid",
+    "ultimoTreino": "16/10/2025",
+    "name": "Real Madrid",
+    "senderNumber": "558198710940",
+    "mensal": 0,
+    "pushNameHistory": [
+      {
+        "ts": 1760633782270,
+        "pushName": "Rodrigo Rabello",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "observedLid": "129665213710417"
+      }
+    ],
+    "metaAnual": null,
+    "lastKnownLid": "129665213710417",
+    "createdAt": "15/10/2025",
+    "identifiers": [
+      "129665213710417",
+      "558198710940"
+    ],
+    "confissoes": {
+      "saldo": 4,
+      "ultimaAtualizacao": "27/11/2025"
+    },
+    "lastPushName": "Rodrigo Rabello",
+    "anual": 60,
+    "registerGrupamentos": true,
+    "lastGroupActivity": "2025-10-16T16:56:22.769Z",
+    "lastSeen": "2025-10-16T16:56:22.769Z",
+    "trofeus": 0
+  },
+  {
+    "id": "Renan Moura",
+    "anual": 121,
+    "pushNameHistory": [
+      {
+        "observedFrom": "558184800692-1542680001@g.us",
+        "pushName": "Renan Moura",
+        "observedLid": "114100168310827",
+        "ts": 1760743956358
+      }
+    ],
+    "senderNumber": "558198981632",
+    "lastGroupActivity": "2025-10-17T23:32:36.701Z",
+    "ultimoTreino": "24/10/2025",
+    "registerGrupamentos": true,
+    "trofeus": 1,
+    "lastPushName": "Renan Moura",
+    "createdAt": "18/06/2025",
+    "confissoes": {
+      "ultimaAtualizacao": "13/09/2025",
+      "saldo": 4
+    },
+    "lastKnownLid": "114100168310827",
+    "name": "Renan Moura",
+    "identifiers": [
+      "114100168310827"
+    ],
+    "lastSeen": "2025-10-17T23:32:36.701Z",
+    "mensal": 0
+  },
+  {
+    "id": "Ricardinho",
+    "anual": 141,
+    "metaAnual": 182,
+    "confissoes": {
+      "ultimaAtualizacao": "21/07/2025",
+      "saldo": 5
+    },
+    "trofeus": 1,
+    "mensal": 0,
+    "createdAt": "18/06/2025",
+    "ultimoTreino": "19/09/2025",
+    "senderNumber": "558391900547",
+    "name": "Ricardinho",
+    "registerGrupamentos": false
+  },
+  {
+    "id": "Ruan Barbosa",
+    "trofeus": 4,
+    "lastKnownLid": "254996604035291",
+    "registerGrupamentos": true,
+    "ultimoTreino": "18/11/2025",
+    "confissoes": {
+      "saldo": 4,
+      "ultimaAtualizacao": "23/12/2025"
+    },
+    "pushNameHistory": [
+      {
+        "pushName": "Ruan Barbosa",
+        "observedLid": "254996604035291",
+        "ts": 1760555340487,
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedLid": "254996604035291",
+        "ts": 1760555340698,
+        "pushName": "Ruan Barbosa",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedLid": "254996604035291",
+        "pushName": "Ruan Barbosa",
+        "ts": 1760555340847,
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760559118397,
+        "observedLid": "254996604035291",
+        "pushName": "Ruan Barbosa"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Ruan Barbosa",
+        "observedLid": "254996604035291",
+        "ts": 1760559119415
+      },
+      {
+        "pushName": "Ruan Barbosa",
+        "ts": 1760559119640,
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "254996604035291"
+      },
+      {
+        "pushName": "Ruan Barbosa",
+        "ts": 1760560635656,
+        "observedFrom": "558184800692-1542680001@g.us",
+        "observedLid": "254996604035291"
+      },
+      {
+        "ts": 1760560635883,
+        "observedLid": "254996604035291",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "pushName": "Ruan Barbosa"
+      },
+      {
+        "pushName": "Ruan Barbosa",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "observedLid": "254996604035291",
+        "ts": 1760560636101
+      },
+      {
+        "ts": 1760560638837,
+        "pushName": "",
+        "observedLid": null,
+        "observedFrom": "254996604035291@c.us"
+      },
+      {
+        "pushName": "Unknown",
+        "observedFrom": "254996604035291@c.us",
+        "ts": 1760560639857,
+        "observedLid": null
+      },
+      {
+        "observedLid": "254996604035291",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "ts": 1760560669796,
+        "pushName": "Ruan Barbosa"
+      },
+      {
+        "observedLid": "254996604035291",
+        "ts": 1760560669945,
+        "observedFrom": "558184800692-1542680001@g.us",
+        "pushName": "Ruan Barbosa"
+      },
+      {
+        "ts": 1760560670070,
+        "pushName": "Ruan Barbosa",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "observedLid": "254996604035291"
+      },
+      {
+        "ts": 1760561148179,
+        "observedFrom": "558196811583@c.us",
+        "pushName": "Ruan Barbosa",
+        "observedLid": null
+      },
+      {
+        "observedLid": null,
+        "ts": 1760561148388,
+        "pushName": "Ruan Barbosa",
+        "observedFrom": "558196811583@c.us"
+      },
+      {
+        "observedLid": "254996604035291",
+        "ts": 1760561901473,
+        "pushName": "Ruan Barbosa",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Ruan Barbosa",
+        "ts": 1760561901648,
+        "observedLid": "254996604035291"
+      },
+      {
+        "pushName": "Ruan Barbosa",
+        "observedLid": "254996604035291",
+        "ts": 1760561901848,
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedLid": "254996604035291",
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Ruan Barbosa",
+        "ts": 1760561904068
+      },
+      {
+        "pushName": "Ruan Barbosa",
+        "observedLid": "254996604035291",
+        "ts": 1760561904272,
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "pushName": "Ruan Barbosa",
+        "ts": 1760561904454,
+        "observedLid": "254996604035291",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "ts": 1760579240505,
+        "observedLid": "254996604035291",
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Ruan Barbosa"
+      },
+      {
+        "observedLid": "254996604035291",
+        "ts": 1760579241004,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Ruan Barbosa"
+      },
+      {
+        "pushName": "Ruan Barbosa",
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "254996604035291",
+        "ts": 1760579241286
+      },
+      {
+        "ts": 1760579245236,
+        "pushName": "Ruan Barbosa",
+        "observedLid": "254996604035291",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Ruan Barbosa",
+        "ts": 1760579245448,
+        "observedLid": "254996604035291"
+      },
+      {
+        "pushName": "Ruan Barbosa",
+        "ts": 1760579245689,
+        "observedLid": "254996604035291",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "pushName": "Ruan Barbosa",
+        "observedLid": "254996604035291",
+        "ts": 1760579483473,
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "pushName": "Ruan Barbosa",
+        "observedLid": "254996604035291",
+        "ts": 1760579483916,
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedLid": "254996604035291",
+        "pushName": "Ruan Barbosa",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760579484158
+      },
+      {
+        "observedLid": "254996604035291",
+        "ts": 1760579498111,
+        "pushName": "Ruan Barbosa",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "pushName": "Ruan Barbosa",
+        "ts": 1760579498320,
+        "observedLid": "254996604035291",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "pushName": "Ruan Barbosa",
+        "ts": 1760579498692,
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "254996604035291"
+      },
+      {
+        "pushName": "Ruan Barbosa",
+        "ts": 1760579502313,
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "254996604035291"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "254996604035291",
+        "pushName": "Ruan Barbosa",
+        "ts": 1760579502497
+      },
+      {
+        "pushName": "Ruan Barbosa",
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "254996604035291",
+        "ts": 1760579502681
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "254996604035291",
+        "ts": 1760579507567,
+        "pushName": "Ruan Barbosa"
+      },
+      {
+        "pushName": "Ruan Barbosa",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760579507769,
+        "observedLid": "254996604035291"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "254996604035291",
+        "pushName": "Ruan Barbosa",
+        "ts": 1760579507973
+      },
+      {
+        "pushName": "Ruan Barbosa",
+        "observedLid": "254996604035291",
+        "ts": 1760579511024,
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "pushName": "Ruan Barbosa",
+        "observedLid": "254996604035291",
+        "ts": 1760579511248,
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760579511430,
+        "observedLid": "254996604035291",
+        "pushName": "Ruan Barbosa"
+      },
+      {
+        "pushName": "Ruan Barbosa",
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "254996604035291",
+        "ts": 1760579511929
+      },
+      {
+        "observedLid": "254996604035291",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760579512134,
+        "pushName": "Ruan Barbosa"
+      },
+      {
+        "observedLid": "254996604035291",
+        "pushName": "Ruan Barbosa",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760579512305
+      },
+      {
+        "pushName": "Ruan Barbosa",
+        "observedLid": "254996604035291",
+        "ts": 1760579534880,
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "pushName": "Ruan Barbosa",
+        "observedLid": "254996604035291",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760579535092
+      },
+      {
+        "ts": 1760579535297,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Ruan Barbosa",
+        "observedLid": "254996604035291"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "254996604035291",
+        "pushName": "Ruan Barbosa",
+        "ts": 1760579545953
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Ruan Barbosa",
+        "observedLid": "254996604035291",
+        "ts": 1760579546153
+      },
+      {
+        "pushName": "Ruan Barbosa",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760579546355,
+        "observedLid": "254996604035291"
+      },
+      {
+        "pushName": "Ruan Barbosa",
+        "ts": 1760579554285,
+        "observedLid": "254996604035291",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "ts": 1760579554464,
+        "observedLid": "254996604035291",
+        "pushName": "Ruan Barbosa",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "pushName": "Ruan Barbosa",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760579554653,
+        "observedLid": "254996604035291"
+      },
+      {
+        "observedFrom": "558184800692-1542680001@g.us",
+        "observedLid": "254996604035291",
+        "pushName": "Ruan Barbosa",
+        "ts": 1760579634600
+      },
+      {
+        "observedFrom": "558184800692-1542680001@g.us",
+        "pushName": "Ruan Barbosa",
+        "ts": 1760579634824,
+        "observedLid": "254996604035291"
+      },
+      {
+        "ts": 1760579635019,
+        "observedLid": "254996604035291",
+        "pushName": "Ruan Barbosa",
+        "observedFrom": "558184800692-1542680001@g.us"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Ruan Barbosa",
+        "ts": 1760579665185,
+        "observedLid": "254996604035291"
+      },
+      {
+        "ts": 1760579665369,
+        "pushName": "Ruan Barbosa",
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "254996604035291"
+      },
+      {
+        "observedLid": "254996604035291",
+        "ts": 1760579665546,
+        "pushName": "Ruan Barbosa",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "ts": 1760579668474,
+        "observedLid": "254996604035291",
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Ruan Barbosa"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Ruan Barbosa",
+        "ts": 1760579668672,
+        "observedLid": "254996604035291"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760579668894,
+        "observedLid": "254996604035291",
+        "pushName": "Ruan Barbosa"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760579669698,
+        "observedLid": "254996604035291",
+        "pushName": "Ruan Barbosa"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760579669896,
+        "observedLid": "254996604035291",
+        "pushName": "Ruan Barbosa"
+      },
+      {
+        "ts": 1760579670090,
+        "observedLid": "254996604035291",
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Ruan Barbosa"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760579699698,
+        "pushName": "Ruan Barbosa",
+        "observedLid": "254996604035291"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Ruan Barbosa",
+        "ts": 1760579699902,
+        "observedLid": "254996604035291"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760579700098,
+        "observedLid": "254996604035291",
+        "pushName": "Ruan Barbosa"
+      },
+      {
+        "ts": 1760579751841,
+        "pushName": "Ruan Barbosa",
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "254996604035291"
+      },
+      {
+        "pushName": "Ruan Barbosa",
+        "observedLid": "254996604035291",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760579752006
+      },
+      {
+        "observedLid": "254996604035291",
+        "ts": 1760579752189,
+        "pushName": "Ruan Barbosa",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "ts": 1760579763872,
+        "observedLid": "254996604035291",
+        "pushName": "Ruan Barbosa",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "ts": 1760579764044,
+        "pushName": "Ruan Barbosa",
+        "observedLid": "254996604035291",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "pushName": "Ruan Barbosa",
+        "ts": 1760579764219,
+        "observedLid": "254996604035291",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "pushName": "Ruan Barbosa",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760579771622,
+        "observedLid": "254996604035291"
+      },
+      {
+        "pushName": "Ruan Barbosa",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760579771799,
+        "observedLid": "254996604035291"
+      },
+      {
+        "ts": 1760579771989,
+        "observedLid": "254996604035291",
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Ruan Barbosa"
+      },
+      {
+        "ts": 1760579792105,
+        "observedFrom": "558184800692-1542680001@g.us",
+        "pushName": "Ruan Barbosa",
+        "observedLid": "254996604035291"
+      },
+      {
+        "pushName": "Ruan Barbosa",
+        "observedLid": "254996604035291",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "ts": 1760579792326
+      },
+      {
+        "ts": 1760579792498,
+        "observedLid": "254996604035291",
+        "pushName": "Ruan Barbosa",
+        "observedFrom": "558184800692-1542680001@g.us"
+      },
+      {
+        "ts": 1760579798452,
+        "observedFrom": "558184800692-1542680001@g.us",
+        "pushName": "Ruan Barbosa",
+        "observedLid": "254996604035291"
+      },
+      {
+        "observedFrom": "558184800692-1542680001@g.us",
+        "pushName": "Ruan Barbosa",
+        "observedLid": "254996604035291",
+        "ts": 1760579798590
+      },
+      {
+        "ts": 1760579798720,
+        "observedLid": "254996604035291",
+        "pushName": "Ruan Barbosa",
+        "observedFrom": "558184800692-1542680001@g.us"
+      },
+      {
+        "ts": 1760579802389,
+        "observedLid": "254996604035291",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "pushName": "Ruan Barbosa"
+      },
+      {
+        "observedLid": "254996604035291",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "ts": 1760579802519,
+        "pushName": "Ruan Barbosa"
+      },
+      {
+        "observedFrom": "558184800692-1542680001@g.us",
+        "observedLid": "254996604035291",
+        "pushName": "Ruan Barbosa",
+        "ts": 1760579802673
+      },
+      {
+        "observedFrom": "558184800692-1542680001@g.us",
+        "observedLid": "254996604035291",
+        "ts": 1760579803139,
+        "pushName": "Ruan Barbosa"
+      },
+      {
+        "ts": 1760579803266,
+        "observedFrom": "558184800692-1542680001@g.us",
+        "pushName": "Ruan Barbosa",
+        "observedLid": "254996604035291"
+      },
+      {
+        "observedFrom": "558184800692-1542680001@g.us",
+        "pushName": "Ruan Barbosa",
+        "ts": 1760579803402,
+        "observedLid": "254996604035291"
+      },
+      {
+        "ts": 1760579869335,
+        "observedFrom": "558184800692-1542680001@g.us",
+        "observedLid": "254996604035291",
+        "pushName": "Ruan Barbosa"
+      },
+      {
+        "ts": 1760579869508,
+        "pushName": "Ruan Barbosa",
+        "observedLid": "254996604035291",
+        "observedFrom": "558184800692-1542680001@g.us"
+      },
+      {
+        "pushName": "Ruan Barbosa",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "ts": 1760579869886,
+        "observedLid": "254996604035291"
+      },
+      {
+        "ts": 1760579888586,
+        "observedFrom": "558184800692-1542680001@g.us",
+        "observedLid": "254996604035291",
+        "pushName": "Ruan Barbosa"
+      },
+      {
+        "pushName": "Ruan Barbosa",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "observedLid": "254996604035291",
+        "ts": 1760579888742
+      },
+      {
+        "ts": 1760579888878,
+        "observedFrom": "558184800692-1542680001@g.us",
+        "observedLid": "254996604035291",
+        "pushName": "Ruan Barbosa"
+      },
+      {
+        "ts": 1760579911299,
+        "observedFrom": "558184800692-1542680001@g.us",
+        "observedLid": "254996604035291",
+        "pushName": "Ruan Barbosa"
+      },
+      {
+        "ts": 1760579911445,
+        "observedLid": "254996604035291",
+        "pushName": "Ruan Barbosa",
+        "observedFrom": "558184800692-1542680001@g.us"
+      },
+      {
+        "observedLid": "254996604035291",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "pushName": "Ruan Barbosa",
+        "ts": 1760579911593
+      },
+      {
+        "observedLid": "254996604035291",
+        "ts": 1760579943340,
+        "pushName": "Ruan Barbosa",
+        "observedFrom": "558184800692-1542680001@g.us"
+      },
+      {
+        "observedLid": "254996604035291",
+        "pushName": "Ruan Barbosa",
+        "ts": 1760579943501,
+        "observedFrom": "558184800692-1542680001@g.us"
+      },
+      {
+        "observedLid": "254996604035291",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "ts": 1760579943652,
+        "pushName": "Ruan Barbosa"
+      },
+      {
+        "pushName": "Ruan Barbosa",
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "254996604035291",
+        "ts": 1760579970373
+      },
+      {
+        "pushName": "Ruan Barbosa",
+        "ts": 1760579970514,
+        "observedLid": "254996604035291",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedLid": "254996604035291",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760579970656,
+        "pushName": "Ruan Barbosa"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Ruan Barbosa",
+        "ts": 1760579998388,
+        "observedLid": "254996604035291"
+      },
+      {
+        "pushName": "Ruan Barbosa",
+        "ts": 1760579998520,
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "254996604035291"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Ruan Barbosa",
+        "observedLid": "254996604035291",
+        "ts": 1760579998663
+      },
+      {
+        "observedLid": "254996604035291",
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Ruan Barbosa",
+        "ts": 1760580000196
+      },
+      {
+        "ts": 1760580000443,
+        "observedLid": "254996604035291",
+        "pushName": "Ruan Barbosa",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "ts": 1760580000576,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Ruan Barbosa",
+        "observedLid": "254996604035291"
+      },
+      {
+        "ts": 1760580055563,
+        "pushName": "Ruan Barbosa",
+        "observedLid": "254996604035291",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "ts": 1760580055727,
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "254996604035291",
+        "pushName": "Ruan Barbosa"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "254996604035291",
+        "pushName": "Ruan Barbosa",
+        "ts": 1760580055881
+      },
+      {
+        "observedLid": "254996604035291",
+        "pushName": "Ruan Barbosa",
+        "ts": 1760580061979,
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "pushName": "Ruan Barbosa",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760580062122,
+        "observedLid": "254996604035291"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760580062279,
+        "pushName": "Ruan Barbosa",
+        "observedLid": "254996604035291"
+      },
+      {
+        "ts": 1760580068942,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Ruan Barbosa",
+        "observedLid": "254996604035291"
+      },
+      {
+        "observedLid": "254996604035291",
+        "pushName": "Ruan Barbosa",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760580069079
+      },
+      {
+        "observedLid": "254996604035291",
+        "ts": 1760580069189,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Ruan Barbosa"
+      },
+      {
+        "ts": 1760580071080,
+        "pushName": "Ruan Barbosa",
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "254996604035291"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "254996604035291",
+        "ts": 1760580071238,
+        "pushName": "Ruan Barbosa"
+      },
+      {
+        "observedLid": "254996604035291",
+        "ts": 1760580071481,
+        "pushName": "Ruan Barbosa",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedLid": "254996604035291",
+        "ts": 1760580078054,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Ruan Barbosa"
+      },
+      {
+        "pushName": "Ruan Barbosa",
+        "observedLid": "254996604035291",
+        "ts": 1760580078222,
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "ts": 1760580078372,
+        "observedLid": "254996604035291",
+        "pushName": "Ruan Barbosa",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Ruan Barbosa",
+        "ts": 1760580080497,
+        "observedLid": "254996604035291"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "254996604035291",
+        "ts": 1760580080628,
+        "pushName": "Ruan Barbosa"
+      },
+      {
+        "pushName": "Ruan Barbosa",
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "254996604035291",
+        "ts": 1760580080809
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Ruan Barbosa",
+        "observedLid": "254996604035291",
+        "ts": 1760580082955
+      },
+      {
+        "pushName": "Ruan Barbosa",
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "254996604035291",
+        "ts": 1760580083140
+      },
+      {
+        "ts": 1760580083270,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Ruan Barbosa",
+        "observedLid": "254996604035291"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Ruan Barbosa",
+        "observedLid": "254996604035291",
+        "ts": 1760580200308
+      },
+      {
+        "observedLid": "254996604035291",
+        "pushName": "Ruan Barbosa",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760580200624
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760580200808,
+        "observedLid": "254996604035291",
+        "pushName": "Ruan Barbosa"
+      },
+      {
+        "pushName": "Ruan Barbosa",
+        "ts": 1760580355507,
+        "observedFrom": "558184800692-1542680001@g.us",
+        "observedLid": "254996604035291"
+      },
+      {
+        "ts": 1760580355671,
+        "observedFrom": "558184800692-1542680001@g.us",
+        "observedLid": "254996604035291",
+        "pushName": "Ruan Barbosa"
+      },
+      {
+        "pushName": "Ruan Barbosa",
+        "ts": 1760580355792,
+        "observedLid": "254996604035291",
+        "observedFrom": "558184800692-1542680001@g.us"
+      },
+      {
+        "pushName": "Ruan Barbosa",
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "254996604035291",
+        "ts": 1760580366732
+      },
+      {
+        "pushName": "Ruan Barbosa",
+        "observedLid": "254996604035291",
+        "ts": 1760580366895,
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "ts": 1760580367059,
+        "observedLid": "254996604035291",
+        "pushName": "Ruan Barbosa",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Ruan Barbosa",
+        "ts": 1760580369850,
+        "observedLid": "254996604035291"
+      },
+      {
+        "observedLid": "254996604035291",
+        "pushName": "Ruan Barbosa",
+        "ts": 1760580370019,
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Ruan Barbosa",
+        "observedLid": "254996604035291",
+        "ts": 1760580370206
+      },
+      {
+        "ts": 1760580380811,
+        "pushName": "Ruan Barbosa",
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "254996604035291"
+      },
+      {
+        "observedLid": "254996604035291",
+        "pushName": "Ruan Barbosa",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760580380935
+      },
+      {
+        "observedLid": "254996604035291",
+        "pushName": "Ruan Barbosa",
+        "ts": 1760580381044,
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "pushName": "Ruan Barbosa",
+        "ts": 1760580390945,
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "254996604035291"
+      },
+      {
+        "pushName": "Ruan Barbosa",
+        "ts": 1760580391088,
+        "observedLid": "254996604035291",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "ts": 1760580391239,
+        "observedLid": "254996604035291",
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Ruan Barbosa"
+      },
+      {
+        "observedLid": "254996604035291",
+        "ts": 1760580402791,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Ruan Barbosa"
+      },
+      {
+        "ts": 1760580402918,
+        "observedLid": "254996604035291",
+        "pushName": "Ruan Barbosa",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Ruan Barbosa",
+        "observedLid": "254996604035291",
+        "ts": 1760580403085
+      },
+      {
+        "pushName": "Ruan Barbosa",
+        "ts": 1760580406041,
+        "observedLid": "254996604035291",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760580406224,
+        "pushName": "Ruan Barbosa",
+        "observedLid": "254996604035291"
+      },
+      {
+        "ts": 1760580406398,
+        "observedLid": "254996604035291",
+        "pushName": "Ruan Barbosa",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "ts": 1760580453457,
+        "pushName": "Ruan Barbosa",
+        "observedLid": "254996604035291",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedLid": "254996604035291",
+        "pushName": "Ruan Barbosa",
+        "ts": 1760580453595,
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "ts": 1760580453723,
+        "pushName": "Ruan Barbosa",
+        "observedLid": "254996604035291",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "ts": 1760580474387,
+        "pushName": "Ruan Barbosa",
+        "observedLid": "254996604035291",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760580474523,
+        "pushName": "Ruan Barbosa",
+        "observedLid": "254996604035291"
+      },
+      {
+        "ts": 1760580474667,
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "254996604035291",
+        "pushName": "Ruan Barbosa"
+      },
+      {
+        "pushName": "Ruan Barbosa",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760580482087,
+        "observedLid": "254996604035291"
+      },
+      {
+        "ts": 1760580482235,
+        "pushName": "Ruan Barbosa",
+        "observedFrom": "120363420604606118@g.us",
+        "observedLid": "254996604035291"
+      },
+      {
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Ruan Barbosa",
+        "ts": 1760580482366,
+        "observedLid": "254996604035291"
+      },
+      {
+        "ts": 1760580484504,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Ruan Barbosa",
+        "observedLid": "254996604035291"
+      },
+      {
+        "ts": 1760580484664,
+        "pushName": "Ruan Barbosa",
+        "observedLid": "254996604035291",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "ts": 1760580484827,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Ruan Barbosa",
+        "observedLid": "254996604035291"
+      },
+      {
+        "ts": 1760584660877,
+        "observedLid": "254996604035291",
+        "pushName": "Ruan Barbosa",
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedLid": "254996604035291",
+        "observedFrom": "120363420604606118@g.us",
+        "ts": 1760584661119,
+        "pushName": "Ruan Barbosa"
+      },
+      {
+        "observedLid": "254996604035291",
+        "ts": 1760584661312,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Ruan Barbosa"
+      },
+      {
+        "observedFrom": "558184800692-1542680001@g.us",
+        "observedLid": "254996604035291",
+        "ts": 1760620043785,
+        "pushName": "Ruan Barbosa"
+      },
+      {
+        "ts": 1760620044019,
+        "observedLid": "254996604035291",
+        "pushName": "Ruan Barbosa",
+        "observedFrom": "558184800692-1542680001@g.us"
+      },
+      {
+        "pushName": "Ruan Barbosa",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "observedLid": "254996604035291",
+        "ts": 1760620044254
+      },
+      {
+        "observedFrom": "558184800692-1542680001@g.us",
+        "ts": 1760620050633,
+        "pushName": "Ruan Barbosa",
+        "observedLid": "254996604035291"
+      },
+      {
+        "ts": 1760620050795,
+        "pushName": "Ruan Barbosa",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "observedLid": "254996604035291"
+      },
+      {
+        "observedFrom": "558184800692-1542680001@g.us",
+        "ts": 1760620050957,
+        "observedLid": "254996604035291",
+        "pushName": "Ruan Barbosa"
+      },
+      {
+        "ts": 1760620666212,
+        "pushName": "Ruan Barbosa",
+        "observedLid": "254996604035291",
+        "observedFrom": "558184800692-1542680001@g.us"
+      },
+      {
+        "observedLid": "254996604035291",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "ts": 1760620666373,
+        "pushName": "Ruan Barbosa"
+      },
+      {
+        "observedLid": "254996604035291",
+        "pushName": "Ruan Barbosa",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "ts": 1760620666530
+      },
+      {
+        "observedLid": "254996604035291",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "ts": 1760620670628,
+        "pushName": "Ruan Barbosa"
+      },
+      {
+        "observedFrom": "558184800692-1542680001@g.us",
+        "ts": 1760620670803,
+        "pushName": "Ruan Barbosa",
+        "observedLid": "254996604035291"
+      },
+      {
+        "observedLid": "254996604035291",
+        "ts": 1760620670959,
+        "observedFrom": "558184800692-1542680001@g.us",
+        "pushName": "Ruan Barbosa"
+      },
+      {
+        "observedLid": "254996604035291",
+        "pushName": "Ruan Barbosa",
+        "ts": 1760620930850,
+        "observedFrom": "558184800692-1542680001@g.us"
+      },
+      {
+        "observedFrom": "558184800692-1542680001@g.us",
+        "observedLid": "254996604035291",
+        "ts": 1760620931077,
+        "pushName": "Ruan Barbosa"
+      },
+      {
+        "ts": 1760620931264,
+        "pushName": "Ruan Barbosa",
+        "observedLid": "254996604035291",
+        "observedFrom": "558184800692-1542680001@g.us"
+      },
+      {
+        "ts": 1760624514630,
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Ruan Barbosa",
+        "observedLid": "254996604035291"
+      },
+      {
+        "observedLid": "254996604035291",
+        "pushName": "Ruan Barbosa",
+        "ts": 1760624514907,
+        "observedFrom": "120363420604606118@g.us"
+      },
+      {
+        "observedLid": "254996604035291",
+        "observedFrom": "120363420604606118@g.us",
+        "pushName": "Ruan Barbosa",
+        "ts": 1760624515093
+      },
+      {
+        "observedFrom": "558184800692-1542680001@g.us",
+        "pushName": "Ruan Barbosa",
+        "observedLid": "254996604035291",
+        "ts": 1760629468380
+      },
+      {
+        "observedFrom": "558184800692-1542680001@g.us",
+        "observedLid": "254996604035291",
+        "ts": 1760629468555,
+        "pushName": "Ruan Barbosa"
+      },
+      {
+        "pushName": "Ruan Barbosa",
+        "ts": 1760629468708,
+        "observedLid": "254996604035291",
+        "observedFrom": "558184800692-1542680001@g.us"
+      }
+    ],
+    "identifiers": [
+      "558196811583",
+      "254996604035291"
+    ],
+    "lastSeen": "2025-10-16T15:44:28.782Z",
+    "mensal": 0,
+    "createdAt": "18/06/2025",
+    "senderNumber": "558196811583",
+    "lastPushName": "Ruan Barbosa",
+    "anual": 193,
+    "lastGroupActivity": "2025-10-16T15:44:28.782Z",
+    "name": "Ruan Barbosa"
+  },
+  {
+    "id": "Samuel",
+    "lastKnownLid": "176548992778445",
+    "lastPushName": "samuel",
+    "ultimoTreino": "27/10/2025",
+    "senderNumber": "558195439114",
+    "identifiers": [
+      "558195439114",
+      "176548992778445"
+    ],
+    "confissoes": {
+      "saldo": 5,
+      "ultimaAtualizacao": "18/06/2025"
+    },
+    "anual": 124,
+    "createdAt": "18/06/2025",
+    "name": "Samuel",
+    "lastSeen": "2025-10-17T16:13:16.925Z",
+    "mensal": 0,
+    "registerGrupamentos": true,
+    "pushNameHistory": [
+      {
+        "pushName": "samuel",
+        "observedFrom": "558195439114@c.us",
+        "observedLid": null,
+        "ts": 1760717540119
+      },
+      {
+        "ts": 1760717596543,
+        "pushName": "samuel",
+        "observedFrom": "558184800692-1542680001@g.us",
+        "observedLid": "176548992778445"
+      }
+    ],
+    "trofeus": 0,
+    "lastGroupActivity": "2025-10-17T16:13:16.925Z"
+  },
+  {
+    "id": "Schuler Ingressos 🎟️",
+    "pushNameHistory": [
+      {
+        "ts": 1760633492882,
+        "observedFrom": "558179024648@c.us",
+        "pushName": "Vinícius Schuler",
+        "observedLid": null
+      },
+      {
+        "observedFrom": "558184800692-1542680001@g.us",
+        "observedLid": "206476358496402",
+        "ts": 1760661631669,
+        "pushName": "Vinícius Schuler"
+      }
+    ],
+    "lastKnownLid": "206476358496402",
+    "confissoes": {
+      "saldo": 3,
+      "ultimaAtualizacao": "21/12/2025"
+    },
+    "createdAt": "15/10/2025",
+    "ultimoTreino": "13/11/2025",
+    "lastGroupActivity": "2025-10-23T15:23:43.865Z",
+    "lastPushName": "Vinícius Schuler",
+    "name": "Schuler Ingressos 🎟️",
+    "registerGrupamentos": true,
+    "trofeus": 3,
+    "senderNumber": "558179024648",
+    "identifiers": [
+      "558179024648",
+      "206476358496402",
+      "status@broadcast"
+    ],
+    "lastSeen": "2025-10-23T15:23:43.865Z",
+    "mensal": 0,
+    "anual": 11
+  },
+  {
+    "id": "barros (o preferido delas)",
+    "name": "barros (o preferido delas)",
+    "lastSeen": "2025-10-16T17:27:18.990Z",
+    "lastPushName": "barros",
+    "trofeus": 0,
+    "ultimoTreino": "16/07/2025",
+    "senderNumber": "558195474490",
+    "registerGrupamentos": false,
+    "confissoes": {
+      "saldo": 4,
+      "ultimaAtualizacao": "17/11/2025"
+    },
+    "lastKnownLid": "55225041866849",
+    "lastGroupActivity": "2025-10-16T17:27:18.990Z",
+    "identifiers": [
+      "558195474490",
+      "55225041866849"
+    ],
+    "pushNameHistory": [
+      {
+        "observedLid": null,
+        "pushName": "barros",
+        "ts": 1760635134993,
+        "observedFrom": "558195474490@c.us"
+      },
+      {
+        "observedFrom": "558184800692-1542680001@g.us",
+        "ts": 1760635638581,
+        "pushName": "barros",
+        "observedLid": "55225041866849"
+      }
+    ],
+    "anual": 15,
+    "createdAt": "01/07/2025",
+    "mensal": 0
+  }
+]

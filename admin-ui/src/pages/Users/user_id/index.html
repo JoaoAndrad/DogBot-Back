@@ -337,49 +337,51 @@
           />
         </div>
         <div class="user-header-info">
-          <h1>Carlos Silva</h1>
+          <h1 id="userName">Carlos Silva</h1>
           <div class="user-details-list">
-            <p>+55 11 99876-5432</p>
-            <p>Joined Dec 10, 2023</p>
+            <p id="userPhone">+55 11 99876-5432</p>
+            <p id="userJoined">Joined Dec 10, 2023</p>
           </div>
         </div>
         <div class="user-header-actions">
-          <div class="status-badge active">
+          <div id="statusBadge" class="status-badge active">
             <span class="status-dot"></span>
-            Active
+            <span id="statusBadgeText">Ativo</span>
           </div>
           <div class="action-buttons-row">
-            <button class="btn btn-danger-outline">Suspend User</button>
-            <button class="btn btn-primary">Edit Profile</button>
+            <button class="btn btn-danger-outline">Suspender usuário</button>
+            <button id="editProfileBtn" class="btn btn-primary">
+              Editar usuário
+            </button>
           </div>
         </div>
       </section>
 
       <section class="quick-stats-row">
         <div class="card stat-small-card">
-          <h3>Total Interactions</h3>
-          <p>1,450</p>
+          <h3>Interações totais</h3>
+          <p id="totalInteractionsValue">-</p>
         </div>
         <div class="card stat-small-card">
-          <h3>Last Active</h3>
-          <p>2 hours ago</p>
+          <h3>Última Atividade</h3>
+          <p id="lastActiveValue">-</p>
         </div>
         <div class="card stat-small-card">
-          <h3>DogFort Plan</h3>
-          <p>Gold</p>
+          <h3>Plano</h3>
+          <p id="dogfortPlanValue">-</p>
         </div>
       </section>
 
       <section class="content-split">
         <div class="card">
           <div class="tab-header">
-            <button class="tab-btn active">Activity Log</button>
-            <button class="tab-btn">Spotify</button>
-            <button class="tab-btn">DogFort Data</button>
+            <button class="tab-btn active">Log Geral/button>
+            <button class="tab-btn">Spotify Requests</button>
+            <button class="tab-btn">DogFort Requests</button>
           </div>
 
           <div class="tab-content">
-            <ul class="timeline-list">
+            <ul id="timelineList" class="timeline-list">
               <li class="timeline-item latest">
                 <div class="timeline-content">
                   <p class="title">Checked in at Gym</p>
@@ -409,26 +411,36 @@
         </div>
 
         <div class="card info-card">
-          <h2>User Information</h2>
+          <h2>Informações do Usuário</h2>
 
           <div class="info-field">
-            <label class="info-label">Email</label>
-            <p class="info-value">carlossilvat@gmail.com</p>
+            <label class="info-label">Contato</label>
+            <p id="senderNumber" class="info-value">-</p>
           </div>
 
           <div class="info-field">
-            <label class="info-label">Device type</label>
-            <p class="info-value">Apple iPhone 14 Pro</p>
+            <label class="info-label">Nome</label>
+            <p id="displayName" class="info-value">-</p>
+          </div>
+
+          <div class="info-field">
+            <label class="info-label">Criado em</label>
+            <p id="createdAt" class="info-value">-</p>
+          </div>
+
+          <div class="info-field">
+            <label class="info-label">DogFort resumo</label>
+            <p id="dogfortResumo" class="info-value">-</p>
           </div>
 
           <div style="margin-top: 30px">
-            <label class="info-label" for="adminNotes">Admin Notes</label>
+            <label class="info-label" for="adminNotes">Notas do Admin</label>
             <textarea
               id="adminNotes"
               class="admin-notes-area"
               placeholder="Adicione notas internas sobre este usuário..."
             >
-Admin notes to #united</textarea
+Adicione notas internas sobre este usuário...</textarea
             >
           </div>
         </div>
@@ -443,6 +455,78 @@ Admin notes to #united</textarea
       type="module"
       src="/admin/static/src/components/sidebar/sidebar.js"
     ></script>
+    <script
+      type="module"
+      src="/admin/static/src/pages/Users/user_id/user.js"
+    ></script>
+    <script type="module">
+      // Dynamically load the User Edit component when Edit Profile is clicked
+      const editBtn = document.getElementById("editProfileBtn");
+      if (editBtn) {
+        editBtn.addEventListener("click", async () => {
+          try {
+            if (document.getElementById("userEditCard")) return;
+            const res = await fetch(
+              "/admin/static/src/components/users/userEdit/index.html"
+            );
+            if (!res.ok) throw new Error(res.statusText);
+            const html = await res.text();
+            // create modal overlay and insert html inside centered container
+            const overlay = document.createElement("div");
+            overlay.id = "userEditOverlay";
+            Object.assign(overlay.style, {
+              position: "fixed",
+              inset: "0",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background: "rgba(0,0,0,0.45)",
+              zIndex: "9999",
+              padding: "20px",
+              overflow: "auto",
+            });
+
+            const modalInner = document.createElement("div");
+            Object.assign(modalInner.style, {
+              maxWidth: "1100px",
+              width: "100%",
+              maxHeight: "90vh",
+              overflow: "auto",
+            });
+            modalInner.innerHTML = html;
+            overlay.appendChild(modalInner);
+            document.body.appendChild(overlay);
+            // prevent background scroll
+            const prevOverflow = document.body.style.overflow;
+            document.body.style.overflow = "hidden";
+
+            // clicking outside closes
+            overlay.addEventListener("click", (ev) => {
+              if (ev.target === overlay) {
+                const el = document.getElementById("userEditOverlay");
+                if (el && el.parentNode) el.parentNode.removeChild(el);
+                document.body.style.overflow = prevOverflow || "";
+                const btn = document.getElementById("editProfileBtn");
+                if (btn) btn.disabled = false;
+              }
+            });
+
+            // import module and initialize
+            const mod = await import(
+              "/admin/static/src/components/users/userEdit/userEdit.js"
+            );
+            if (mod && typeof mod.default === "function") {
+              await mod.default();
+              console.log("[admin] userEdit initialized");
+            }
+            editBtn.disabled = true;
+          } catch (e) {
+            console.error("Failed to load user editor", e);
+            alert("Erro ao abrir editor: " + (e && e.message));
+          }
+        });
+      }
+    </script>
     <script src="/admin/static/app.js"></script>
   </body>
 </html>

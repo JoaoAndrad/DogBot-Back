@@ -50,7 +50,15 @@ router.get("/:id", async (req, res) => {
 router.patch("/:id", express.json(), async (req, res) => {
   try {
     const id = req.params.id;
-    const allowed = ["display_name", "push_name", "metadata", "last_known_lid"];
+    // allow updating basic user fields plus sender_number and nested dogfort
+    const allowed = [
+      "display_name",
+      "push_name",
+      "metadata",
+      "last_known_lid",
+      "sender_number",
+      "dogfort",
+    ];
     const payload = {};
     for (const k of allowed) if (k in req.body) payload[k] = req.body[k];
     if (Object.keys(payload).length === 0)

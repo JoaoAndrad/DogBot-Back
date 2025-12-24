@@ -111,15 +111,47 @@ async function refreshTokenForAccount(accountId) {
 async function getValidAccessTokenForAccount(accountId) {
   const latest = await getLatestTokenByAccountId(accountId);
   if (!latest) return null;
+  // margin: 5 minutes (avoid using tokens that will expire shortly)
+  const MARGIN_MS = 5 * 60 * 1000;
   if (
     latest.expiresAt &&
-    new Date(latest.expiresAt) > new Date(Date.now() + 60 * 1000)
+    new Date(latest.expiresAt) > new Date(Date.now() + MARGIN_MS)
   ) {
     return latest.accessToken;
   }
   // expired or near-expiry: refresh
   const refreshed = await refreshTokenForAccount(accountId);
   return refreshed.token.accessToken;
+}
+
+// Wrapper for calling Spotify API using stored account tokens.
+// Automatically refreshes once on 401 and retries.
+async function spotifyFetch(accountId, url, options = {}) {
+  if (!accountId) throw new Error("accountId is required for spotifyFetch");
+
+  const token = await getValidAccessTokenForAccount(accountId);
+  if (!token)
+    throw new Error("No access token available for account " + accountId);
+
+  if (!options.headers) options.headers = {};
+  options.headers["Authorization"] = `Bearer ${token}`;
+
+  let res = await fetch(url, options);
+
+  if (res.status === 401) {
+    // try refresh and retry once
+    try {
+      const refreshed = await refreshTokenForAccount(accountId);
+      const newToken = refreshed.token.accessToken;
+      options.headers["Authorization"] = `Bearer ${newToken}`;
+      res = await fetch(url, options);
+    } catch (err) {
+      // swallow refresh error and return original 401 response
+      console.error("spotifyFetch: refresh failed", err);
+    }
+  }
+
+  return res;
 }
 
 module.exports = {
@@ -129,4 +161,5 @@ module.exports = {
   getLatestTokenByAccountId,
   refreshTokenForAccount,
   getValidAccessTokenForAccount,
+  spotifyFetch,
 };

@@ -49,7 +49,13 @@ async function findUserById(id) {
     await recreatePrismaClient();
     prisma = getPrisma();
   }
-  return prisma.user.findUnique({ where: { id } });
+  return prisma.user.findUnique({
+    where: { id },
+    include: {
+      dogfort: true,
+      pushNameHistory: true,
+    },
+  });
 }
 
 async function upsertBySenderNumber(data) {
@@ -93,6 +99,49 @@ async function updateUserById(id, data) {
   return prisma.user.update({ where: { id }, data });
 }
 
+async function upsertDogfortForUser(userId, dogData) {
+  let prisma = getPrisma();
+  if (!prisma || !prisma.dogFortStats) {
+    console.warn(
+      "Prisma client missing 'dogFortStats' model on upsertDogfortForUser - attempting recreate"
+    );
+    await recreatePrismaClient();
+    prisma = getPrisma();
+  }
+
+  // Normalize keys: accept either camelCase or snake_case
+  const normalized = {};
+  if (typeof dogData.saldo !== "undefined") normalized.saldo = dogData.saldo;
+  if (typeof dogData.mensal !== "undefined") normalized.mensal = dogData.mensal;
+  if (typeof dogData.anual !== "undefined") normalized.anual = dogData.anual;
+  if (typeof dogData.plan !== "undefined") normalized.plan = dogData.plan;
+  if (typeof dogData.trofeus !== "undefined")
+    normalized.trofeus = dogData.trofeus;
+  if (typeof dogData.meta_anual !== "undefined")
+    normalized.meta_anual = dogData.meta_anual;
+  if (typeof dogData.metaAnual !== "undefined")
+    normalized.meta_anual = dogData.metaAnual;
+  if (typeof dogData.ultimo_treino !== "undefined")
+    normalized.ultimo_treino = dogData.ultimo_treino;
+  if (typeof dogData.ultimoTreino !== "undefined")
+    normalized.ultimo_treino = dogData.ultimoTreino;
+
+  // attempt upsert by user_id
+  try {
+    return await prisma.dogFortStats.upsert({
+      where: { user_id: userId },
+      update: normalized,
+      create: Object.assign({ user_id: userId }, normalized),
+    });
+  } catch (e) {
+    console.error(
+      "Failed to upsert DogFortStats",
+      e && e.message ? e.message : e
+    );
+    throw e;
+  }
+}
+
 async function deleteUserById(id) {
   let prisma = getPrisma();
   if (!prisma || !prisma.user) {
@@ -129,6 +178,7 @@ module.exports = {
   upsertBySenderNumber,
   createUser,
   updateUserById,
+  upsertDogfortForUser,
   deleteUserById,
   bulkAction,
 };

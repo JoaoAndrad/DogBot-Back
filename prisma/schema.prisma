@@ -105,6 +105,8 @@ model DogFortStats {
   saldo      Int?     @default(0)
   mensal     Int?     @default(0)
   anual      Int?     @default(0)
+  plan       String?
+  meta_anual Int?
   trofeus    Int?     @default(0)
   ultimo_treino DateTime? @db.Timestamptz(6)
   created_at DateTime @default(now()) @db.Timestamptz(6)

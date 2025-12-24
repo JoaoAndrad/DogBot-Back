@@ -1,0 +1,70 @@
+/* Simple styling for the User Edit form */
+.user-edit-card {
+  padding: 20px;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
+}
+.user-edit-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.user-edit-field {
+  display: flex;
+  flex-direction: column;
+}
+.user-edit-field label {
+  font-size: 0.85rem;
+  color: #666;
+  margin-bottom: 6px;
+}
+.user-edit-field input,
+.user-edit-field textarea,
+.user-edit-field select {
+  padding: 10px 12px;
+  border: 1px solid #eef2fb;
+  border-radius: 8px;
+  font-size: 0.95rem;
+}
+.user-edit-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+.user-edit-full {
+  grid-column: 1 / -1;
+}
+.user-edit-note {
+  min-height: 100px;
+}
+
+/* Calendar overlay for Último treino picker */
+.useredit-calendar-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: 10000;
+}
+.useredit-calendar {
+  background: #fff;
+  padding: 12px;
+  border-radius: 8px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.18);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.useredit-calendar input[type="datetime-local"] {
+  padding: 8px 10px;
+  font-size: 1rem;
+  border: 1px solid #e6eaf2;
+  border-radius: 6px;
+}
+.useredit-calendar .btn {
+  padding: 8px 10px;
+  border-radius: 6px;
+}

@@ -88,7 +88,7 @@ export async function initUsersPage() {
     const data = await getJson(url);
     // support both array and {items,total} shapes
     if (!data) {
-      usersTbody.innerHTML = '<tr><td colspan="7">Erro ao carregar</td></tr>';
+      usersTbody.innerHTML = '<tr><td colspan="6">Erro ao carregar</td></tr>';
       return;
     }
     if (Array.isArray(data)) {
@@ -105,7 +105,7 @@ export async function initUsersPage() {
     usersTbody.innerHTML = "";
     if (!items.length) {
       usersTbody.innerHTML =
-        '<tr><td colspan="7">Nenhum usuário encontrado</td></tr>';
+        '<tr><td colspan="6">Nenhum usuário encontrado</td></tr>';
     }
     for (const u of items) {
       const tr = document.createElement("tr");
@@ -160,15 +160,20 @@ export async function initUsersPage() {
       userCell.appendChild(infoDiv);
       nameTd.appendChild(userCell);
 
-      const phoneTd = document.createElement("td");
-      // keep phone column for compatibility but leave blank (info shown in name column)
-      phoneTd.textContent = "";
+      // Push name column (support multiple possible field names)
       const pushTd = document.createElement("td");
-      pushTd.textContent = u.push_name || "-";
+      pushTd.textContent =
+        u.push_name ||
+        u.pushName ||
+        (u.metadata && u.metadata.push_name) ||
+        "-";
+
       const lastTd = document.createElement("td");
-      lastTd.textContent = fmtDate(u.last_seen);
+      lastTd.textContent = fmtDate(
+        u.last_seen || u.lastSeen || (u.metadata && u.metadata.last_seen)
+      );
       const createdTd = document.createElement("td");
-      createdTd.textContent = fmtDate(u.created_at);
+      createdTd.textContent = fmtDate(u.created_at || u.createdAt);
       const actionsTd = document.createElement("td");
       actionsTd.className = "actions";
 
@@ -177,8 +182,8 @@ export async function initUsersPage() {
         const url = `/admin/static/src/pages/Users/user_id/index.html?id=${encodeURIComponent(
           id
         )}`;
-        if (window && window.__admin_navigateTo) window.__admin_navigateTo(url);
-        else location.href = url;
+        // force full page navigation so module scripts execute reliably
+        location.href = url;
       });
       const editBtn = makeActionBtn("Edit", "btn ghost");
       editBtn.addEventListener("click", () => showEditModal(u));
@@ -205,7 +210,6 @@ export async function initUsersPage() {
 
       tr.appendChild(chkTd);
       tr.appendChild(nameTd);
-      tr.appendChild(phoneTd);
       tr.appendChild(pushTd);
       tr.appendChild(lastTd);
       tr.appendChild(createdTd);
@@ -217,12 +221,12 @@ export async function initUsersPage() {
         const url = `/admin/static/src/pages/Users/user_id/index.html?id=${encodeURIComponent(
           id
         )}`;
-        if (window && window.__admin_navigateTo) window.__admin_navigateTo(url);
-        else location.href = url;
+        // force full navigation (avoids SPA partial load that doesn't execute module)
+        location.href = url;
       });
     }
 
-    pageInfo.textContent = `Página ${page}`;
+    if (pageInfo) pageInfo.textContent = `Página ${page}`;
     paginationInfo.textContent = `Mostrando ${items.length} de ${total}`;
   }
 
