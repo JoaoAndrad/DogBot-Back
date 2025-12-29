@@ -163,3 +163,171 @@ module.exports = {
   getValidAccessTokenForAccount,
   spotifyFetch,
 };
+
+// -------------------------
+// Persistence helpers for monitoring
+// -------------------------
+
+/**
+ * Upsert current playback for an account (CurrentPlayback table)
+ * trackData: { id, name, artists, album, progress_ms, duration_ms, image }
+ */
+async function upsertCurrentPlayback(accountId, trackData = {}) {
+  if (!accountId) throw new Error("accountId required");
+
+  const now = new Date();
+
+  return prisma.currentPlayback.upsert({
+    where: { accountId },
+    create: {
+      accountId,
+      trackId: trackData.id || "",
+      startedAt: now,
+      metadata: trackData,
+    },
+    update: {
+      trackId: trackData.id || "",
+      updatedAt: now,
+      metadata: trackData,
+    },
+  });
+}
+
+/**
+ * Create a TrackPlayback entry. listenedMs is optional (calculated by monitor).
+ */
+async function createTrackPlayback({
+  accountId,
+  userId = null,
+  trackId,
+  deviceId = null,
+  contextType = null,
+  contextId = null,
+  listenedMs = null,
+  metadata = {},
+}) {
+  if (!accountId || !trackId) throw new Error("accountId and trackId required");
+
+  return prisma.trackPlayback.create({
+    data: {
+      accountId,
+      userId,
+      trackId,
+      deviceId,
+      contextType,
+      contextId,
+      listenedMs: listenedMs !== null ? BigInt(listenedMs) : null,
+      metadata,
+    },
+  });
+}
+
+/**
+ * Update or create a SpotifySession for an account and device
+ */
+async function upsertSession({
+  accountId,
+  deviceId = null,
+  lastSeen = new Date(),
+  isActive = true,
+  metadata = {},
+}) {
+  if (!accountId) throw new Error("accountId required");
+
+  // Try to find session by accountId + deviceId
+  const where = deviceId
+    ? { accountId_deviceId: { accountId, deviceId } }
+    : null;
+
+  if (where) {
+    // ensure compound unique index exists? use findFirst then upsert
+    const existing = await prisma.spotifySession.findFirst({
+      where: { accountId, deviceId },
+    });
+    if (existing) {
+      return prisma.spotifySession.update({
+        where: { id: existing.id },
+        data: { lastSeen, isActive, metadata },
+      });
+    }
+  }
+
+  return prisma.spotifySession.create({
+    data: { accountId, deviceId, lastSeen, isActive, metadata },
+  });
+}
+
+/**
+ * Fetch currently playing for a single user/account using a provided userSpotifyAPI
+ * and persist results to DB.
+ * userSpotifyAPI must implement: getCurrentlyPlaying(userId) and getConnectedUsers()/getConnectionStatus
+ */
+async function fetchAndPersistUser({ accountId, userId, userSpotifyAPI }) {
+  if (!userSpotifyAPI) throw new Error("userSpotifyAPI is required");
+
+  const result = await userSpotifyAPI.getCurrentlyPlaying(userId);
+
+  // if error or not playing, update session lastSeen and return
+  const now = new Date();
+
+  await upsertSession({
+    accountId,
+    deviceId: null,
+    lastSeen: now,
+    isActive: !!result.playing,
+  });
+
+  if (!result || result.error || result.playing === false) {
+    return { status: "no_music", detail: result };
+  }
+
+  // persist current playback and a playback record (listenedMs unknown here)
+  const trackId = result.url ? result.url.split("/").pop() : result.id || null;
+
+  // Upsert track entity if not exists (best-effort)
+  if (trackId) {
+    try {
+      await prisma.track.upsert({
+        where: { id: trackId },
+        create: {
+          id: trackId,
+          name: result.name || null,
+          album: result.album || null,
+          artists: result.artists ? JSON.stringify(result.artists) : null,
+          metadata: result,
+        },
+        update: {
+          name: result.name || null,
+          album: result.album || null,
+          metadata: result,
+        },
+      });
+    } catch (e) {
+      // ignore upsert errors
+      console.warn("track upsert failed", e.message);
+    }
+  }
+
+  // create a playback record with a conservative listenedMs = progress_ms or null
+  const listenedMs = result.progress_ms || null;
+  await createTrackPlayback({
+    accountId,
+    userId,
+    trackId: trackId || result.id || "",
+    listenedMs,
+    metadata: result,
+  });
+
+  await upsertCurrentPlayback(accountId, {
+    id: trackId || result.id || "",
+    ...result,
+  });
+
+  return { status: "playing", track: result };
+}
+
+// export helpers
+module.exports.upsertCurrentPlayback = upsertCurrentPlayback;
+module.exports.createTrackPlayback = createTrackPlayback;
+module.exports.upsertSession = upsertSession;
+module.exports.fetchAndPersistUser = fetchAndPersistUser;

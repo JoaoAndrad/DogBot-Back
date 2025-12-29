@@ -81,6 +81,7 @@ model User {
   trackVotes         TrackVote[]
   trackNotes         TrackNote[]
   playlistEntriesAdded PlaylistEntry[]
+  liveRequests       LiveRequest[]
   listeningSummary   UserListeningSummary?
 
   @@map("User")
@@ -133,6 +134,10 @@ model SpotifyAccount {
   user       User?     @relation(fields: [userId], references: [id])
   currentPlayback CurrentPlayback?
 
+  // playlists and sessions managed by this account
+  playlists  Playlist[]
+  sessions   SpotifySession[]
+
   @@index([userId])
 }
 
@@ -165,6 +170,7 @@ model Track {
   votes      TrackVote[]
   notes      TrackNote[]
   playlistEntries PlaylistEntry[]
+  liveRequests LiveRequest[]
 
   @@map("Track")
 }
@@ -265,7 +271,92 @@ model PlaylistEntry {
   track         Track?   @relation(fields: [trackId], references: [id], onDelete: Cascade)
   addedBy       User?    @relation(fields: [addedByUserId], references: [id], onDelete: Cascade)
 
+  // Relacionamento com Playlist gerenciada
+  playlist      Playlist @relation(fields: [playlistId], references: [id], onDelete: Cascade)
+
   @@index([playlistId])
   @@index([addedByUserId])
+}
+
+// =====================
+// Spotify management models
+// =====================
+
+model Playlist {
+  id         String   @id @default(uuid())
+  name       String
+  description String?
+  spotifyId  String?  // optional external Spotify playlist id
+  accountId  String?  // FK to SpotifyAccount when tied to a bot account
+  coverUrl   String?
+  isManaged  Boolean  @default(true)
+  meta       Json?    @db.Json
+  syncedAt   DateTime? @db.Timestamptz(6)
+  createdAt  DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt  DateTime @updatedAt @db.Timestamptz(6)
+
+  // relations
+  entries    PlaylistEntry[]
+  account    SpotifyAccount? @relation(fields: [accountId], references: [id])
+  liveRequests LiveRequest[]
+  syncLogs     PlaylistSyncLog[]
+
+  @@index([accountId])
+}
+
+model LiveRequest {
+  id                 String   @id @default(uuid())
+  trackId            String?  // FK to Track (if resolved)
+  userId             String?  // who requested (User.id)
+  playlistId         String?  // optional target playlist
+  status             String   @default("pending") // pending | approved | played | rejected
+  createdAt          DateTime @default(now()) @db.Timestamptz(6)
+  handledBySessionId String?
+  handledAt          DateTime? @db.Timestamptz(6)
+  metadata           Json?    @db.Json
+  archivedAt         DateTime? @db.Timestamptz(6)
+
+  // relations
+  track    Track?   @relation(fields: [trackId], references: [id], onDelete: SetNull)
+  user     User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  playlist Playlist? @relation(fields: [playlistId], references: [id], onDelete: SetNull)
+  session  SpotifySession? @relation(fields: [handledBySessionId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([status])
+}
+
+model SpotifySession {
+  id         String   @id @default(uuid())
+  accountId  String
+  deviceId   String?
+  startedAt  DateTime @default(now()) @db.Timestamptz(6)
+  lastSeen   DateTime? @db.Timestamptz(6)
+  isActive   Boolean  @default(true)
+  metadata   Json?    @db.Json
+
+  account    SpotifyAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  // requests handled by this session
+  handledRequests LiveRequest[]
+
+  @@index([accountId, isActive])
+  @@index([lastSeen])
+}
+
+model PlaylistSyncLog {
+  id          String   @id @default(uuid())
+  playlistId  String
+  attemptedBy String?  // user id who triggered sync
+  startedAt   DateTime @default(now()) @db.Timestamptz(6)
+  finishedAt  DateTime? @db.Timestamptz(6)
+  success     Boolean? @default(false)
+  result      Json?    @db.Json
+  errorMessage String?
+
+  playlist    Playlist @relation(fields: [playlistId], references: [id], onDelete: Cascade)
+
+  @@index([playlistId])
+  @@index([startedAt])
 }
 
