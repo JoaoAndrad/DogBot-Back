@@ -76,6 +76,27 @@ try {
   );
 }
 
+// Start Spotify monitor on app startup (uses internal adapter)
+try {
+  const UserSpotifyAdapter = require("./services/userSpotifyAdapter");
+  const SpotifyMonitor = require("./services/spotifyMonitor");
+  const monitor = new SpotifyMonitor({
+    userSpotifyAPI: UserSpotifyAdapter,
+    intervalMs: Number(process.env.SPOTIFY_MONITOR_INTERVAL_MS) || 10000,
+    concurrency: Number(process.env.SPOTIFY_MONITOR_CONCURRENCY) || 5,
+  });
+  // start monitoring in background
+  monitor.start();
+  // attach monitor to app for introspection (e.g., routes can access)
+  app.locals.spotifyMonitor = monitor;
+  console.log("[App] SpotifyMonitor initialized and started");
+} catch (e) {
+  console.warn(
+    "Failed to initialize SpotifyMonitor:",
+    e && e.message ? e.message : e
+  );
+}
+
 app.get("/connected", async (req, res) => {
   try {
     await testConnection();
