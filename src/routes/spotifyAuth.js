@@ -9,7 +9,9 @@ const SPOTIFY_REDIRECT_URI = process.env.SPOTIFY_REDIRECT_URI;
 const {
   upsertAccountTokens,
   upsertAccountForUser,
+  prisma,
 } = require("../services/spotifyService");
+const { randomUUID } = require("crypto");
 
 function base64ClientCreds() {
   return Buffer.from(`${SPOTIFY_CLIENT_ID}:${SPOTIFY_CLIENT_SECRET}`).toString(
@@ -51,10 +53,60 @@ router.get("/login", (req, res) => {
   res.redirect(url);
 });
 
+// Start OAuth flow: create a short-lived auth session and return auth URL
+router.post("/start", async (req, res) => {
+  const {
+    userId = null,
+    scopes = null,
+    redirectAfter = null,
+    show_dialog = false,
+  } = req.body || {};
+  if (!SPOTIFY_CLIENT_ID || !SPOTIFY_REDIRECT_URI) {
+    return res.status(500).json({ error: "Spotify client not configured" });
+  }
+
+  try {
+    const state = randomUUID();
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+
+    // persist auth session for later verification in callback
+    await prisma.spotifyAuthSession.create({
+      data: {
+        state,
+        userId,
+        redirectAfter,
+        expiresAt,
+        metadata: { initiatedBy: "frontend" },
+      },
+    });
+
+    const scopeStr = (
+      scopes ||
+      "user-read-private user-read-email user-read-playback-state user-read-currently-playing"
+    ).trim();
+    const params = new URLSearchParams({
+      client_id: SPOTIFY_CLIENT_ID,
+      response_type: "code",
+      redirect_uri: SPOTIFY_REDIRECT_URI,
+      scope: scopeStr,
+      state,
+      show_dialog: show_dialog ? "true" : "false",
+    });
+
+    const url = `https://accounts.spotify.com/authorize?${params.toString()}`;
+    return res.json({ auth_url: url, state });
+  } catch (err) {
+    console.error("/spotify/auth/start error", err);
+    return res
+      .status(500)
+      .json({ error: "Failed to start auth", details: String(err) });
+  }
+});
+
 // Callback: exchange code for tokens and return JSON (no DB persistence here)
 router.get("/callback", async (req, res) => {
   const code = req.query.code;
-  const userId = req.query.user_id || null; // optional: link token to a user
+  let userId = req.query.user_id || null; // optional: link token to a user
   if (!code) return res.status(400).json({ error: "Missing code" });
   try {
     const data = await postTokenForm({
@@ -62,6 +114,24 @@ router.get("/callback", async (req, res) => {
       code,
       redirect_uri: SPOTIFY_REDIRECT_URI,
     });
+
+    // If state present, try to resolve session and prefer its userId
+    const state = req.query.state || null;
+    let session = null;
+    try {
+      if (state) {
+        session = await prisma.spotifyAuthSession.findUnique({
+          where: { state },
+        });
+        if (session && session.userId && !userId) {
+          // prefer session's userId if callback did not include one
+          // eslint-disable-next-line no-param-reassign
+          userId = session.userId;
+        }
+      }
+    } catch (sessErr) {
+      console.warn("failed to lookup spotify auth session", sessErr);
+    }
 
     // Persist tokens in DB
     try {
@@ -76,6 +146,18 @@ router.get("/callback", async (req, res) => {
         expiresIn: data.expires_in,
         scope: data.scope,
       });
+
+      // mark session used and attach accountId if we have a session
+      try {
+        if (session) {
+          await prisma.spotifyAuthSession.update({
+            where: { id: session.id },
+            data: { used: true, accountId: account.id },
+          });
+        }
+      } catch (uErr) {
+        console.warn("failed to update spotify auth session", uErr);
+      }
       return res.json({
         message: "Tokens saved",
         account: account.id,
@@ -117,12 +199,10 @@ router.get("/refresh", async (req, res) => {
       });
     } catch (err) {
       console.error("spotify refresh error", err.message || err);
-      return res
-        .status(500)
-        .json({
-          error: "Failed to refresh token for account",
-          details: String(err),
-        });
+      return res.status(500).json({
+        error: "Failed to refresh token for account",
+        details: String(err),
+      });
     }
   }
 

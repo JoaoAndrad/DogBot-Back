@@ -360,3 +360,19 @@ model PlaylistSyncLog {
   @@index([startedAt])
 }
 
+// Temporary OAuth session records for frontend-initiated Spotify auth flows
+model SpotifyAuthSession {
+  id            String   @id @default(uuid())
+  state         String   @unique
+  userId        String?  // optional: the local User.id this auth is intended for
+  accountId     String?  // optional: SpotifyAccount.id if already known
+  redirectAfter String?  // optional URL or route to redirect after auth
+  used          Boolean  @default(false)
+  metadata      Json?    @db.Json
+  expiresAt     DateTime?
+  createdAt     DateTime @default(now()) @db.Timestamptz(6)
+
+  @@index([userId])
+  @@index([accountId])
+}
+
