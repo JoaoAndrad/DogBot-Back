@@ -30,7 +30,9 @@ class SpotifyMonitor {
 
   // Simple concurrency limiter using chunks
   async _runOnce() {
-    const connected = this.userSpotifyAPI.getConnectedUsers();
+    const connected = await Promise.resolve(
+      this.userSpotifyAPI.getConnectedUsers()
+    );
     console.log(
       "[SpotifyMonitor] Usuários conectados ao spotify:",
       connected && connected.length ? connected.join(", ") : "nenhum"
@@ -43,7 +45,7 @@ class SpotifyMonitor {
     const chunkSize = Math.max(1, this.concurrency);
     let processed = 0;
 
-    for (let i = 0; i < connected.length; i += chunkSize) {
+    for (let i = 0; i < (connected.length || 0); i += chunkSize) {
       const chunk = connected.slice(i, i + chunkSize);
       const promises = chunk.map((userId) => this._checkOne(userId));
       const results = await Promise.all(promises);
@@ -91,7 +93,7 @@ class SpotifyMonitor {
     // checking if there were any successes with playing status in a fresh quick pass.
     // Perform a lightweight pass to detect any currently playing users (non-persisting).
     let anyPlaying = false;
-    for (const userId of connected) {
+    for (const userId of connected || []) {
       try {
         const peek = (await this.userSpotifyAPI.getCurrentlyPlaying)
           ? await this.userSpotifyAPI.getCurrentlyPlaying(userId)
@@ -140,8 +142,10 @@ class SpotifyMonitor {
     return this._runOnce();
   }
 
-  getStats() {
-    const connected = this.userSpotifyAPI.getConnectedUsers();
+  async getStats() {
+    const connected = await Promise.resolve(
+      this.userSpotifyAPI.getConnectedUsers()
+    );
     return {
       isRunning: this.isRunning,
       intervalMs: this.intervalMs,
