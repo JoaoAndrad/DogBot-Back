@@ -70,6 +70,13 @@ router.post("/start", async (req, res) => {
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
 
     // persist auth session for later verification in callback
+    if (!prisma || !prisma.spotifyAuthSession) {
+      const msg =
+        "Prisma client missing model `spotifyAuthSession`. Run `npx prisma generate` and restart the server";
+      console.error("/spotify/start error:", msg);
+      return res.status(500).json({ error: msg });
+    }
+
     await prisma.spotifyAuthSession.create({
       data: {
         state,
