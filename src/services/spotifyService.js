@@ -11,18 +11,49 @@ async function upsertAccountForUser({
   clientId = null,
   scope = null,
 }) {
+  // If no userId provided, create a bot/global account
   if (!userId) {
-    // create a bot/global account
     const account = await prisma.spotifyAccount.create({
       data: { accountType, clientId, scope },
     });
     return account;
   }
-  const existing = await prisma.spotifyAccount.findFirst({ where: { userId } });
-  if (existing) return existing;
-  return prisma.spotifyAccount.create({
-    data: { userId, accountType, clientId, scope },
+
+  // The caller may pass an internal User.id (uuid) or an external sender number
+  // Try resolving an internal user first; if not found, try sender_number lookup.
+  let resolvedUser = null;
+  try {
+    resolvedUser = await prisma.user.findUnique({ where: { id: userId } });
+  } catch (e) {
+    // ignore
+  }
+  if (!resolvedUser) {
+    try {
+      resolvedUser = await prisma.user.findUnique({ where: { sender_number: userId } });
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  if (resolvedUser) {
+    const existing = await prisma.spotifyAccount.findFirst({ where: { userId: resolvedUser.id } });
+    if (existing) return existing;
+    return prisma.spotifyAccount.create({
+      data: { userId: resolvedUser.id, accountType, clientId, scope },
+    });
+  }
+
+  // Could not resolve a local User; create an account WITHOUT foreign key to avoid FK constraint
+  // Store the original identifier in `meta.externalId` for later reconciliation
+  const account = await prisma.spotifyAccount.create({
+    data: {
+      accountType,
+      clientId,
+      scope,
+      meta: { externalId: userId },
+    },
   });
+  return account;
 }
 
 async function upsertAccountTokens({

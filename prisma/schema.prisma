@@ -63,7 +63,6 @@ model User {
   identifiers        String[]
   display_name       String?
   push_name          String?
-  push_name_history  Json?    @db.Json
   created_at         DateTime @default(now()) @db.Timestamptz(6)
   last_seen          DateTime? @db.Timestamptz(6)
   last_group_activity DateTime? @db.Timestamptz(6)

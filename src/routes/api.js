@@ -17,12 +17,10 @@ try {
   // Fallback: expose a helpful 500 on /polls so requests don't silently 404
   const fallback = express.Router();
   fallback.get("/", (req, res) =>
-    res
-      .status(500)
-      .json({
-        error: "polls_controller_failed_to_load",
-        details: String(e && e.message ? e.message : e),
-      })
+    res.status(500).json({
+      error: "polls_controller_failed_to_load",
+      details: String(e && e.message ? e.message : e),
+    })
   );
   router.use("/polls", fallback);
 }
@@ -39,14 +37,32 @@ try {
   );
   const fallback = express.Router();
   fallback.get("/", (req, res) =>
-    res
-      .status(500)
-      .json({
-        error: "messages_controller_failed_to_load",
-        details: String(e && e.message ? e.message : e),
-      })
+    res.status(500).json({
+      error: "messages_controller_failed_to_load",
+      details: String(e && e.message ? e.message : e),
+    })
   );
   router.use("/messages", fallback);
+}
+
+// users
+try {
+  const userController = require("../domains/users/controllers/userController");
+  router.use("/users", authHeader, userController);
+  console.info("[routes/api] mounted /api/users");
+} catch (e) {
+  console.error(
+    "[routes/api] failed to mount /api/users controller:",
+    e && e.message ? e.message : e
+  );
+  const fallback = express.Router();
+  fallback.get("/", (req, res) =>
+    res.status(500).json({
+      error: "users_controller_failed_to_load",
+      details: String(e && e.message ? e.message : e),
+    })
+  );
+  router.use("/users", fallback);
 }
 
 module.exports = router;

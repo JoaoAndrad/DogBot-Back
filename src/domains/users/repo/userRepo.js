@@ -1,4 +1,389 @@
 const { getPrisma, recreatePrismaClient } = require("../../../db");
+const logger = require("../../../lib/logger");
+
+/**
+ * Extracts base phone number from WhatsApp identifier
+ * Removes @c.us, @s.whatsapp.net, @g.us, @lid suffixes
+ * @param {string} identifier - e.g. "558182132346@c.us", "185495510364403@lid"
+ * @returns {string} - e.g. "558182132346", "185495510364403"
+ */
+function extractBaseNumber(identifier) {
+  if (!identifier) return "";
+  return identifier.replace(/@(c\.us|s\.whatsapp\.net|g\.us|lid)$/i, "");
+}
+
+/**
+ * Step 1: Find user by exact identifier match in identifiers[] array
+ * @param {string} identifier
+ * @returns {Promise<User|null>}
+ */
+async function findByIdentifierExact(identifier) {
+  const prisma = getPrisma();
+  if (!prisma || !prisma.user) {
+    logger.warn("Prisma client missing 'user' model - attempting recreate");
+    await recreatePrismaClient();
+    return findByIdentifierExact(identifier);
+  }
+
+  return prisma.user.findFirst({
+    where: {
+      identifiers: {
+        has: identifier,
+      },
+    },
+    include: {
+      pushNameHistory: {
+        orderBy: { ts: "desc" },
+        take: 5,
+      },
+    },
+  });
+}
+
+/**
+ * Step 2: Find user by base number (strips @c.us/@lid suffixes)
+ * @param {string} baseNumber
+ * @returns {Promise<User|null>}
+ */
+async function findByBaseNumber(baseNumber) {
+  const prisma = getPrisma();
+  if (!prisma || !prisma.user) {
+    logger.warn("Prisma client missing 'user' model - attempting recreate");
+    await recreatePrismaClient();
+    return findByBaseNumber(baseNumber);
+  }
+
+  // Find users where any identifier starts with base number
+  const users = await prisma.user.findMany({
+    where: {
+      identifiers: {
+        hasSome: [
+          baseNumber,
+          `${baseNumber}@c.us`,
+          `${baseNumber}@s.whatsapp.net`,
+        ],
+      },
+    },
+    include: {
+      pushNameHistory: {
+        orderBy: { ts: "desc" },
+        take: 5,
+      },
+    },
+  });
+
+  return users.length > 0 ? users[0] : null;
+}
+
+/**
+ * Step 3: Find user by push_name (only if unique match)
+ * @param {string} pushName
+ * @returns {Promise<User|null>}
+ */
+async function findByPushNameUnique(pushName) {
+  const prisma = getPrisma();
+  if (!prisma || !prisma.user) {
+    logger.warn("Prisma client missing 'user' model - attempting recreate");
+    await recreatePrismaClient();
+    return findByPushNameUnique(pushName);
+  }
+
+  if (!pushName) return null;
+
+  const users = await prisma.user.findMany({
+    where: {
+      push_name: pushName,
+    },
+    include: {
+      pushNameHistory: {
+        orderBy: { ts: "desc" },
+        take: 5,
+      },
+    },
+  });
+
+  if (users.length === 1) {
+    return users[0];
+  } else if (users.length > 1) {
+    logger.warn(
+      `[USER_COLLISION] Multiple users (${
+        users.length
+      }) found with push_name="${pushName}". Cannot auto-link. User IDs: ${users
+        .map((u) => u.id)
+        .join(", ")}`
+    );
+    return null;
+  }
+
+  return null;
+}
+
+/**
+ * Adds a new identifier to user's identifiers array if not already present
+ * @param {string} userId
+ * @param {string} identifier
+ * @returns {Promise<User>}
+ */
+async function addIdentifierToUser(userId, identifier) {
+  const prisma = getPrisma();
+  if (!prisma || !prisma.user) {
+    logger.warn("Prisma client missing 'user' model - attempting recreate");
+    await recreatePrismaClient();
+    return addIdentifierToUser(userId, identifier);
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { identifiers: true },
+  });
+
+  if (!user) {
+    throw new Error(`User ${userId} not found`);
+  }
+
+  // Only add if not already present
+  if (!user.identifiers.includes(identifier)) {
+    return prisma.user.update({
+      where: { id: userId },
+      data: {
+        identifiers: {
+          push: identifier,
+        },
+      },
+    });
+  }
+
+  return prisma.user.findUnique({ where: { id: userId } });
+}
+
+/**
+ * Updates user's push_name and maintains push_name_history (max 5 entries)
+ * @param {string} userId
+ * @param {string} newPushName
+ * @param {string} observedFrom - chat_id or source
+ * @param {string} observedLid - LID if from group
+ * @returns {Promise<User>}
+ */
+async function updatePushNameWithHistory(
+  userId,
+  newPushName,
+  observedFrom,
+  observedLid = null
+) {
+  const prisma = getPrisma();
+  if (!prisma || !prisma.user) {
+    logger.warn("Prisma client missing 'user' model - attempting recreate");
+    await recreatePrismaClient();
+    return updatePushNameWithHistory(
+      userId,
+      newPushName,
+      observedFrom,
+      observedLid
+    );
+  }
+
+  if (!newPushName) return prisma.user.findUnique({ where: { id: userId } });
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { push_name: true },
+  });
+
+  if (!user) {
+    throw new Error(`User ${userId} not found`);
+  }
+
+  // Only update if push_name is different
+  if (user.push_name !== newPushName) {
+    const oldPushName = user.push_name;
+
+    // Update main push_name field
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        push_name: newPushName,
+      },
+    });
+
+    // Add old push_name to history if it was set
+    if (oldPushName) {
+      await prisma.pushNameHistory.create({
+        data: {
+          user_id: userId,
+          push_name: oldPushName,
+          observed_from: observedFrom,
+          observed_lid: observedLid,
+          ts: BigInt(Date.now()),
+        },
+      });
+
+      // Keep only last 5 entries
+      const allHistory = await prisma.pushNameHistory.findMany({
+        where: { user_id: userId },
+        orderBy: { ts: "desc" },
+      });
+
+      if (allHistory.length > 5) {
+        const toDelete = allHistory.slice(5);
+        await prisma.pushNameHistory.deleteMany({
+          where: {
+            id: {
+              in: toDelete.map((h) => h.id),
+            },
+          },
+        });
+      }
+    }
+  }
+
+  return prisma.user.findUnique({
+    where: { id: userId },
+    include: {
+      pushNameHistory: {
+        orderBy: { ts: "desc" },
+        take: 5,
+      },
+    },
+  });
+}
+
+/**
+ * Main function: Find existing user by multiple strategies or create new one
+ * Priority: identifier exact → base number → push_name unique → create new
+ *
+ * @param {Object} params
+ * @param {string} params.identifier - WhatsApp identifier (e.g. "558182132346@c.us", "185495510364403@lid")
+ * @param {string} params.push_name - User's WhatsApp push name
+ * @param {string} params.display_name - Display name from message
+ * @param {string} params.observed_from - chat_id or source where user was observed
+ * @param {string} params.observed_lid - LID if observed in group
+ * @returns {Promise<User>} - User record with UUID id
+ */
+async function findOrCreateUser({
+  identifier,
+  push_name,
+  display_name,
+  observed_from,
+  observed_lid = null,
+}) {
+  const prisma = getPrisma();
+  if (!prisma || !prisma.user) {
+    logger.warn("Prisma client missing 'user' model - attempting recreate");
+    await recreatePrismaClient();
+    return findOrCreateUser({
+      identifier,
+      push_name,
+      display_name,
+      observed_from,
+      observed_lid,
+    });
+  }
+
+  // Step 1: Try exact identifier match
+  let user = await findByIdentifierExact(identifier);
+  if (user) {
+    logger.info(
+      `[findOrCreateUser] Found by identifier exact: ${identifier} → user ${user.id}`
+    );
+
+    // Update metadata
+    await addIdentifierToUser(user.id, identifier);
+    await updatePushNameWithHistory(
+      user.id,
+      push_name,
+      observed_from,
+      observed_lid
+    );
+
+    // Update last_seen, display_name
+    user = await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        last_seen: new Date(),
+        display_name: display_name || user.display_name,
+        last_known_lid: observed_lid || user.last_known_lid,
+      },
+    });
+
+    return user;
+  }
+
+  // Step 2: Try base number match
+  const baseNumber = extractBaseNumber(identifier);
+  if (baseNumber && baseNumber !== identifier) {
+    user = await findByBaseNumber(baseNumber);
+    if (user) {
+      logger.info(
+        `[findOrCreateUser] Found by base number: ${baseNumber} → user ${user.id}`
+      );
+
+      // Add new identifier variant
+      await addIdentifierToUser(user.id, identifier);
+      await updatePushNameWithHistory(
+        user.id,
+        push_name,
+        observed_from,
+        observed_lid
+      );
+
+      user = await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          last_seen: new Date(),
+          display_name: display_name || user.display_name,
+          last_known_lid: observed_lid || user.last_known_lid,
+        },
+      });
+
+      return user;
+    }
+  }
+
+  // Step 3: Try push_name match (only if unique)
+  if (push_name) {
+    user = await findByPushNameUnique(push_name);
+    if (user) {
+      logger.info(
+        `[findOrCreateUser] Found by unique push_name: "${push_name}" → user ${user.id}`
+      );
+
+      // Link new identifier to existing user
+      await addIdentifierToUser(user.id, identifier);
+
+      user = await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          last_seen: new Date(),
+          display_name: display_name || user.display_name,
+          last_known_lid: observed_lid || user.last_known_lid,
+        },
+      });
+
+      return user;
+    }
+  }
+
+  // Step 4: Create new user
+  logger.info(
+    `[findOrCreateUser] Creating new user for identifier: ${identifier}`
+  );
+
+  user = await prisma.user.create({
+    data: {
+      sender_number: identifier,
+      identifiers: [identifier],
+      push_name: push_name,
+      display_name: display_name,
+      last_seen: new Date(),
+      last_known_lid: observed_lid,
+    },
+    include: {
+      pushNameHistory: true,
+    },
+  });
+
+  return user;
+}
 
 async function findUsers({ page = 1, per_page = 20, q, platform, is_active }) {
   let prisma = getPrisma();
@@ -208,6 +593,14 @@ module.exports = {
   upsertDogfortForUser,
   deleteUserById,
   bulkAction,
+  // New multi-identifier functions
+  findOrCreateUser,
+  findByIdentifierExact,
+  findByBaseNumber,
+  findByPushNameUnique,
+  extractBaseNumber,
+  addIdentifierToUser,
+  updatePushNameWithHistory,
 };
 
 async function updateUserById(id, data) {
