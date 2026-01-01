@@ -1,5 +1,6 @@
 const { PrismaClient } = require("@prisma/client");
 const fetch = require("node-fetch");
+const playbackTracker = require("../domains/spotify/services/playbackTrackerService");
 
 const prisma = new PrismaClient();
 
@@ -308,7 +309,7 @@ async function upsertSession({
 
 /**
  * Fetch currently playing for a single user/account using a provided userSpotifyAPI
- * and persist results to DB.
+ * and persist results to DB using the playbackTracker service.
  * userSpotifyAPI must implement: getCurrentlyPlaying(userId) and getConnectedUsers()/getConnectionStatus
  */
 async function fetchAndPersistUser({ accountId, userId, userSpotifyAPI }) {
@@ -323,15 +324,26 @@ async function fetchAndPersistUser({ accountId, userId, userSpotifyAPI }) {
     result ? `playing=${result.playing} error=${!!result.error}` : "null"
   );
 
+  // Resolve accountId if not provided
+  let resolvedAccountId = accountId;
+  if (!resolvedAccountId) {
+    const account = await prisma.spotifyAccount.findFirst({
+      where: { userId },
+    });
+    resolvedAccountId = account?.id;
+  }
+
   // if error or not playing, update session lastSeen and return
   const now = new Date();
 
-  await upsertSession({
-    accountId: resolvedAccountId,
-    deviceId: null,
-    lastSeen: now,
-    isActive: !!result.playing,
-  });
+  if (resolvedAccountId) {
+    await upsertSession({
+      accountId: resolvedAccountId,
+      deviceId: null,
+      lastSeen: now,
+      isActive: !!result.playing,
+    });
+  }
 
   if (!result || result.error || result.playing === false) {
     // Diagnostic log to help identify why no playback was detected
@@ -352,45 +364,46 @@ async function fetchAndPersistUser({ accountId, userId, userSpotifyAPI }) {
     return { status: "no_music", detail: result };
   }
 
-  // persist current playback and a playback record (listenedMs unknown here)
+  // Extract track ID and prepare track data
   const trackId = result.url ? result.url.split("/").pop() : result.id || null;
 
-  // Upsert track entity if not exists (best-effort)
-  if (trackId) {
-    try {
-      await prisma.track.upsert({
-        where: { id: trackId },
-        create: {
-          id: trackId,
-          name: result.name || null,
-          album: result.album || null,
-          artists: result.artists ? JSON.stringify(result.artists) : null,
-          metadata: result,
-        },
-        update: {
-          name: result.name || null,
-          album: result.album || null,
-          metadata: result,
-        },
-      });
-    } catch (e) {
-      // ignore upsert errors
-      console.warn("track upsert failed", e.message);
-    }
+  if (!trackId || !resolvedAccountId) {
+    console.warn(
+      `[fetchAndPersistUser] Missing trackId or accountId, skipping persist`
+    );
+    return { status: "playing", track: result };
   }
 
-  // create a playback record with a conservative listenedMs = progress_ms or null
-  const listenedMs = result.progress_ms || null;
-  await createTrackPlayback({
-    accountId,
-    userId,
-    trackId: trackId || result.id || "",
-    listenedMs,
-    metadata: result,
-  });
+  // Use playbackTracker to record this playback
+  try {
+    await playbackTracker.recordPlayback({
+      userId,
+      accountId: resolvedAccountId,
+      trackData: {
+        id: trackId,
+        name: result.name,
+        artists: result.artists,
+        album: result.album,
+        duration_ms: result.duration_ms,
+        progress_ms: result.progress_ms,
+        is_playing: result.playing,
+        image: result.image,
+        popularity: result.popularity,
+        explicit: result.explicit,
+        preview_url: result.preview_url,
+        device_type: result.device?.type,
+        context: result.context,
+      },
+      deviceId: result.device?.id,
+      progressMs: result.progress_ms,
+    });
+  } catch (err) {
+    console.error(`[fetchAndPersistUser] playbackTracker error:`, err);
+  }
 
-  await upsertCurrentPlayback(accountId, {
-    id: trackId || result.id || "",
+  // Update current playback pointer
+  await upsertCurrentPlayback(resolvedAccountId, {
+    id: trackId,
     ...result,
   });
 

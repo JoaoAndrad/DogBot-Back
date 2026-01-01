@@ -65,4 +65,24 @@ try {
   router.use("/users", fallback);
 }
 
+// spotify history & stats
+try {
+  const spotifyHistory = require("./spotifyHistory");
+  router.use("/spotify", authHeader, spotifyHistory);
+  console.info("[routes/api] mounted /api/spotify");
+} catch (e) {
+  console.log(
+    "[routes/api] failed to mount /api/spotify routes:",
+    e && e.message ? e.message : e
+  );
+  const fallback = express.Router();
+  fallback.get("/", (req, res) =>
+    res.status(500).json({
+      error: "spotify_routes_failed_to_load",
+      details: String(e && e.message ? e.message : e),
+    })
+  );
+  router.use("/spotify", fallback);
+}
+
 module.exports = router;

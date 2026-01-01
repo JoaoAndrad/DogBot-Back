@@ -82,6 +82,8 @@ model User {
   playlistEntriesAdded PlaylistEntry[]
   liveRequests       LiveRequest[]
   listeningSummary   UserListeningSummary?
+  yearSummaries      UserYearSummary[]
+  listeningSessions  ListeningSession[]
 
   @@map("User")
 }
@@ -162,6 +164,14 @@ model Track {
   artists    Json?    @db.Json
   album      String?
   durationMs Int?
+  
+  // Audio features for Wrapped insights
+  genres     String[]
+  audioFeatures Json? @db.Json // { danceability, energy, valence, tempo, ... }
+  popularity Int?
+  releaseDate String?
+  imageUrl   String?
+  
   metadata   Json?    @db.Json
 
   playbacks  TrackPlayback[]
@@ -179,21 +189,35 @@ model TrackPlayback {
   accountId  String
   userId     String?
   trackId    String
+  
+  // Context and device
   deviceId   String?
+  deviceType String?
   contextType String?
   contextId  String?
+  
   startedAt  DateTime @default(now()) @db.Timestamptz(6)
   endedAt    DateTime? @db.Timestamptz(6)
   listenedMs BigInt?  @db.BigInt
   percentPlayed Float?
+  
+  // Behavior tracking for Wrapped
+  wasSkipped Boolean? @default(false)
+  wasRepeated Boolean? @default(false)
+  isFirstPlay Boolean? @default(false)
+  sessionId  String?
+  source     String?  @default("monitor") // "monitor" | "import" | "manual"
+  
   metadata   Json?    @db.Json
 
   account    SpotifyAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
   track      Track          @relation(fields: [trackId], references: [id], onDelete: Cascade)
   user       User?          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  session    ListeningSession? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
 
   @@index([trackId, startedAt])
   @@index([userId])
+  @@index([sessionId])
 }
 
 model CurrentPlayback {
@@ -374,4 +398,71 @@ model SpotifyAuthSession {
   @@index([userId])
   @@index([accountId])
 }
+
+// Listening sessions - groups playbacks into temporal sessions
+model ListeningSession {
+  id         String   @id @default(uuid())
+  userId     String
+  startedAt  DateTime @db.Timestamptz(6)
+  endedAt    DateTime? @db.Timestamptz(6)
+  trackCount Int      @default(0)
+  totalMs    BigInt   @default(0) @db.BigInt
+  deviceType String?
+  contextType String?
+  
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  playbacks  TrackPlayback[]
+  
+  @@index([userId, startedAt])
+}
+
+// Pre-computed yearly summary for Wrapped
+model UserYearSummary {
+  id            String   @id @default(uuid())
+  userId        String
+  year          Int
+  
+  // Totals
+  totalMinutes  Int
+  totalPlays    Int
+  uniqueTracks  Int
+  uniqueArtists Int
+  uniqueAlbums  Int
+  
+  // Top lists (JSON arrays)
+  topTracks     Json?    @db.Json
+  topArtists    Json?    @db.Json
+  topGenres     Json?    @db.Json
+  topAlbums     Json?    @db.Json
+  
+  // Temporal patterns
+  hourlyPattern Json?    @db.Json
+  weekdayPattern Json?   @db.Json
+  monthlyPattern Json?   @db.Json
+  
+  // Audio personality
+  avgDanceability Float?
+  avgEnergy       Float?
+  avgValence      Float?
+  avgTempo        Float?
+  
+  // Discoveries
+  newArtistsCount Int?
+  newTracksCount  Int?
+  topDiscoveries  Json?    @db.Json
+  
+  // Listening behavior
+  skipRate        Float?
+  repeatRate      Float?
+  avgSessionMinutes Float?
+  longestStreak   Json?    @db.Json
+  
+  computedAt    DateTime @default(now()) @db.Timestamptz(6)
+  
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, year])
+  @@index([year])
+}
+
 
