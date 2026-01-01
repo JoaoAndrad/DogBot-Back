@@ -327,7 +327,7 @@ async function fetchAndPersistUser({ accountId, userId, userSpotifyAPI }) {
   const now = new Date();
 
   await upsertSession({
-    accountId,
+    accountId: resolvedAccountId,
     deviceId: null,
     lastSeen: now,
     isActive: !!result.playing,

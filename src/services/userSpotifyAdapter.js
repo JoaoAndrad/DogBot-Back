@@ -50,6 +50,11 @@ module.exports = {
       }
       if (!res.ok) {
         const text = await res.text().catch(() => null);
+        console.log(
+          `[getCurrentlyPlaying] ERROR response not ok: status=${
+            res.status
+          } body=${text ? text.slice(0, 500) : "null"}`
+        );
         return { error: `Spotify API error ${res.status}`, details: text };
       }
       const data = await res.json();
@@ -85,6 +90,7 @@ module.exports = {
         is_playing: data.is_playing,
       };
     } catch (err) {
+      console.log(`[getCurrentlyPlaying] ERROR:`, err.message);
       return { error: err.message };
     }
   },
