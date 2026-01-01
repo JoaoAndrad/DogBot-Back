@@ -182,6 +182,20 @@ async function spotifyFetch(accountId, url, options = {}) {
     }
   }
 
+  // Diagnostic logging for non-OK responses (except 401 handled above)
+  try {
+    if (!res.ok) {
+      const text = await res.text().catch(() => null);
+      console.warn(
+        `[spotifyFetch] account=${accountId} url=${url} status=${res.status} body=${
+          text ? text.slice(0, 1000) : "<no-body>"
+        }`
+      );
+    }
+  } catch (e) {
+    console.warn("[spotifyFetch] failed to log response body", e && e.message);
+  }
+
   return res;
 }
 
@@ -309,6 +323,16 @@ async function fetchAndPersistUser({ accountId, userId, userSpotifyAPI }) {
   });
 
   if (!result || result.error || result.playing === false) {
+    // Diagnostic log to help identify why no playback was detected
+    try {
+      console.log(
+        `[fetchAndPersistUser] no playback for user=${userId} account=${accountId} result=`,
+        result && typeof result === 'object' ? JSON.stringify(result).slice(0,2000) : result
+      );
+    } catch (e) {
+      console.warn('[fetchAndPersistUser] failed to stringify result', e && e.message);
+    }
+
     return { status: "no_music", detail: result };
   }
 
