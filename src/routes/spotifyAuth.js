@@ -11,6 +11,7 @@ const {
   upsertAccountForUser,
   prisma,
 } = require("../services/spotifyService");
+const userRepo = require("../domains/users/repo/userRepo");
 const { randomUUID } = require("crypto");
 
 function base64ClientCreds() {
@@ -142,9 +143,50 @@ router.get("/callback", async (req, res) => {
 
     // Persist tokens in DB
     try {
+      // Resolve userId: if it's a WhatsApp identifier, find the User.id UUID
+      let resolvedUserId = userId;
+      if (userId) {
+        // Check if it's already a UUID (36 chars with dashes)
+        const isUUID =
+          /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+            userId
+          );
+
+        if (!isUUID) {
+          // It's a WhatsApp identifier, resolve to User.id
+          try {
+            let user = await userRepo.findByIdentifierExact(userId);
+            if (!user) {
+              const baseNumber = userRepo.extractBaseNumber(userId);
+              user = await userRepo.findByBaseNumber(baseNumber);
+            }
+            if (user) {
+              resolvedUserId = user.id;
+              console.log(
+                `[SpotifyAuth] Resolved identifier ${userId} → User.id ${resolvedUserId}`
+              );
+            } else {
+              console.warn(
+                `[SpotifyAuth] Could not resolve identifier ${userId} to User - account will be created without userId`
+              );
+              resolvedUserId = null;
+            }
+          } catch (resolveErr) {
+            console.error(
+              `[SpotifyAuth] Error resolving identifier ${userId}:`,
+              resolveErr
+            );
+            resolvedUserId = null;
+          }
+        }
+      }
+
       // create or find account
-      const account = userId
-        ? await upsertAccountForUser({ userId, accountType: "user" })
+      const account = resolvedUserId
+        ? await upsertAccountForUser({
+            userId: resolvedUserId,
+            accountType: "user",
+          })
         : await upsertAccountForUser({ accountType: "bot" });
       const result = await upsertAccountTokens({
         accountId: account.id,
