@@ -15,7 +15,7 @@ router.get("/", async (req, res) => {
     const data = await userService.listUsers({ page, per_page, q });
     res.json(data);
   } catch (e) {
-    console.error("users list error", e && e.message ? e.message : e);
+    console.log("users list error", e && e.message ? e.message : e);
     res.status(500).json({ error: "Failed to list users" });
   }
 });
@@ -29,7 +29,7 @@ router.post("/", express.json(), async (req, res) => {
     const created = await userService.createUser(payload);
     res.status(201).json(created);
   } catch (e) {
-    console.error("user create error", e && e.message ? e.message : e);
+    console.log("user create error", e && e.message ? e.message : e);
     res.status(500).json({ error: "Failed to create user" });
   }
 });
@@ -41,7 +41,7 @@ router.get("/:id", async (req, res) => {
     if (!user) return res.status(404).json({ error: "User not found" });
     res.json(user);
   } catch (e) {
-    console.error("user detail error", e && e.message ? e.message : e);
+    console.log("user detail error", e && e.message ? e.message : e);
     res.status(500).json({ error: "Failed to get user" });
   }
 });
@@ -67,7 +67,7 @@ router.patch("/:id", express.json(), async (req, res) => {
     const updated = await userService.updateUser(id, payload);
     res.json(updated);
   } catch (e) {
-    console.error("user update error", e && e.message ? e.message : e);
+    console.log("user update error", e && e.message ? e.message : e);
     res.status(500).json({ error: "Failed to update user" });
   }
 });
@@ -79,7 +79,7 @@ router.delete("/:id", async (req, res) => {
     await userService.deleteUser(id);
     res.json({ success: true });
   } catch (e) {
-    console.error("user delete error", e && e.message ? e.message : e);
+    console.log("user delete error", e && e.message ? e.message : e);
     res.status(500).json({ error: "Failed to delete user" });
   }
 });
@@ -93,7 +93,7 @@ router.post("/bulk", express.json(), async (req, res) => {
     const result = await userService.bulkUsers({ ids, action });
     res.json(result);
   } catch (e) {
-    console.error("bulk users error", e && e.message ? e.message : e);
+    console.log("bulk users error", e && e.message ? e.message : e);
     res.status(500).json({ error: "Failed to perform bulk action" });
   }
 });

@@ -11,7 +11,7 @@ async function importUsers() {
 
   // 1. Verifica arquivo
   if (!fs.existsSync(file)) {
-    console.error(
+    console.log(
       `[${new Date().toISOString()}] Legacy export file not found: ${file}`
     );
     process.exit(1);
@@ -167,7 +167,7 @@ async function importUsers() {
 
       imported++;
     } catch (err) {
-      console.error(`${ts()} [${idx}/${total}] ERROR: ${err.message}`);
+      console.log(`${ts()} [${idx}/${total}] ERROR: ${err.message}`);
     }
   }
 
@@ -243,7 +243,7 @@ async function clearDatabase() {
   try {
     await importUsers();
   } catch (err) {
-    console.error("Fatal error:", err);
+    console.log("Fatal error:", err);
   } finally {
     await prisma.$disconnect();
   }

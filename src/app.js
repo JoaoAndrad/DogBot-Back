@@ -102,7 +102,7 @@ app.get("/connected", async (req, res) => {
     await testConnection();
     return res.json({ message: "Conectado com sucesso" });
   } catch (err) {
-    console.error("DB connection failed:", err.message || err);
+    console.log("DB connection failed:", err.message || err);
     return res
       .status(500)
       .json({ error: "Falha ao conectar ao banco", details: err.message });

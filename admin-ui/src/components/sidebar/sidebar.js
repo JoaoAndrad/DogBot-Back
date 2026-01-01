@@ -125,7 +125,7 @@ class AdminSidebar extends HTMLElement {
             const data = await r.json();
             alert(data && data.message ? data.message : "OK");
           } catch (e) {
-            console.error("remontar error", e);
+            console.log("remontar error", e);
             alert("Falha ao recriar Prisma client: " + (e.message || e));
           } finally {
             b.classList.remove("disabled");
@@ -152,7 +152,7 @@ class AdminSidebar extends HTMLElement {
               `Studio iniciado na porta ${data.port}. Acesse: http://${location.hostname}:${data.port}/`
             );
           } catch (e) {
-            console.error("start-studio error", e);
+            console.log("start-studio error", e);
             alert("Falha ao iniciar Prisma Studio: " + (e.message || e));
           } finally {
             sbtn.classList.remove("disabled");

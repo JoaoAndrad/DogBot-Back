@@ -14,16 +14,14 @@ router.post("/", async (req, res) => {
     console.info("[pollController] created poll", created && created.id);
     res.status(201).json(created);
   } catch (err) {
-    console.error(
+    console.log(
       "[pollController] create error",
       err && err.message ? err.message : err
     );
-    res
-      .status(500)
-      .json({
-        error: "Failed to create poll",
-        details: err && err.message ? err.message : String(err),
-      });
+    res.status(500).json({
+      error: "Failed to create poll",
+      details: err && err.message ? err.message : String(err),
+    });
   }
 });
 
@@ -35,16 +33,14 @@ router.get("/", async (req, res) => {
     const rows = await service.listPolls({ chat_id });
     res.json(rows);
   } catch (err) {
-    console.error(
+    console.log(
       "[pollController] list error",
       err && err.message ? err.message : err
     );
-    res
-      .status(500)
-      .json({
-        error: "Failed to list polls",
-        details: err && err.message ? err.message : String(err),
-      });
+    res.status(500).json({
+      error: "Failed to list polls",
+      details: err && err.message ? err.message : String(err),
+    });
   }
 });
 
@@ -60,16 +56,14 @@ router.get("/:id/", async (req, res) => {
     }
     res.json(p);
   } catch (err) {
-    console.error(
+    console.log(
       "[pollController] get error",
       err && err.message ? err.message : err
     );
-    res
-      .status(500)
-      .json({
-        error: "Failed to get poll",
-        details: err && err.message ? err.message : String(err),
-      });
+    res.status(500).json({
+      error: "Failed to get poll",
+      details: err && err.message ? err.message : String(err),
+    });
   }
 });
 
@@ -82,16 +76,14 @@ router.delete("/:id/", async (req, res) => {
     console.info("[pollController] deleted", id);
     res.json({ ok: true });
   } catch (err) {
-    console.error(
+    console.log(
       "[pollController] delete error",
       err && err.message ? err.message : err
     );
-    res
-      .status(500)
-      .json({
-        error: "Failed to delete poll",
-        details: err && err.message ? err.message : String(err),
-      });
+    res.status(500).json({
+      error: "Failed to delete poll",
+      details: err && err.message ? err.message : String(err),
+    });
   }
 });
 
@@ -109,16 +101,14 @@ router.post("/:id/votes/", async (req, res) => {
     console.info("[pollController] vote created", created && created.id);
     res.status(201).json(created);
   } catch (err) {
-    console.error(
+    console.log(
       "[pollController] record vote error",
       err && err.message ? err.message : err
     );
-    res
-      .status(500)
-      .json({
-        error: "Failed to record vote",
-        details: err && err.message ? err.message : String(err),
-      });
+    res.status(500).json({
+      error: "Failed to record vote",
+      details: err && err.message ? err.message : String(err),
+    });
   }
 });
 

@@ -4,7 +4,7 @@ async function getJson(url) {
     if (!res.ok) return null;
     return await res.json();
   } catch (e) {
-    console.error("fetch error", url, e);
+    console.log("fetch error", url, e);
     return null;
   }
 }

@@ -10,7 +10,7 @@ try {
   router.use("/polls", authHeader, pollController);
   console.info("[routes/api] mounted /api/polls");
 } catch (e) {
-  console.error(
+  console.log(
     "[routes/api] failed to mount /api/polls controller:",
     e && e.message ? e.message : e
   );
@@ -31,7 +31,7 @@ try {
   router.use("/messages", authHeader, messageController);
   console.info("[routes/api] mounted /api/messages");
 } catch (e) {
-  console.error(
+  console.log(
     "[routes/api] failed to mount /api/messages controller:",
     e && e.message ? e.message : e
   );
@@ -51,7 +51,7 @@ try {
   router.use("/users", authHeader, userController);
   console.info("[routes/api] mounted /api/users");
 } catch (e) {
-  console.error(
+  console.log(
     "[routes/api] failed to mount /api/users controller:",
     e && e.message ? e.message : e
   );

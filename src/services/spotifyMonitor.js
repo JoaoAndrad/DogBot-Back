@@ -120,12 +120,10 @@ class SpotifyMonitor {
     this.isRunning = true;
     // immediate run
     this._runOnce().catch((e) =>
-      console.error("spotifyMonitor initial run failed", e)
+      console.log("spotifyMonitor initial run failed", e)
     );
     this._timer = setInterval(() => {
-      this._runOnce().catch((e) =>
-        console.error("spotifyMonitor run failed", e)
-      );
+      this._runOnce().catch((e) => console.log("spotifyMonitor run failed", e));
     }, this.intervalMs);
     console.log("[SpotifyMonitor] started — interval:", this.intervalMs);
   }

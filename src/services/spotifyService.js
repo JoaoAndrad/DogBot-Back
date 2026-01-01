@@ -182,7 +182,7 @@ async function spotifyFetch(accountId, url, options = {}) {
       res = await fetch(url, options);
     } catch (err) {
       // swallow refresh error and return original 401 response
-      console.error("spotifyFetch: refresh failed", err);
+      console.log("spotifyFetch: refresh failed", err);
     }
   }
 

@@ -12,7 +12,7 @@ router.post("/recreate-prisma", async (req, res) => {
     await recreatePrismaClient();
     res.json({ success: true, message: "Prisma client recriado" });
   } catch (e) {
-    console.error("recreate-prisma error", e && e.message ? e.message : e);
+    console.log("recreate-prisma error", e && e.message ? e.message : e);
     res.status(500).json({ error: "Falha ao recriar Prisma client" });
   }
 });
@@ -31,7 +31,7 @@ router.get("/prisma-info", async (req, res) => {
       hasUserModel: !!(prisma && prisma.user),
     });
   } catch (e) {
-    console.error("prisma-info error", e && e.message ? e.message : e);
+    console.log("prisma-info error", e && e.message ? e.message : e);
     return res.status(500).json({ error: "Failed to get prisma info" });
   }
 });
@@ -65,7 +65,7 @@ router.post("/start-studio", async (req, res) => {
       pid: child.pid,
     });
   } catch (e) {
-    console.error("start-studio error", e && e.message ? e.message : e);
+    console.log("start-studio error", e && e.message ? e.message : e);
     return res.status(500).json({ error: "Failed to start Prisma Studio" });
   }
 });
@@ -83,7 +83,7 @@ router.post("/generate-prisma", async (req, res) => {
       { cwd: backendRoot, env: process.env },
       async (err, stdout, stderr) => {
         if (err) {
-          console.error("prisma generate failed", err, stderr);
+          console.log("prisma generate failed", err, stderr);
           return res.status(500).json({
             error: "prisma generate failed",
             details: stderr || String(err),
@@ -94,7 +94,7 @@ router.post("/generate-prisma", async (req, res) => {
           await recreatePrismaClient();
           return res.json({ success: true, output: stdout });
         } catch (e) {
-          console.error(
+          console.log(
             "recreate after generate failed",
             e && e.message ? e.message : e
           );
@@ -106,7 +106,7 @@ router.post("/generate-prisma", async (req, res) => {
       }
     );
   } catch (e) {
-    console.error("generate-prisma error", e && e.message ? e.message : e);
+    console.log("generate-prisma error", e && e.message ? e.message : e);
     return res.status(500).json({ error: "Failed to run prisma generate" });
   }
 });
@@ -155,10 +155,7 @@ router.post("/spotify-check", async (req, res) => {
 
     return res.json({ success: true, accountId: account.id, result });
   } catch (err) {
-    console.error(
-      "spotify-check error",
-      err && err.message ? err.message : err
-    );
+    console.log("spotify-check error", err && err.message ? err.message : err);
     return res
       .status(500)
       .json({ error: "spotify_check_failed", details: err && err.message });

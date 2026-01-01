@@ -135,7 +135,7 @@ export default async function initUserEdit() {
       raw.ultimoTreino ?? raw.ultimo_treino ?? metaDf.ultimo_treino;
     setValue("dfUltimoTreino", brDateToIso(ultimoTreinoRaw));
   } catch (e) {
-    console.error("Failed to load user for edit", e);
+    console.log("Failed to load user for edit", e);
   }
 
   // helper: convert ISO datetime to input[type=datetime-local] value
@@ -276,8 +276,8 @@ export default async function initUserEdit() {
         document.body.style.overflow = "";
         window.location.reload();
       } catch (e) {
-        console.error("Failed to save user", e);
-        console.error("server response body:", e && e.body);
+        console.log("Failed to save user", e);
+        console.log("server response body:", e && e.body);
         alert("Failed to save user: " + (e && e.message));
       }
     });

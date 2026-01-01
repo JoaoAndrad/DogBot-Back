@@ -113,7 +113,7 @@ async function recreatePrismaClient() {
     _lastPrismaError = null;
     return prisma;
   } catch (err) {
-    console.error(
+    console.log(
       "Falha ao recriar/conectar cliente Prisma:",
       err && err.message ? err.message : String(err)
     );
@@ -132,11 +132,11 @@ async function testConnection() {
     _lastPrismaError = null;
     return true;
   } catch (err) {
-    console.error(
+    console.log(
       "Teste de conexão Prisma falhou:",
       err && err.message ? err.message : String(err)
     );
-    if (err && err.stack) console.error(err.stack);
+    if (err && err.stack) console.log(err.stack);
     _lastPrismaError = err;
     throw err;
   }

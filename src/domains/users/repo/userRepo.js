@@ -395,7 +395,7 @@ async function findUsers({ page = 1, per_page = 20, q, platform, is_active }) {
       await recreatePrismaClient();
       prisma = getPrisma();
     } catch (e) {
-      console.error(
+      console.log(
         "recreatePrismaClient failed",
         e && e.message ? e.message : e
       );
@@ -536,7 +536,7 @@ async function upsertDogfortForUser(userId, dogData) {
         });
       }
     } catch (e) {
-      console.error(
+      console.log(
         "Failed to persist plan into metadata.raw for user",
         userId,
         e && e.message ? e.message : e
@@ -546,7 +546,7 @@ async function upsertDogfortForUser(userId, dogData) {
 
     return upsertRes;
   } catch (e) {
-    console.error(
+    console.log(
       "Failed to upsert DogFortStats",
       e && e.message ? e.message : e
     );

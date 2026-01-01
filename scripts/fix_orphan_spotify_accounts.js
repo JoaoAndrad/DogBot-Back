@@ -71,7 +71,7 @@ async function fixOrphanAccounts() {
         failed++;
       }
     } catch (err) {
-      console.error(
+      console.log(
         `[FixOrphanAccounts] Error processing account ${account.id}:`,
         err.message
       );
@@ -84,6 +84,6 @@ async function fixOrphanAccounts() {
 }
 
 fixOrphanAccounts().catch((err) => {
-  console.error("[FixOrphanAccounts] Fatal error:", err);
+  console.log("[FixOrphanAccounts] Fatal error:", err);
   process.exit(1);
 });

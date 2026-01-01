@@ -8,7 +8,7 @@ function warn(...args) {
 }
 
 function error(...args) {
-  console.error(new Date().toISOString(), "[ERROR]", ...args);
+  console.log(new Date().toISOString(), "[ERROR]", ...args);
 }
 
 module.exports = { info, warn, error };

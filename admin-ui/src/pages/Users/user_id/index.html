@@ -521,7 +521,7 @@ Adicione notas internas sobre este usuário...</textarea
             }
             editBtn.disabled = true;
           } catch (e) {
-            console.error("Failed to load user editor", e);
+            console.log("Failed to load user editor", e);
             alert("Erro ao abrir editor: " + (e && e.message));
           }
         });

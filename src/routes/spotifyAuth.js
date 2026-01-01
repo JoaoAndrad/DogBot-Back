@@ -74,7 +74,7 @@ router.post("/start", async (req, res) => {
     if (!prisma || !prisma.spotifyAuthSession) {
       const msg =
         "Prisma client missing model `spotifyAuthSession`. Run `npx prisma generate` and restart the server";
-      console.error("/spotify/start error:", msg);
+      console.log("/spotify/start error:", msg);
       return res.status(500).json({ error: msg });
     }
 
@@ -104,7 +104,7 @@ router.post("/start", async (req, res) => {
     const url = `https://accounts.spotify.com/authorize?${params.toString()}`;
     return res.json({ auth_url: url, state });
   } catch (err) {
-    console.error("/spotify/auth/start error", err);
+    console.log("/spotify/auth/start error", err);
     return res
       .status(500)
       .json({ error: "Failed to start auth", details: String(err) });
@@ -172,7 +172,7 @@ router.get("/callback", async (req, res) => {
               resolvedUserId = null;
             }
           } catch (resolveErr) {
-            console.error(
+            console.log(
               `[SpotifyAuth] Error resolving identifier ${userId}:`,
               resolveErr
             );
@@ -214,7 +214,7 @@ router.get("/callback", async (req, res) => {
         raw: data,
       });
     } catch (dbErr) {
-      console.error("Failed to persist Spotify tokens:", dbErr);
+      console.log("Failed to persist Spotify tokens:", dbErr);
       // still return tokens to caller but warn
       return res.json({
         warning: "Token exchange succeeded but persistence failed",
@@ -222,7 +222,7 @@ router.get("/callback", async (req, res) => {
       });
     }
   } catch (e) {
-    console.error("spotify callback error", e.message || e);
+    console.log("spotify callback error", e.message || e);
     return res
       .status(500)
       .json({ error: "Failed to exchange code", details: String(e) });
@@ -247,7 +247,7 @@ router.get("/refresh", async (req, res) => {
         raw: result,
       });
     } catch (err) {
-      console.error("spotify refresh error", err.message || err);
+      console.log("spotify refresh error", err.message || err);
       return res.status(500).json({
         error: "Failed to refresh token for account",
         details: String(err),
@@ -264,7 +264,7 @@ router.get("/refresh", async (req, res) => {
     });
     return res.json(data);
   } catch (e) {
-    console.error("spotify refresh error", e.message || e);
+    console.log("spotify refresh error", e.message || e);
     return res
       .status(500)
       .json({ error: "Failed to refresh token", details: String(e) });

@@ -14,7 +14,7 @@ async function getJson(url) {
     if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
     return await r.json();
   } catch (e) {
-    console.error("fetch error", e);
+    console.log("fetch error", e);
     return null;
   }
 }
@@ -39,7 +39,7 @@ async function doFetch(url, method = "GET", body) {
     }
     return data;
   } catch (e) {
-    console.error("doFetch error", e);
+    console.log("doFetch error", e);
     throw e;
   }
 }
@@ -557,7 +557,7 @@ if (
   document.getElementById("usersContainer")
 ) {
   // call immediately if the container exists (initial load or after router replacement)
-  initUsersPage().catch((e) => console.error(e));
+  initUsersPage().catch((e) => console.log(e));
 }
 
 export default initUsersPage;

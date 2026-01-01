@@ -141,7 +141,7 @@ export async function navigateTo(url, replace = false) {
     if (replace) history.replaceState(null, "", url);
     else history.pushState(null, "", url);
   } catch (e) {
-    console.error("Navigation error", e);
+    console.log("Navigation error", e);
     // fallback to full load
     location.href = url;
   }

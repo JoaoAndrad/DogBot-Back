@@ -212,7 +212,7 @@ async function init() {
     if (notesEl && u.metadata && u.metadata.admin_notes)
       notesEl.value = u.metadata.admin_notes;
   } catch (e) {
-    console.error("Failed to load user", e);
+    console.log("Failed to load user", e);
     // visible error feedback
     const nameEl = document.getElementById("userName");
     const phoneEl = document.getElementById("userPhone");
