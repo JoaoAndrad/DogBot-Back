@@ -312,10 +312,16 @@ async function upsertSession({
  * userSpotifyAPI must implement: getCurrentlyPlaying(userId) and getConnectedUsers()/getConnectionStatus
  */
 async function fetchAndPersistUser({ accountId, userId, userSpotifyAPI }) {
-  console.log(`[fetchAndPersistUser] START userId=${userId} accountId=${accountId}`);\n  if (!userSpotifyAPI) throw new Error("userSpotifyAPI is required");
+  console.log(
+    `[fetchAndPersistUser] START userId=${userId} accountId=${accountId}`
+  );
+  if (!userSpotifyAPI) throw new Error("userSpotifyAPI is required");
 
   const result = await userSpotifyAPI.getCurrentlyPlaying(userId);
-  console.log(`[fetchAndPersistUser] getCurrentlyPlaying returned:`, result ? `playing=${result.playing} error=${!!result.error}` : 'null');
+  console.log(
+    `[fetchAndPersistUser] getCurrentlyPlaying returned:`,
+    result ? `playing=${result.playing} error=${!!result.error}` : "null"
+  );
 
   // if error or not playing, update session lastSeen and return
   const now = new Date();
