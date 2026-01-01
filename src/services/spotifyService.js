@@ -29,14 +29,18 @@ async function upsertAccountForUser({
   }
   if (!resolvedUser) {
     try {
-      resolvedUser = await prisma.user.findUnique({ where: { sender_number: userId } });
+      resolvedUser = await prisma.user.findUnique({
+        where: { sender_number: userId },
+      });
     } catch (e) {
       // ignore
     }
   }
 
   if (resolvedUser) {
-    const existing = await prisma.spotifyAccount.findFirst({ where: { userId: resolvedUser.id } });
+    const existing = await prisma.spotifyAccount.findFirst({
+      where: { userId: resolvedUser.id },
+    });
     if (existing) return existing;
     return prisma.spotifyAccount.create({
       data: { userId: resolvedUser.id, accountType, clientId, scope },
@@ -187,9 +191,9 @@ async function spotifyFetch(accountId, url, options = {}) {
     if (!res.ok) {
       const text = await res.text().catch(() => null);
       console.warn(
-        `[spotifyFetch] account=${accountId} url=${url} status=${res.status} body=${
-          text ? text.slice(0, 1000) : "<no-body>"
-        }`
+        `[spotifyFetch] account=${accountId} url=${url} status=${
+          res.status
+        } body=${text ? text.slice(0, 1000) : "<no-body>"}`
       );
     }
   } catch (e) {
@@ -327,10 +331,15 @@ async function fetchAndPersistUser({ accountId, userId, userSpotifyAPI }) {
     try {
       console.log(
         `[fetchAndPersistUser] no playback for user=${userId} account=${accountId} result=`,
-        result && typeof result === 'object' ? JSON.stringify(result).slice(0,2000) : result
+        result && typeof result === "object"
+          ? JSON.stringify(result).slice(0, 2000)
+          : result
       );
     } catch (e) {
-      console.warn('[fetchAndPersistUser] failed to stringify result', e && e.message);
+      console.warn(
+        "[fetchAndPersistUser] failed to stringify result",
+        e && e.message
+      );
     }
 
     return { status: "no_music", detail: result };
