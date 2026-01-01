@@ -110,3 +110,57 @@ router.post("/generate-prisma", async (req, res) => {
     return res.status(500).json({ error: "Failed to run prisma generate" });
   }
 });
+
+// POST /admin/api/maintenance/spotify-check
+// Body: { userId: '<uuid or whatsapp identifier>' }
+router.post("/spotify-check", async (req, res) => {
+  try {
+    const { userId } = req.body || {};
+    if (!userId) return res.status(400).json({ error: "missing_userId" });
+
+    const userSpotifyAdapter = require("../services/userSpotifyAdapter");
+    const spotifyService = require("../services/spotifyService");
+    const userRepo = require("../domains/users/repo/userRepo");
+
+    let resolvedUserId = userId;
+    // if not UUID, try resolve via identifiers/base
+    const isUUID =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+        userId
+      );
+    if (!isUUID) {
+      let user = await userRepo.findByIdentifierExact(userId);
+      if (!user) {
+        const base = userRepo.extractBaseNumber(userId);
+        user = await userRepo.findByBaseNumber(base);
+      }
+      if (!user) return res.status(404).json({ error: "user_not_found" });
+      resolvedUserId = user.id;
+    }
+
+    // find account for user
+    const prisma = spotifyService.prisma;
+    const account = await prisma.spotifyAccount.findFirst({
+      where: { userId: resolvedUserId },
+    });
+    if (!account)
+      return res.status(404).json({ error: "spotify_account_not_found" });
+
+    // call fetchAndPersistUser directly
+    const result = await spotifyService.fetchAndPersistUser({
+      accountId: account.id,
+      userId: resolvedUserId,
+      userSpotifyAPI: userSpotifyAdapter,
+    });
+
+    return res.json({ success: true, accountId: account.id, result });
+  } catch (err) {
+    console.error(
+      "spotify-check error",
+      err && err.message ? err.message : err
+    );
+    return res
+      .status(500)
+      .json({ error: "spotify_check_failed", details: err && err.message });
+  }
+});
