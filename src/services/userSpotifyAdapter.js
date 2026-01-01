@@ -21,30 +21,53 @@ module.exports = {
   },
 
   async getCurrentlyPlaying(userId) {
-    if (!userId) return { playing: false, message: "no userId" };
+    console.log(`[getCurrentlyPlaying] START userId=${userId}`);
+    if (!userId) {
+      console.log("[getCurrentlyPlaying] no userId provided");
+      return { playing: false, message: "no userId" };
+    }
     const account = await prisma.spotifyAccount.findFirst({
       where: { userId },
     });
+    console.log(
+      `[getCurrentlyPlaying] account found:`,
+      account ? `id=${account.id}` : "null"
+    );
     if (!account) return { playing: false, message: "no account" };
 
     try {
+      console.log(
+        `[getCurrentlyPlaying] calling spotifyFetch for account=${account.id}`
+      );
       const res = await spotifyFetch(
         account.id,
         "https://api.spotify.com/v1/me/player/currently-playing"
       );
-      if (res.status === 204)
+      console.log(`[getCurrentlyPlaying] response status=${res.status}`);
+      if (res.status === 204) {
+        console.log("[getCurrentlyPlaying] status 204 - no music playing");
         return { playing: false, message: "Nenhuma música tocando" };
+      }
       if (!res.ok) {
         const text = await res.text().catch(() => null);
         return { error: `Spotify API error ${res.status}`, details: text };
       }
       const data = await res.json();
-      if (!data || !data.item)
+      console.log(
+        `[getCurrentlyPlaying] data received:`,
+        data ? `is_playing=${data.is_playing} item=${!!data.item}` : "null"
+      );
+      if (!data || !data.item) {
+        console.log("[getCurrentlyPlaying] no data or no item in response");
         return { playing: false, message: "Nenhuma música tocando" };
+      }
 
       const item = data.item;
       const trackId = item.id;
       const trackUrl = item.external_urls?.spotify || null;
+      console.log(
+        `[getCurrentlyPlaying] SUCCESS track=${item.name} artist=${item.artists?.[0]?.name} is_playing=${data.is_playing}`
+      );
       return {
         playing: !!data.is_playing,
         userId,
