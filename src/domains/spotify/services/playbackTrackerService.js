@@ -84,7 +84,9 @@ module.exports = {
         playbackId: playback.id,
         sessionId: listeningSession.id,
         lastSave: now,
+        // accumulatedMs: time since last flush; totalMs: cumulative listened for this playback
         accumulatedMs: 0,
+        totalMs: 0,
         durationMs: trackData.duration_ms || 180000, // default 3min
       });
 
@@ -97,6 +99,7 @@ module.exports = {
     // Same track continuing - accumulate time
     const elapsed = Math.min(now - session.lastSave, 60000); // max 60s between checks
     session.accumulatedMs += elapsed;
+    session.totalMs = (session.totalMs || 0) + elapsed;
     session.lastSave = now;
 
     // Determine if should flush to DB
@@ -116,7 +119,11 @@ module.exports = {
   async flushSession(userId, session) {
     if (session.accumulatedMs === 0) return;
 
-    const percentPlayed = (session.accumulatedMs / session.durationMs) * 100;
+    // Use cumulative totalMs to compute percent played relative to track duration
+    const totalMs = session.totalMs || session.accumulatedMs;
+    const percentPlayed = session.durationMs
+      ? (totalMs / session.durationMs) * 100
+      : 0;
     const wasSkipped = percentPlayed < 30; // consider skipped if < 30%
 
     console.log(
@@ -126,9 +133,9 @@ module.exports = {
     );
 
     try {
-      // Update playback record
+      // Update playback record with cumulative listened time
       await playbackRepo.update(session.playbackId, {
-        listenedMs: session.accumulatedMs,
+        listenedMs: totalMs,
         percentPlayed,
         wasSkipped,
         endedAt: new Date(),
@@ -153,7 +160,7 @@ module.exports = {
         );
       }
 
-      // Reset accumulator
+      // Reset accumulator (keep totalMs for cumulative percent across multiple flushes)
       session.accumulatedMs = 0;
     } catch (error) {
       console.log("[PlaybackTracker] Error flushing session:", error);

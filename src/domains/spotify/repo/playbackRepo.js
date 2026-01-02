@@ -38,7 +38,11 @@ module.exports = {
     return prisma.trackPlayback.update({
       where: { id: playbackId },
       data: {
-        listenedMs: updates.listenedMs ? BigInt(updates.listenedMs) : undefined,
+        // allow zero values (0) to be written, so check against undefined
+        listenedMs:
+          updates.listenedMs !== undefined
+            ? BigInt(updates.listenedMs)
+            : undefined,
         percentPlayed: updates.percentPlayed,
         endedAt: updates.endedAt,
         wasSkipped: updates.wasSkipped,
