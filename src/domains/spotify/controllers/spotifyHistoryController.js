@@ -34,7 +34,7 @@ module.exports = {
 
       res.json(result);
     } catch (error) {
-      console.error("[HistoryController] getHistory error:", error);
+      console.log("[HistoryController] getHistory error:", error);
       res.status(500).json({ error: error.message });
     }
   },
@@ -89,7 +89,7 @@ module.exports = {
         stats,
       });
     } catch (error) {
-      console.error("[HistoryController] getSummary error:", error);
+      console.log("[HistoryController] getSummary error:", error);
       res.status(500).json({ error: error.message });
     }
   },
@@ -139,7 +139,7 @@ module.exports = {
         })),
       });
     } catch (error) {
-      console.error("[HistoryController] getStats error:", error);
+      console.log("[HistoryController] getStats error:", error);
       res.status(500).json({ error: error.message });
     }
   },
@@ -182,7 +182,7 @@ module.exports = {
         percentPlayed: current.percentPlayed,
       });
     } catch (error) {
-      console.error("[HistoryController] getCurrent error:", error);
+      console.log("[HistoryController] getCurrent error:", error);
       res.status(500).json({ error: error.message });
     }
   },

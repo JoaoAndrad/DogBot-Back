@@ -28,7 +28,7 @@ router.post("/state", async (req, res) => {
 
     res.json(state);
   } catch (err) {
-    console.error("[menuStateController] POST /state error:", err);
+    console.log("[menuStateController] POST /state error:", err);
     res.status(500).json({
       error: "Failed to save menu state",
       details: err.message,
@@ -51,7 +51,7 @@ router.get("/state/:userId/:flowId", async (req, res) => {
 
     res.json(state);
   } catch (err) {
-    console.error("[menuStateController] GET /state error:", err);
+    console.log("[menuStateController] GET /state error:", err);
     res.status(500).json({
       error: "Failed to get menu state",
       details: err.message,
@@ -70,7 +70,7 @@ router.delete("/state/:userId/:flowId", async (req, res) => {
 
     res.json({ success: true });
   } catch (err) {
-    console.error("[menuStateController] DELETE /state error:", err);
+    console.log("[menuStateController] DELETE /state error:", err);
     res.status(500).json({
       error: "Failed to delete menu state",
       details: err.message,
@@ -89,7 +89,7 @@ router.get("/state/:userId", async (req, res) => {
 
     res.json(states);
   } catch (err) {
-    console.error("[menuStateController] GET /state/:userId error:", err);
+    console.log("[menuStateController] GET /state/:userId error:", err);
     res.status(500).json({
       error: "Failed to list menu states",
       details: err.message,
@@ -109,7 +109,7 @@ router.post("/cleanup", async (req, res) => {
       deletedCount: result.count,
     });
   } catch (err) {
-    console.error("[menuStateController] POST /cleanup error:", err);
+    console.log("[menuStateController] POST /cleanup error:", err);
     res.status(500).json({
       error: "Failed to cleanup expired states",
       details: err.message,

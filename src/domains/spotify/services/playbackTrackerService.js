@@ -156,7 +156,7 @@ module.exports = {
       // Reset accumulator
       session.accumulatedMs = 0;
     } catch (error) {
-      console.error("[PlaybackTracker] Error flushing session:", error);
+      console.log("[PlaybackTracker] Error flushing session:", error);
     }
   },
 

@@ -398,7 +398,7 @@ async function fetchAndPersistUser({ accountId, userId, userSpotifyAPI }) {
       progressMs: result.progress_ms,
     });
   } catch (err) {
-    console.error(`[fetchAndPersistUser] playbackTracker error:`, err);
+    console.log(`[fetchAndPersistUser] playbackTracker error:`, err);
   }
 
   // Update current playback pointer
