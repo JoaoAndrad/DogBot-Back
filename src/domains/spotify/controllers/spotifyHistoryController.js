@@ -155,8 +155,65 @@ module.exports = {
       if (!userId) {
         return res.status(400).json({ error: "userId is required" });
       }
+      // Try to fetch currently-playing directly from Spotify (real-time)
+      const userSpotifyAdapter = require("../../../services/userSpotifyAdapter");
+      const userRepo = require("../../users/repo/userRepo");
 
-      // Get most recent playback
+      // Resolve external identifier to internal UUID if needed
+      let resolvedUserId = userId;
+      const isUUID =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+          userId
+        );
+      if (!isUUID) {
+        try {
+          const u = await userRepo.findByIdentifierExact(userId);
+          if (u && u.id) resolvedUserId = u.id;
+          else {
+            const base = userRepo.extractBaseNumber(userId);
+            const u2 = await userRepo.findByBaseNumber(base);
+            if (u2 && u2.id) resolvedUserId = u2.id;
+          }
+        } catch (e) {
+          // ignore resolution errors and continue with original userId
+        }
+      }
+
+      try {
+        const live = await userSpotifyAdapter.getCurrentlyPlaying(
+          resolvedUserId
+        );
+        if (live && live.playing && !live.error) {
+          const durationMs = live.duration_ms || live.durationMs || 0;
+          const progressMs = live.progress_ms || live.progressMs || 0;
+          const percentPlayed = durationMs
+            ? (progressMs / durationMs) * 100
+            : 0;
+
+          return res.json({
+            playing: true,
+            track: {
+              id: live.id,
+              name: live.name,
+              artists: live.artists,
+              album: live.album,
+              imageUrl: live.image,
+              durationMs: durationMs,
+            },
+            startedAt: new Date(Date.now() - progressMs),
+            listenedMs: progressMs,
+            percentPlayed,
+            source: "live",
+          });
+        }
+      } catch (err) {
+        console.warn(
+          "/api/spotify/current: live lookup failed",
+          err && err.message
+        );
+      }
+
+      // Fallback: Get most recent playback from DB
       const recent = await playbackRepo.getRecent(userId, 1);
 
       if (recent.length === 0) {
@@ -180,6 +237,7 @@ module.exports = {
         startedAt: current.startedAt,
         listenedMs: Number(current.listenedMs),
         percentPlayed: current.percentPlayed,
+        source: "db",
       });
     } catch (error) {
       console.log("[HistoryController] getCurrent error:", error);
