@@ -11,6 +11,7 @@ async function insertPoll(p) {
     poll_options: p.poll_options || p.pollOptions || null,
     options_obj: p.options_obj || p.optionsObj || null,
     type: p.type || "native",
+    metadata: p.metadata || null,
   };
   return prisma.poll.create({ data });
 }

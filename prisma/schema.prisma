@@ -18,6 +18,8 @@ model Poll {
   // additional options object / metadata
   options_obj Json?    @db.Json
   type        String?  @default("native")
+  // metadata for flow navigation (flowId, path, etc.)
+  metadata    Json?    @db.Json
   created_at  DateTime @default(now()) @db.Timestamptz(6)
 
   votes       Vote[]
@@ -463,6 +465,23 @@ model UserYearSummary {
   
   @@unique([userId, year])
   @@index([year])
+}
+
+// MenuState - stores navigation state for interactive menu flows
+model MenuState {
+  id        String   @id @default(uuid())
+  userId    String   // WhatsApp user identifier (e.g., 5581...@c.us)
+  flowId    String   // Flow identifier (e.g., 'spotify', 'dogfort')
+  path      String   // Current path in flow tree (e.g., '/historico/mensal')
+  history   Json?    @db.Json // Array of previous paths for back navigation
+  context   Json?    @db.Json // Additional flow-specific data
+  expiresAt DateTime? @db.Timestamptz(6) // TTL for cleanup
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+  @@unique([userId, flowId])
+  @@index([expiresAt])
+  @@map("MenuState")
 }
 
 

@@ -65,6 +65,26 @@ try {
   router.use("/users", fallback);
 }
 
+// menu state for interactive flows
+try {
+  const menuStateController = require("../domains/menu/controllers/menuStateController");
+  router.use("/menu", authHeader, menuStateController);
+  console.info("[routes/api] mounted /api/menu");
+} catch (e) {
+  console.log(
+    "[routes/api] failed to mount /api/menu controller:",
+    e && e.message ? e.message : e
+  );
+  const fallback = express.Router();
+  fallback.get("/", (req, res) =>
+    res.status(500).json({
+      error: "menu_controller_failed_to_load",
+      details: String(e && e.message ? e.message : e),
+    })
+  );
+  router.use("/menu", fallback);
+}
+
 // spotify history & stats
 try {
   const spotifyHistory = require("./spotifyHistory");
