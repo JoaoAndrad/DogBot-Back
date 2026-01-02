@@ -94,6 +94,15 @@ router.get("/by-identifier/:identifier", async (req, res) => {
       });
     }
 
+    // Sanitize BigInt fields (e.g., ts) to strings for JSON serialization
+    const pushNameHistory = (user.pushNameHistory || []).map((h) => ({
+      id: h.id,
+      push_name: h.push_name,
+      observed_from: h.observed_from,
+      observed_lid: h.observed_lid,
+      ts: h.ts ? String(h.ts) : h.ts,
+    }));
+
     return res.json({
       success: true,
       user: {
@@ -102,9 +111,9 @@ router.get("/by-identifier/:identifier", async (req, res) => {
         identifiers: user.identifiers,
         push_name: user.push_name,
         display_name: user.display_name,
-        created_at: user.created_at,
-        last_seen: user.last_seen,
-        push_name_history: user.pushNameHistory || [],
+        created_at: user.created_at ? String(user.created_at) : user.created_at,
+        last_seen: user.last_seen ? String(user.last_seen) : user.last_seen,
+        push_name_history: pushNameHistory,
       },
     });
   } catch (err) {
