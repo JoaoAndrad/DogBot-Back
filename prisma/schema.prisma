@@ -81,6 +81,7 @@ model User {
   trackPlaybacks     TrackPlayback[]
   trackVotes         TrackVote[]
   trackNotes         TrackNote[]
+  latestNotes        TrackNoteLatest[]
   playlistEntriesAdded PlaylistEntry[]
   liveRequests       LiveRequest[]
   listeningSummary   UserListeningSummary?
@@ -124,10 +125,6 @@ model DogFortStats {
 model SpotifyAccount {
   id         String   @id @default(uuid())
   userId     String?  // optional FK to User.id for per-user tokens
-  accountType String  @default("bot") // 'bot' | 'user'
-  clientId   String?
-  scope      String?
-  meta       Json?    @db.Json
   createdAt  DateTime @default(now()) @db.Timestamptz(6)
   updatedAt  DateTime @updatedAt @db.Timestamptz(6)
 
@@ -137,9 +134,8 @@ model SpotifyAccount {
   user       User?     @relation(fields: [userId], references: [id])
   currentPlayback CurrentPlayback?
 
-  // playlists and sessions managed by this account
+  // playlists managed by this account
   playlists  Playlist[]
-  sessions   SpotifySession[]
 
   @@index([userId])
 }
@@ -180,6 +176,7 @@ model Track {
   stats      TrackStat?
   votes      TrackVote[]
   notes      TrackNote[]
+  latestNotes TrackNoteLatest[]
   playlistEntries PlaylistEntry[]
   liveRequests LiveRequest[]
 
@@ -367,29 +364,12 @@ model LiveRequest {
   track    Track?   @relation(fields: [trackId], references: [id], onDelete: SetNull)
   user     User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
   playlist Playlist? @relation(fields: [playlistId], references: [id], onDelete: SetNull)
-  session  SpotifySession? @relation(fields: [handledBySessionId], references: [id], onDelete: SetNull)
 
   @@index([createdAt])
   @@index([status])
 }
 
-model SpotifySession {
-  id         String   @id @default(uuid())
-  accountId  String
-  deviceId   String?
-  startedAt  DateTime @default(now()) @db.Timestamptz(6)
-  lastSeen   DateTime? @db.Timestamptz(6)
-  isActive   Boolean  @default(true)
-  metadata   Json?    @db.Json
 
-  account    SpotifyAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
-
-  // requests handled by this session
-  handledRequests LiveRequest[]
-
-  @@index([accountId, isActive])
-  @@index([lastSeen])
-}
 
 model PlaylistSyncLog {
   id          String   @id @default(uuid())

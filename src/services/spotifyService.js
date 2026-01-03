@@ -6,16 +6,11 @@ const prisma = new PrismaClient();
 
 const SPOTIFY_TOKEN_URL = "https://accounts.spotify.com/api/token";
 
-async function upsertAccountForUser({
-  userId,
-  accountType = "bot",
-  clientId = null,
-  scope = null,
-}) {
-  // If no userId provided, create a bot/global account
+async function upsertAccountForUser({ userId }) {
+  // If no userId provided, create a global account
   if (!userId) {
     const account = await prisma.spotifyAccount.create({
-      data: { accountType, clientId, scope },
+      data: {},
     });
     return account;
   }
@@ -44,19 +39,13 @@ async function upsertAccountForUser({
     });
     if (existing) return existing;
     return prisma.spotifyAccount.create({
-      data: { userId: resolvedUser.id, accountType, clientId, scope },
+      data: { userId: resolvedUser.id },
     });
   }
 
-  // Could not resolve a local User; create an account WITHOUT foreign key to avoid FK constraint
-  // Store the original identifier in `meta.externalId` for later reconciliation
+  // Could not resolve a local User; create an account WITHOUT foreign key
   const account = await prisma.spotifyAccount.create({
-    data: {
-      accountType,
-      clientId,
-      scope,
-      meta: { externalId: userId },
-    },
+    data: {},
   });
   return account;
 }
@@ -64,11 +53,9 @@ async function upsertAccountForUser({
 async function upsertAccountTokens({
   accountId,
   userId,
-  accountType = "bot",
   accessToken,
   refreshToken,
   expiresIn,
-  scope,
 }) {
   // ensure account exists
   let account = null;
@@ -80,28 +67,54 @@ async function upsertAccountTokens({
     account = await prisma.spotifyAccount.findFirst({ where: { userId } });
   }
   if (!account) {
-    account = await upsertAccountForUser({
-      userId,
-      accountType,
-      clientId: process.env.SPOTIFY_CLIENT_ID,
-      scope,
-    });
+    account = await upsertAccountForUser({ userId });
   }
 
   const expiresAt = expiresIn
     ? new Date(Date.now() + Number(expiresIn) * 1000)
     : null;
 
-  // create a new token row for auditability (we keep all tokens)
-  const token = await prisma.spotifyToken.create({
-    data: {
-      accountId: account.id,
-      accessToken: accessToken || "",
-      refreshToken: refreshToken || "",
-      scope: scope || null,
-      expiresAt,
-    },
+  // Update the most recent token row when possible to avoid accumulating
+  // many token rows. If none exists, create. After creating/updating, prune
+  // other tokens older than the kept one.
+  const latest = await prisma.spotifyToken.findFirst({
+    where: { accountId: account.id },
+    orderBy: { createdAt: "desc" },
   });
+
+  let token = null;
+  if (latest) {
+    token = await prisma.spotifyToken.update({
+      where: { id: latest.id },
+      data: {
+        accessToken: accessToken || latest.accessToken || "",
+        refreshToken: refreshToken || latest.refreshToken || "",
+        expiresAt,
+      },
+    });
+  } else {
+    token = await prisma.spotifyToken.create({
+      data: {
+        accountId: account.id,
+        accessToken: accessToken || "",
+        refreshToken: refreshToken || "",
+        expiresAt,
+      },
+    });
+  }
+
+  // Prune older tokens for this account, keep only the token we just updated/created
+  try {
+    await prisma.spotifyToken.deleteMany({
+      where: { accountId: account.id, id: { not: token.id } },
+    });
+  } catch (e) {
+    // ignore prune errors (best-effort)
+    console.warn(
+      "spotifyService: prune tokens failed",
+      e && e.message ? e.message : e
+    );
+  }
 
   return { account, token };
 }
@@ -273,41 +286,6 @@ async function createTrackPlayback({
 }
 
 /**
- * Update or create a SpotifySession for an account and device
- */
-async function upsertSession({
-  accountId,
-  deviceId = null,
-  lastSeen = new Date(),
-  isActive = true,
-  metadata = {},
-}) {
-  if (!accountId) throw new Error("accountId required");
-
-  // Try to find session by accountId + deviceId
-  const where = deviceId
-    ? { accountId_deviceId: { accountId, deviceId } }
-    : null;
-
-  if (where) {
-    // ensure compound unique index exists? use findFirst then upsert
-    const existing = await prisma.spotifySession.findFirst({
-      where: { accountId, deviceId },
-    });
-    if (existing) {
-      return prisma.spotifySession.update({
-        where: { id: existing.id },
-        data: { lastSeen, isActive, metadata },
-      });
-    }
-  }
-
-  return prisma.spotifySession.create({
-    data: { accountId, deviceId, lastSeen, isActive, metadata },
-  });
-}
-
-/**
  * Fetch currently playing for a single user/account using a provided userSpotifyAPI
  * and persist results to DB using the playbackTracker service.
  * userSpotifyAPI must implement: getCurrentlyPlaying(userId) and getConnectedUsers()/getConnectionStatus
@@ -333,18 +311,7 @@ async function fetchAndPersistUser({ accountId, userId, userSpotifyAPI }) {
     resolvedAccountId = account?.id;
   }
 
-  // if error or not playing, update session lastSeen and return
-  const now = new Date();
-
-  if (resolvedAccountId) {
-    await upsertSession({
-      accountId: resolvedAccountId,
-      deviceId: null,
-      lastSeen: now,
-      isActive: !!result.playing,
-    });
-  }
-
+  // if error or not playing, return
   if (!result || result.error || result.playing === false) {
     // Diagnostic log to help identify why no playback was detected
     try {
