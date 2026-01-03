@@ -20,7 +20,7 @@ function extractBaseNumber(identifier) {
 async function findByIdentifierExact(identifier) {
   const prisma = getPrisma();
   if (!prisma || !prisma.user) {
-    logger.warn("Prisma client missing 'user' model - attempting recreate");
+    console.log("Prisma client missing 'user' model - attempting recreate");
     await recreatePrismaClient();
     return findByIdentifierExact(identifier);
   }
@@ -48,7 +48,7 @@ async function findByIdentifierExact(identifier) {
 async function findByBaseNumber(baseNumber) {
   const prisma = getPrisma();
   if (!prisma || !prisma.user) {
-    logger.warn("Prisma client missing 'user' model - attempting recreate");
+    console.log("Prisma client missing 'user' model - attempting recreate");
     await recreatePrismaClient();
     return findByBaseNumber(baseNumber);
   }
@@ -83,7 +83,7 @@ async function findByBaseNumber(baseNumber) {
 async function findByPushNameUnique(pushName) {
   const prisma = getPrisma();
   if (!prisma || !prisma.user) {
-    logger.warn("Prisma client missing 'user' model - attempting recreate");
+    console.log("Prisma client missing 'user' model - attempting recreate");
     await recreatePrismaClient();
     return findByPushNameUnique(pushName);
   }
@@ -105,7 +105,7 @@ async function findByPushNameUnique(pushName) {
   if (users.length === 1) {
     return users[0];
   } else if (users.length > 1) {
-    logger.warn(
+    console.log(
       `[USER_COLLISION] Multiple users (${
         users.length
       }) found with push_name="${pushName}". Cannot auto-link. User IDs: ${users
@@ -127,7 +127,7 @@ async function findByPushNameUnique(pushName) {
 async function addIdentifierToUser(userId, identifier) {
   const prisma = getPrisma();
   if (!prisma || !prisma.user) {
-    logger.warn("Prisma client missing 'user' model - attempting recreate");
+    console.log("Prisma client missing 'user' model - attempting recreate");
     await recreatePrismaClient();
     return addIdentifierToUser(userId, identifier);
   }
@@ -172,7 +172,7 @@ async function updatePushNameWithHistory(
 ) {
   const prisma = getPrisma();
   if (!prisma || !prisma.user) {
-    logger.warn("Prisma client missing 'user' model - attempting recreate");
+    console.log("Prisma client missing 'user' model - attempting recreate");
     await recreatePrismaClient();
     return updatePushNameWithHistory(
       userId,
@@ -268,7 +268,7 @@ async function findOrCreateUser({
 }) {
   const prisma = getPrisma();
   if (!prisma || !prisma.user) {
-    logger.warn("Prisma client missing 'user' model - attempting recreate");
+    console.log("Prisma client missing 'user' model - attempting recreate");
     await recreatePrismaClient();
     return findOrCreateUser({
       identifier,
@@ -282,7 +282,7 @@ async function findOrCreateUser({
   // Step 1: Try exact identifier match
   let user = await findByIdentifierExact(identifier);
   if (user) {
-    logger.info(
+    console.log(
       `[findOrCreateUser] Found by identifier exact: ${identifier} → user ${user.id}`
     );
 
@@ -313,7 +313,7 @@ async function findOrCreateUser({
   if (baseNumber && baseNumber !== identifier) {
     user = await findByBaseNumber(baseNumber);
     if (user) {
-      logger.info(
+      console.log(
         `[findOrCreateUser] Found by base number: ${baseNumber} → user ${user.id}`
       );
 
@@ -343,7 +343,7 @@ async function findOrCreateUser({
   if (push_name) {
     user = await findByPushNameUnique(push_name);
     if (user) {
-      logger.info(
+      console.log(
         `[findOrCreateUser] Found by unique push_name: "${push_name}" → user ${user.id}`
       );
 
@@ -364,7 +364,7 @@ async function findOrCreateUser({
   }
 
   // Step 4: Create new user
-  logger.info(
+  console.log(
     `[findOrCreateUser] Creating new user for identifier: ${identifier}`
   );
 

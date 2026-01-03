@@ -239,6 +239,10 @@ model TrackStat {
   avgSessionMs Int?
   lastPlayedAt DateTime? @db.Timestamptz(6)
 
+  // Rating aggregates
+  avgRating   Decimal? @db.Decimal(4,2)
+  ratingCount Int      @default(0)
+
   track        Track    @relation(fields: [trackId], references: [id], onDelete: Cascade)
 
   @@index([lastPlayedAt])
@@ -273,13 +277,31 @@ model TrackNote {
   trackId   String
   userId    String
   note      String?  @db.Text
+  // legacy integer rating kept for migration; new decimal rating stored in rating_decimal
   rating    Int?
+  rating_decimal Decimal? @db.Decimal(4,2)
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
   track     Track    @relation(fields: [trackId], references: [id], onDelete: Cascade)
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([trackId])
+  @@index([userId])
+}
+
+model TrackNoteLatest {
+  trackId   String
+  userId    String
+  rating    Decimal? @db.Decimal(4,2)
+  note      String?  @db.Text
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+  track     Track    @relation(fields: [trackId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([trackId, userId])
   @@index([trackId])
   @@index([userId])
 }

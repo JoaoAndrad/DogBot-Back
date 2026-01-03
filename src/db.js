@@ -58,13 +58,13 @@ try {
         e.params && typeof e.params === "string"
           ? e.params
           : JSON.stringify(e.params || {});
-      console.debug("[prisma] query", {
+      console.log("[prisma] query", {
         query: e.query,
         params: params,
         duration: e.duration,
       });
     } catch (e) {
-      console.debug("[prisma] query", e.query, "params omitted");
+      console.log("[prisma] query", e.query, "params omitted");
     }
   });
 } catch (e) {

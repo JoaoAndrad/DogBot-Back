@@ -51,7 +51,7 @@ router.post("/upsert", async (req, res) => {
       },
     });
   } catch (err) {
-    logger.error("[POST /api/users/upsert] Error:", err);
+    console.log("[POST /api/users/upsert] Error:", err);
     return res.status(500).json({
       error: "upsert_failed",
       message: err.message,
@@ -117,7 +117,7 @@ router.get("/by-identifier/:identifier", async (req, res) => {
       },
     });
   } catch (err) {
-    logger.error("[GET /api/users/by-identifier/:identifier] Error:", err);
+    console.log("[GET /api/users/by-identifier/:identifier] Error:", err);
     return res.status(500).json({
       error: "lookup_failed",
       message: err.message,
@@ -147,7 +147,7 @@ router.get("/:id", async (req, res) => {
       user,
     });
   } catch (err) {
-    logger.error("[GET /api/users/:id] Error:", err);
+    console.log("[GET /api/users/:id] Error:", err);
     return res.status(500).json({
       error: "fetch_failed",
       message: err.message,
@@ -176,7 +176,7 @@ router.get("/", async (req, res) => {
       ...result,
     });
   } catch (err) {
-    logger.error("[GET /api/users] Error:", err);
+    console.log("[GET /api/users] Error:", err);
     return res.status(500).json({
       error: "list_failed",
       message: err.message,

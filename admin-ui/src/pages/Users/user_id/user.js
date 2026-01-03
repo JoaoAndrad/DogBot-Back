@@ -81,7 +81,7 @@ async function init() {
     if (dogfortEl) {
       // debug helper to inspect what's returned from the API when empty
       try {
-        console.debug("[admin] dogfort object:", df);
+        console.log("[admin] dogfort object:", df);
       } catch (e) {}
       const parts = [];
       if (df.saldo != null) parts.push(`Saldo: ${df.saldo}`);

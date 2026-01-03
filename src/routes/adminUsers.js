@@ -50,7 +50,7 @@ router.get("/:id", async (req, res) => {
 router.patch("/:id", express.json(), async (req, res) => {
   try {
     const id = req.params.id;
-    console.debug("[admin] PATCH /admin/api/users/:id body:", req.body);
+    console.log("[admin] PATCH /admin/api/users/:id body:", req.body);
     // allow updating basic user fields plus sender_number and nested dogfort
     const allowed = [
       "display_name",

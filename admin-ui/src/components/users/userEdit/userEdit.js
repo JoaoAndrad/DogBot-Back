@@ -94,7 +94,7 @@ export default async function initUserEdit() {
 
   try {
     const u = await fetchUser(id);
-    console.debug("[admin] userEdit fetched user:", u);
+    console.log("[admin] userEdit fetched user:", u);
 
     // Estrutura de dados baseada no JSON fornecido
     // Prioridade: metadata.raw > raiz > dogfort
@@ -263,11 +263,11 @@ export default async function initUserEdit() {
         },
       };
 
-      console.debug("[admin] userEdit outgoing payload:", payload);
+      console.log("[admin] userEdit outgoing payload:", payload);
 
       try {
         const res = await patchUser(id, payload);
-        console.debug("[admin] userEdit patch result:", res);
+        console.log("[admin] userEdit patch result:", res);
         // simple feedback and close overlay then reload
         alert("User updated");
         const overlay = document.getElementById("userEditOverlay");

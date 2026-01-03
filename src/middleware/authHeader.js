@@ -20,18 +20,18 @@ module.exports = function authHeader(req, res, next) {
 
   if (secrets.length === 0) {
     // No secret configured: deny to be safe
-    logger.error("[authHeader] No secrets configured in environment");
+    console.log("[authHeader] No secrets configured in environment");
     return res.status(403).json({ error: "server_misconfigured_no_secrets" });
   }
 
   if (!headerSecret) {
-    logger.warn("[authHeader] Missing secret header in request");
+    console.log("[authHeader] Missing secret header in request");
     return res.status(401).json({ error: "missing_secret_header" });
   }
 
   const valid = secrets.some((s) => s && s === headerSecret);
   if (!valid) {
-    logger.warn(
+    console.log(
       `[authHeader] Invalid secret. Received: ${headerSecret.slice(
         0,
         10
