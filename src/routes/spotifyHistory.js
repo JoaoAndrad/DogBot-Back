@@ -20,6 +20,10 @@ router.get("/stats", historyController.getStats);
 // GET /api/spotify/current - Get currently playing track
 router.get("/current", historyController.getCurrent);
 
+// Track notes: simplified endpoint (auto-resolves trackId)
+// POST /api/spotify/notes
+router.post("/notes", trackNoteController.createNoteSimple);
+
 // Track notes: history + latest + create
 // POST /api/spotify/tracks/:trackId/notes
 router.post("/tracks/:trackId/notes", trackNoteController.createNote);
