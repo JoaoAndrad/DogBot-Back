@@ -64,15 +64,22 @@ router.post("/:chatId/active-listeners", async (req, res) => {
       });
     });
 
-    // Filter users who have current playback (playing or paused recently)
+    // Filter users who are currently playing music (isPlaying: true)
     const activeListeners = users
       .filter((user) => {
-        const hasActivePlayback = user.spotifyAccounts.some(
-          (account) =>
-            account.currentPlayback &&
+        const hasActivePlayback = user.spotifyAccounts.some((account) => {
+          if (!account.currentPlayback) return false;
+
+          const meta = account.currentPlayback.metadata || {};
+          const isPlaying =
+            meta.is_playing ?? meta.playing ?? meta.isPlaying ?? false;
+
+          return (
+            isPlaying &&
             (!trackId || account.currentPlayback.trackId === trackId) &&
-            (!contextId || account.currentPlayback.contextId === contextId)
-        );
+            (!contextId || (meta.context?.uri || meta.context_id) === contextId)
+          );
+        });
         return hasActivePlayback;
       })
       .map((user) => {
