@@ -519,7 +519,7 @@
             <span class="section-counter">2/3 width</span>
           </div>
 
-          <div class="playlists-grid">
+          <div id="playlistsGrid" class="playlists-grid">
             <div class="playlist-card-item">
               <div class="playlist-cover-container">
                 <img
@@ -633,7 +633,7 @@
             <div class="section-header">
               <h2 class="section-title">Top Trending Tracks</h2>
             </div>
-            <ul class="trending-list">
+            <ul id="trendingList" class="trending-list">
               <li class="trending-item">
                 <span class="trending-rank">1.</span>
                 <div class="trending-cover">
@@ -677,6 +677,19 @@
           </div>
         </div>
       </section>
+
+      <div
+        id="toastContainer"
+        style="
+          position: fixed;
+          top: 16px;
+          right: 16px;
+          z-index: 9999;
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        "
+      ></div>
     </main>
 
     <script
@@ -688,5 +701,198 @@
       src="/admin/static/src/components/sidebar/sidebar.js"
     ></script>
     <script src="/admin/static/app.js"></script>
+    <script>
+      (function () {
+        let internalSecret = null;
+
+        function showToast(message, type = "info", ttl = 6000) {
+          const container = document.getElementById("toastContainer");
+          if (!container) return;
+          const t = document.createElement("div");
+          t.style.padding = "10px 14px";
+          t.style.borderRadius = "8px";
+          t.style.background =
+            type === "error"
+              ? "#ff5252"
+              : type === "success"
+              ? "#2ecc71"
+              : "#333";
+          t.style.color = "white";
+          t.style.boxShadow = "0 6px 18px rgba(0,0,0,0.12)";
+          t.style.fontSize = "0.95rem";
+          t.textContent = message;
+          container.appendChild(t);
+          setTimeout(() => {
+            t.style.opacity = "0";
+            setTimeout(() => t.remove(), 400);
+          }, ttl);
+        }
+
+        async function fetchJson(path, opts = {}) {
+          const headers = opts.headers || {};
+          if (internalSecret) headers["X-Internal-Secret"] = internalSecret;
+          const res = await fetch(
+            path,
+            Object.assign({}, opts, { headers, credentials: "include" })
+          );
+          if (!res.ok) {
+            const text = await res.text().catch(() => res.statusText);
+            throw new Error("Fetch error " + res.status + ": " + text);
+          }
+          return res.json().catch(() => null);
+        }
+
+        async function loadPlaylists() {
+          try {
+            const playlists = await fetchJson("/api/spotify/playlists/managed");
+            renderPlaylists(playlists || []);
+          } catch (e) {
+            console.error("Failed to load playlists", e);
+            showToast("Failed to load playlists", "error");
+          }
+        }
+
+        async function loadTop() {
+          try {
+            const top = await fetchJson("/api/spotify/top");
+            renderTrending(top || []);
+          } catch (e) {
+            console.error("Failed to load top tracks", e);
+            showToast("Failed to load top tracks", "error");
+          }
+        }
+
+        function renderPlaylists(list) {
+          const container = document.getElementById("playlistsGrid");
+          if (!container) return;
+          container.innerHTML = "";
+          list.forEach((p) => {
+            const el = document.createElement("div");
+            el.className = "playlist-card-item";
+            el.innerHTML = `
+              <div class="playlist-cover-container">
+                <img src="${
+                  p.coverUrl ||
+                  "https://placehold.co/300x300/ccc/FFF?text=No+Cover"
+                }" alt="Cover" class="cover-img" />
+                <div class="playlist-overlay"><span class="material-icons-outlined">music_note</span></div>
+              </div>
+              <div class="playlist-details">
+                <h3 class="playlist-title">${p.name}</h3>
+                <p class="playlist-tracks">${p.trackCount || 0} tracks</p>
+                <div class="playlist-actions">
+                  <button class="btn-spotify-sync" data-id="${
+                    p.id
+                  }"><span class="material-icons-outlined">sync</span> Sync</button>
+                  <button class="btn-icon-settings" data-id="${
+                    p.id
+                  }"><span class="material-icons-outlined">settings</span></button>
+                </div>
+              </div>
+            `;
+            container.appendChild(el);
+          });
+        }
+
+        function renderTrending(list) {
+          const container = document.getElementById("trendingList");
+          if (!container) return;
+          container.innerHTML = "";
+          list.slice(0, 10).forEach((t, i) => {
+            const li = document.createElement("li");
+            li.className = "trending-item";
+            li.innerHTML = `
+              <span class="trending-rank">${i + 1}.</span>
+              <div class="trending-cover"><img src="${
+                t.image || "https://placehold.co/50x50/888/FFF?text=?"
+              }" alt="cover"/></div>
+              <div class="trending-info"><h4 class="trending-title">${
+                t.name
+              }</h4><p class="trending-requests">${
+              t.playCount || 0
+            } plays</p></div>
+            `;
+            container.appendChild(li);
+          });
+        }
+
+        // Delegate click handlers for sync/settings
+        document.addEventListener("click", async (ev) => {
+          const btn = ev.target.closest && ev.target.closest("button");
+          if (!btn) return;
+          if (btn.classList.contains("btn-spotify-sync")) {
+            const id = btn.dataset.id;
+            try {
+              await fetchJson(`/api/admin/spotify/playlists/${id}/sync`, {
+                method: "POST",
+              });
+              showToast("Sync started", "success");
+              loadPlaylists();
+            } catch (e) {
+              console.error("Sync failed", e);
+              showToast("Sync failed", "error");
+            }
+          }
+          if (btn.classList.contains("btn-icon-settings")) {
+            const id = btn.dataset.id;
+            try {
+              const settings = await fetchJson(
+                `/api/admin/spotify/playlists/${id}/settings`
+              );
+              showToast("Settings loaded (console)", "info");
+              console.log("playlist settings", settings);
+            } catch (e) {
+              console.error("Settings fetch failed", e);
+              showToast("Settings fetch failed", "error");
+            }
+          }
+        });
+
+        function connectSSE(secret) {
+          try {
+            const url = `/api/admin/spotify/events?internal_secret=${encodeURIComponent(
+              secret
+            )}`;
+            const es = new EventSource(url);
+            es.addEventListener("vote_cancelled", (ev) => {
+              const data = JSON.parse(ev.data || "{}");
+              showToast(`Vote cancelled: ${data.id}`, "info");
+              loadTop();
+              loadPlaylists();
+            });
+            es.addEventListener("vote_forced", (ev) => {
+              const data = JSON.parse(ev.data || "{}");
+              showToast(`Vote forced: ${data.id}`, "success");
+              loadTop();
+              loadPlaylists();
+            });
+            es.onopen = () => showToast("Live feed connected", "success", 3000);
+            es.onerror = (e) => {
+              console.error("SSE error", e);
+              showToast("Live feed error", "error", 4000);
+            };
+          } catch (e) {
+            console.error("SSE connection failed", e);
+            showToast("SSE connection failed", "error");
+          }
+        }
+
+        async function init() {
+          await loadPlaylists();
+          await loadTop();
+
+          const secret = prompt(
+            "Enter admin internal secret for live feed (or cancel to skip)"
+          );
+          if (secret) {
+            internalSecret = secret;
+            // connect SSE using query param (EventSource cannot set headers)
+            connectSSE(secret);
+          }
+        }
+
+        document.addEventListener("DOMContentLoaded", init);
+      })();
+    </script>
   </body>
 </html>

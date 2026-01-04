@@ -105,6 +105,26 @@ try {
   router.use("/spotify", fallback);
 }
 
+// admin spotify (admin UI)
+try {
+  const adminSpotify = require("./adminSpotify");
+  router.use("/admin/spotify", adminSpotify);
+  console.info("[routes/api] mounted /api/admin/spotify");
+} catch (e) {
+  console.log(
+    "[routes/api] failed to mount /api/admin/spotify routes:",
+    e && e.message ? e.message : e
+  );
+  const fallback = express.Router();
+  fallback.get("/", (req, res) =>
+    res.status(500).json({
+      error: "admin_spotify_routes_failed_to_load",
+      details: String(e && e.message ? e.message : e),
+    })
+  );
+  router.use("/admin/spotify", fallback);
+}
+
 // collaborative group listening
 try {
   const groupController = require("../domains/spotify/controllers/groupController");
