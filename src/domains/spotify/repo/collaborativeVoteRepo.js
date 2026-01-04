@@ -9,6 +9,11 @@ module.exports = {
    * Create a new collaborative vote
    */
   async create(data) {
+    // Convert trackArtists array to string if needed
+    const trackArtists = Array.isArray(data.trackArtists)
+      ? data.trackArtists.join(", ")
+      : data.trackArtists;
+
     return await prisma.collaborativeVote.create({
       data: {
         groupChatId: data.groupChatId,
@@ -16,7 +21,7 @@ module.exports = {
         voteType: data.voteType,
         trackId: data.trackId,
         trackName: data.trackName,
-        trackArtists: data.trackArtists,
+        trackArtists,
         initiatorUserId: data.initiatorUserId,
         targetUserIds: data.targetUserIds || [],
         votesFor: data.votesFor || [data.initiatorUserId], // Initiator auto-votes yes
