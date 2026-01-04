@@ -328,6 +328,23 @@ async function fetchAndPersistUser({ accountId, userId, userSpotifyAPI }) {
       );
     }
 
+    // Delete currentPlayback if it exists (user stopped playing)
+    if (resolvedAccountId) {
+      try {
+        await prisma.currentPlayback.deleteMany({
+          where: { accountId: resolvedAccountId },
+        });
+        console.log(
+          `[fetchAndPersistUser] Deleted stale currentPlayback for account=${resolvedAccountId}`
+        );
+      } catch (err) {
+        console.warn(
+          `[fetchAndPersistUser] Failed to delete currentPlayback:`,
+          err.message
+        );
+      }
+    }
+
     return { status: "no_music", detail: result };
   }
 

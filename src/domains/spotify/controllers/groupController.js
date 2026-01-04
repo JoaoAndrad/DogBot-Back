@@ -43,106 +43,64 @@ router.post("/:chatId/active-listeners", async (req, res) => {
         ],
       },
       include: {
-        spotifyAccounts: {
-          include: {
-            currentPlayback: true,
-          },
-        },
+        spotifyAccounts: true,
       },
     });
 
     console.log(`[GroupsController] Found users: ${users.length}`);
-    users.forEach((user) => {
-      const account = user.spotifyAccounts[0];
-      const meta = account?.currentPlayback?.metadata || {};
-      console.log(`  - User ${user.display_name || user.push_name}:`, {
-        spotifyAccounts: user.spotifyAccounts.length,
-        hasPlayback: user.spotifyAccounts.some(
-          (a) => a.currentPlayback !== null
-        ),
-        metadataIsPlaying:
-          meta.is_playing ?? meta.playing ?? meta.isPlaying ?? false,
-        trackId: account?.currentPlayback?.trackId,
-      });
-    });
 
-    // Filter users who are currently playing music (isPlaying: true)
-    const activeListeners = users
-      .filter((user) => {
-        const hasActivePlayback = user.spotifyAccounts.some((account) => {
-          if (!account.currentPlayback) return false;
+    // Get real-time playback for each user
+    const userSpotifyAdapter = require("../../../services/userSpotifyAdapter");
+    const activeListeners = [];
 
-          const meta = account.currentPlayback.metadata || {};
-          const isPlaying =
-            meta.is_playing ?? meta.playing ?? meta.isPlaying ?? false;
+    for (const user of users) {
+      if (user.spotifyAccounts.length === 0) continue;
 
-          console.log(
-            `[GroupsController] Checking ${user.display_name}: isPlaying=${isPlaying}, trackId=${account.currentPlayback.trackId}`
-          );
+      // Get current playback in real-time
+      const playback = await userSpotifyAdapter.getCurrentlyPlaying(user.id);
 
-          return (
-            isPlaying &&
-            (!trackId || account.currentPlayback.trackId === trackId) &&
-            (!contextId || (meta.context?.uri || meta.context_id) === contextId)
-          );
-        });
-        return hasActivePlayback;
-      })
-      .map((user) => {
-        const activeAccount = user.spotifyAccounts.find(
-          (account) => account.currentPlayback
+      if (!playback || !playback.playing || playback.error) {
+        console.log(`[GroupsController] ${user.display_name}: not playing`);
+        continue;
+      }
+
+      // Check filters
+      if (trackId && playback.id !== trackId) {
+        console.log(`[GroupsController] ${user.display_name}: different track`);
+        continue;
+      }
+
+      if (contextId && playback.context?.uri !== contextId) {
+        console.log(
+          `[GroupsController] ${user.display_name}: different context`
         );
+        continue;
+      }
 
-        // Find matching identifier from memberIds
-        const matchingId = memberIds.find(
-          (mid) => user.sender_number === mid || user.identifiers?.includes(mid)
-        );
+      // Find matching identifier
+      const matchingId = memberIds.find(
+        (mid) => user.sender_number === mid || user.identifiers?.includes(mid)
+      );
 
-        // Log what we have in currentPlayback
-        if (activeAccount?.currentPlayback) {
-          console.log(
-            `[GroupsController] currentPlayback for ${user.display_name}:`,
-            {
-              trackId: activeAccount.currentPlayback.trackId,
-              hasMetadata: !!activeAccount.currentPlayback.metadata,
-              metadata: activeAccount.currentPlayback.metadata,
-            }
-          );
-        }
+      console.log(
+        `[GroupsController] ${user.display_name}: ACTIVE - ${playback.name}`
+      );
 
-        // Extract track info from metadata
-        const playback = activeAccount?.currentPlayback;
-        const meta = playback?.metadata || {};
-
-        const result = {
-          userId: user.id,
-          identifier: matchingId || user.sender_number,
-          displayName: user.display_name || user.push_name,
-          currentTrack: playback
-            ? {
-                trackId: playback.trackId,
-                trackName: meta.name || meta.track_name || meta.trackName,
-                artists: meta.artists || meta.artist_name,
-                albumName: meta.album || meta.album_name || meta.albumName,
-                contextId:
-                  meta.context?.uri || meta.context_id || meta.contextId,
-                contextType:
-                  meta.context?.type || meta.context_type || meta.contextType,
-                isPlaying:
-                  meta.is_playing ?? meta.playing ?? meta.isPlaying ?? true,
-              }
-            : null,
-        };
-
-        console.log(`[GroupsController] Mapped listener:`, {
-          userId: result.userId,
-          identifier: result.identifier,
-          displayName: result.displayName,
-          hasTrack: !!result.currentTrack,
-        });
-
-        return result;
+      activeListeners.push({
+        userId: user.id,
+        identifier: matchingId || user.sender_number,
+        displayName: user.display_name || user.push_name,
+        currentTrack: {
+          trackId: playback.id,
+          trackName: playback.name,
+          artists: playback.artists,
+          albumName: playback.album,
+          contextId: playback.context?.uri,
+          contextType: playback.context?.type,
+          isPlaying: playback.playing,
+        },
       });
+    }
 
     console.log(
       `[GroupsController] Active listeners: ${activeListeners.length}`
