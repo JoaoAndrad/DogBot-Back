@@ -24,8 +24,12 @@ router.get("/current", historyController.getCurrent);
 router.get("/playlists/managed", async (req, res) => {
   try {
     const prisma = require("../db").getPrisma();
+    // Only return playlists that are managed and linked to an active group
     const playlists = await prisma.playlist.findMany({
-      where: { isManaged: true },
+      where: {
+        isManaged: true,
+        groupChats: { some: { isActive: true } },
+      },
       orderBy: { updatedAt: "desc" },
       include: { _count: { select: { entries: true } } },
     });

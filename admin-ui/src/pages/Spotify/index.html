@@ -803,6 +803,18 @@
                 await loadPlaylists();
               } catch (e) {
                 console.error("Failed to unlink playlist", e);
+                // If backend reports playlist not linked, refresh UI instead of error
+                try {
+                  const msg = (e && e.message) || "";
+                  if (
+                    msg.includes("playlist_not_linked") ||
+                    msg.includes("404")
+                  ) {
+                    showToast("Playlist already unlinked", "info");
+                    await loadPlaylists();
+                    return;
+                  }
+                } catch (_) {}
                 showToast("Failed to unlink playlist", "error");
               }
             });
