@@ -85,6 +85,20 @@ router.post("/:chatId/active-listeners", async (req, res) => {
           (mid) => user.sender_number === mid || user.identifiers?.includes(mid)
         );
 
+        // Log what we have in currentPlayback
+        if (activeAccount?.currentPlayback) {
+          console.log(
+            `[GroupsController] currentPlayback for ${user.display_name}:`,
+            {
+              trackId: activeAccount.currentPlayback.trackId,
+              trackName: activeAccount.currentPlayback.trackName,
+              hasTrackName: !!activeAccount.currentPlayback.trackName,
+              artists: activeAccount.currentPlayback.artists,
+              allFields: Object.keys(activeAccount.currentPlayback),
+            }
+          );
+        }
+
         const result = {
           userId: user.id,
           identifier: matchingId || user.sender_number,
@@ -92,11 +106,21 @@ router.post("/:chatId/active-listeners", async (req, res) => {
           currentTrack: activeAccount?.currentPlayback
             ? {
                 trackId: activeAccount.currentPlayback.trackId,
-                trackName: activeAccount.currentPlayback.trackName,
-                artists: activeAccount.currentPlayback.artists,
-                contextId: activeAccount.currentPlayback.contextId,
-                contextType: activeAccount.currentPlayback.contextType,
-                isPlaying: activeAccount.currentPlayback.isPlaying,
+                trackName:
+                  activeAccount.currentPlayback.trackName ||
+                  activeAccount.currentPlayback.track_name,
+                artists:
+                  activeAccount.currentPlayback.artists ||
+                  activeAccount.currentPlayback.artist_name,
+                contextId:
+                  activeAccount.currentPlayback.contextId ||
+                  activeAccount.currentPlayback.context_id,
+                contextType:
+                  activeAccount.currentPlayback.contextType ||
+                  activeAccount.currentPlayback.context_type,
+                isPlaying:
+                  activeAccount.currentPlayback.isPlaying ??
+                  activeAccount.currentPlayback.is_playing,
               }
             : null,
         };
