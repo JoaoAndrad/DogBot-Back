@@ -60,6 +60,54 @@ router.post("/upsert", async (req, res) => {
 });
 
 /**
+ * GET /api/users/lookup
+ * Check if user exists by identifier (no auto-create)
+ *
+ * Query: ?identifier=558182132346@c.us
+ * Returns: { found: boolean, userId?: string }
+ */
+router.get("/lookup", async (req, res) => {
+  try {
+    const { identifier } = req.query;
+
+    if (!identifier) {
+      return res.status(400).json({
+        error: "missing_identifier",
+        message: "Query parameter 'identifier' is required",
+      });
+    }
+
+    // Try exact match first
+    let user = await userRepo.findByIdentifierExact(identifier);
+
+    // Fallback to base number
+    if (!user) {
+      const baseNumber = userRepo.extractBaseNumber(identifier);
+      if (baseNumber && baseNumber !== identifier) {
+        user = await userRepo.findByBaseNumber(baseNumber);
+      }
+    }
+
+    if (!user) {
+      return res.json({
+        found: false,
+      });
+    }
+
+    return res.json({
+      found: true,
+      userId: user.id,
+    });
+  } catch (err) {
+    console.log("[GET /api/users/lookup] Error:", err);
+    return res.status(500).json({
+      error: "lookup_failed",
+      message: err.message,
+    });
+  }
+});
+
+/**
  * GET /api/users/by-identifier/:identifier
  * Lookup user by any known identifier
  *
