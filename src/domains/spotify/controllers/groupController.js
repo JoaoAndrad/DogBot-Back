@@ -53,14 +53,16 @@ router.post("/:chatId/active-listeners", async (req, res) => {
 
     console.log(`[GroupsController] Found users: ${users.length}`);
     users.forEach((user) => {
+      const account = user.spotifyAccounts[0];
+      const meta = account?.currentPlayback?.metadata || {};
       console.log(`  - User ${user.display_name || user.push_name}:`, {
         spotifyAccounts: user.spotifyAccounts.length,
         hasPlayback: user.spotifyAccounts.some(
           (a) => a.currentPlayback !== null
         ),
-        isPlaying: user.spotifyAccounts.some(
-          (a) => a.currentPlayback?.isPlaying
-        ),
+        metadataIsPlaying:
+          meta.is_playing ?? meta.playing ?? meta.isPlaying ?? false,
+        trackId: account?.currentPlayback?.trackId,
       });
     });
 
@@ -73,6 +75,10 @@ router.post("/:chatId/active-listeners", async (req, res) => {
           const meta = account.currentPlayback.metadata || {};
           const isPlaying =
             meta.is_playing ?? meta.playing ?? meta.isPlaying ?? false;
+
+          console.log(
+            `[GroupsController] Checking ${user.display_name}: isPlaying=${isPlaying}, trackId=${account.currentPlayback.trackId}`
+          );
 
           return (
             isPlaying &&
