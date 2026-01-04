@@ -228,8 +228,11 @@ router.post("/votes/:voteId/cast", async (req, res) => {
       return res.status(404).json({ error: "Vote not found" });
     }
 
-    // Check if resolved
-    vote = await collaborativeVoteRepo.checkAndResolve(voteId);
+    // Check if resolved - pode retornar null se já resolvido
+    const resolvedVote = await collaborativeVoteRepo.checkAndResolve(voteId);
+    if (resolvedVote) {
+      vote = resolvedVote;
+    }
 
     const stats = await collaborativeVoteRepo.getVoteStats(voteId);
 
