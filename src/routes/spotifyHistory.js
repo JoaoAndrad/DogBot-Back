@@ -35,17 +35,11 @@ router.get("/tracks/:trackId/notes/latest", trackNoteController.getLatestNotes);
 router.get("/tracks/:trackId/stats", trackNoteController.getTrackStats);
 
 // Playback control
-// POST /api/spotify/skip - Skip to next track for a user
+// POST /api/spotify/skip - Skip to next track
 router.post("/skip", async (req, res) => {
   try {
-    const { userId } = req.body;
-
-    if (!userId) {
-      return res.status(400).json({ error: "userId is required" });
-    }
-
     const spotifyService = require("../services/spotifyService");
-    const result = await spotifyService.skipTrack(userId);
+    const result = await spotifyService.skipTrack();
 
     if (result.success) {
       res.json({ success: true });

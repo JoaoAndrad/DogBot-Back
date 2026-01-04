@@ -404,11 +404,16 @@ module.exports.fetchAndPersistUser = fetchAndPersistUser;
  * @param {string} userId - User ID
  * @returns {Promise<{success: boolean, error?: string}>}
  */
-async function skipTrack(userId) {
+async function skipTrack() {
   try {
-    // Find user's Spotify account
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
+    // Get any user with a connected Spotify Developer account
+    // (Since only the Developer account can skip, find the user who has it)
+    const user = await prisma.user.findFirst({
+      where: {
+        spotifyAccounts: {
+          some: {}, // Has at least one Spotify account
+        },
+      },
       include: {
         spotifyAccounts: {
           include: {
@@ -422,7 +427,10 @@ async function skipTrack(userId) {
     });
 
     if (!user || user.spotifyAccounts.length === 0) {
-      return { success: false, error: "User has no connected Spotify account" };
+      return {
+        success: false,
+        error: "No Spotify Developer account connected",
+      };
     }
 
     const account = user.spotifyAccounts[0];
