@@ -23,29 +23,23 @@ router.post("/:chatId/active-listeners", async (req, res) => {
     const { memberIds } = req.body;
     const { trackId, contextId } = req.query;
 
+    console.log(`[GroupsController] active-listeners request:`, {
+      chatId,
+      memberCount: memberIds?.length,
+      trackId,
+      contextId,
+    });
+
     if (!memberIds || !Array.isArray(memberIds) || memberIds.length === 0) {
       return res.json({ listeners: [] });
     }
 
-    // Find users by member identifiers and with Spotify accounts
+    // Find users by member identifiers
     const users = await prisma.user.findMany({
       where: {
-        AND: [
-          {
-            OR: [
-              { sender_number: { in: memberIds } },
-              { identifiers: { hasSome: memberIds } },
-            ],
-          },
-          {
-            spotifyAccounts: {
-              some: {
-                currentPlayback: {
-                  isNot: null,
-                },
-              },
-            },
-          },
+        OR: [
+          { sender_number: { in: memberIds } },
+          { identifiers: { hasSome: memberIds } },
         ],
       },
       include: {
@@ -57,13 +51,25 @@ router.post("/:chatId/active-listeners", async (req, res) => {
       },
     });
 
-    // Filter users who are currently playing
+    console.log(`[GroupsController] Found users: ${users.length}`);
+    users.forEach((user) => {
+      console.log(`  - User ${user.display_name || user.push_name}:`, {
+        spotifyAccounts: user.spotifyAccounts.length,
+        hasPlayback: user.spotifyAccounts.some(
+          (a) => a.currentPlayback !== null
+        ),
+        isPlaying: user.spotifyAccounts.some(
+          (a) => a.currentPlayback?.isPlaying
+        ),
+      });
+    });
+
+    // Filter users who have current playback (playing or paused recently)
     const activeListeners = users
       .filter((user) => {
         const hasActivePlayback = user.spotifyAccounts.some(
           (account) =>
             account.currentPlayback &&
-            account.currentPlayback.isPlaying &&
             (!trackId || account.currentPlayback.trackId === trackId) &&
             (!contextId || account.currentPlayback.contextId === contextId)
         );
@@ -71,7 +77,7 @@ router.post("/:chatId/active-listeners", async (req, res) => {
       })
       .map((user) => {
         const activeAccount = user.spotifyAccounts.find(
-          (account) => account.currentPlayback?.isPlaying
+          (account) => account.currentPlayback
         );
         return {
           userId: user.id,
@@ -84,10 +90,15 @@ router.post("/:chatId/active-listeners", async (req, res) => {
                 artists: activeAccount.currentPlayback.artists,
                 contextId: activeAccount.currentPlayback.contextId,
                 contextType: activeAccount.currentPlayback.contextType,
+                isPlaying: activeAccount.currentPlayback.isPlaying,
               }
             : null,
         };
       });
+
+    console.log(
+      `[GroupsController] Active listeners: ${activeListeners.length}`
+    );
 
     res.json({ listeners: activeListeners });
   } catch (error) {
