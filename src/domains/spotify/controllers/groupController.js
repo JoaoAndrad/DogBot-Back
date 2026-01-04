@@ -95,6 +95,7 @@ router.post("/:chatId/active-listeners", async (req, res) => {
           trackName: playback.name,
           artists: playback.artists,
           albumName: playback.album,
+          image: playback.image,
           contextId: playback.context?.uri,
           contextType: playback.context?.type,
           isPlaying: playback.playing,
