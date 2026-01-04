@@ -520,7 +520,10 @@
         <div class="card">
           <div class="section-header">
             <h2 class="section-title">Bot Managed Playlists</h2>
-            <span class="section-counter">2/3 width</span>
+            <span class="section-counter"
+              ><span id="playlistsActive">—</span> active ·
+              <span id="playlistsTotal">—</span> managed</span
+            >
           </div>
 
           <div id="playlistsGrid" class="playlists-grid">
@@ -603,7 +606,9 @@
           <div class="card">
             <div class="section-header">
               <h2 class="section-title">Live users sessions</h2>
-              <span class="section-counter">1/3 width</span>
+              <span class="section-counter"
+                ><span id="sessionsCounter">—</span> active</span
+              >
             </div>
             <ul id="sessionsList" class="timeline-feed">
               <li class="timeline-feed-item loading">Loading sessions…</li>
@@ -696,6 +701,12 @@
               ? resp.playlists
               : [];
             renderPlaylists(playlists || []);
+            // update active playlists counter (those shown)
+            try {
+              const activeEl = document.getElementById("playlistsActive");
+              if (activeEl)
+                activeEl.textContent = (playlists || []).length.toString();
+            } catch (e) {}
           } catch (e) {
             console.error("Failed to load playlists", e);
             showToast("Failed to load playlists", "error");
@@ -728,6 +739,8 @@
             const playlistsEl = document.getElementById(
               "managedPlaylistsCount"
             );
+            const playlistsTotalEl = document.getElementById("playlistsTotal");
+            const sessionsHeaderEl = document.getElementById("sessionsCounter");
 
             if (apiText) {
               const conn = s.tokenConnected ? "Connected" : "Disconnected";
@@ -741,8 +754,14 @@
             if (reqEl)
               reqEl.textContent = (s.requestsToday || 0).toLocaleString();
             if (sessEl) sessEl.textContent = (s.activeSessions || 0).toString();
+            if (sessionsHeaderEl)
+              sessionsHeaderEl.textContent = (s.activeSessions || 0).toString();
             if (playlistsEl)
               playlistsEl.textContent = (s.managedPlaylists || 0).toString();
+            if (playlistsTotalEl)
+              playlistsTotalEl.textContent = (
+                s.managedPlaylists || 0
+              ).toString();
           } catch (e) {
             console.error("Failed to load status", e);
           }
@@ -850,6 +869,14 @@
             const sessions =
               resp && (resp.sessions || resp) ? resp.sessions || resp : [];
             renderSessions(sessions);
+            try {
+              const sessionsHeaderEl =
+                document.getElementById("sessionsCounter");
+              if (sessionsHeaderEl)
+                sessionsHeaderEl.textContent = (
+                  sessions || []
+                ).length.toString();
+            } catch (e) {}
           } catch (e) {
             console.error("Failed to load sessions", e);
           }
