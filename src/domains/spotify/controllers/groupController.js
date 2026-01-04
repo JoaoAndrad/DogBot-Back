@@ -79,9 +79,15 @@ router.post("/:chatId/active-listeners", async (req, res) => {
         const activeAccount = user.spotifyAccounts.find(
           (account) => account.currentPlayback
         );
-        return {
+
+        // Find matching identifier from memberIds
+        const matchingId = memberIds.find(
+          (mid) => user.sender_number === mid || user.identifiers?.includes(mid)
+        );
+
+        const result = {
           userId: user.id,
-          identifier: user.sender_number,
+          identifier: matchingId || user.sender_number,
           displayName: user.display_name || user.push_name,
           currentTrack: activeAccount?.currentPlayback
             ? {
@@ -94,6 +100,15 @@ router.post("/:chatId/active-listeners", async (req, res) => {
               }
             : null,
         };
+
+        console.log(`[GroupsController] Mapped listener:`, {
+          userId: result.userId,
+          identifier: result.identifier,
+          displayName: result.displayName,
+          hasTrack: !!result.currentTrack,
+        });
+
+        return result;
       });
 
     console.log(
