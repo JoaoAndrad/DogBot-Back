@@ -1,6 +1,7 @@
 const { PrismaClient } = require("@prisma/client");
 const fetch = require("node-fetch");
 const playbackTracker = require("../domains/spotify/services/playbackTrackerService");
+const sseHub = require("../lib/sseHub");
 
 const prisma = new PrismaClient();
 
@@ -337,6 +338,14 @@ async function fetchAndPersistUser({ accountId, userId, userSpotifyAPI }) {
         console.log(
           `[fetchAndPersistUser] Deleted stale currentPlayback for account=${resolvedAccountId}`
         );
+        try {
+          sseHub.sendEvent("playlist_sync", {
+            accountId: resolvedAccountId,
+            action: "deleted",
+          });
+        } catch (e) {
+          console.error("[fetchAndPersistUser] sse send error:", e);
+        }
       } catch (err) {
         console.warn(
           `[fetchAndPersistUser] Failed to delete currentPlayback:`,
@@ -390,6 +399,16 @@ async function fetchAndPersistUser({ accountId, userId, userSpotifyAPI }) {
     id: trackId,
     ...result,
   });
+
+  try {
+    sseHub.sendEvent("playlist_sync", {
+      accountId: resolvedAccountId,
+      action: "upserted",
+      trackId,
+    });
+  } catch (e) {
+    console.error("[fetchAndPersistUser] sse send error:", e);
+  }
 
   return { status: "playing", track: result };
 }
