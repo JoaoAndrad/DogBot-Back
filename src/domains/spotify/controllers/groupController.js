@@ -481,3 +481,118 @@ router.get("/playlists/:playlistId", async (req, res) => {
 });
 
 module.exports = router;
+
+/**
+ * GET /api/groups/playlists/:playlistId/check-track
+ * Query: ?trackId=...&trackName=...
+ * Returns whether the playlist already contains the track (exact) or similar titles
+ */
+router.get("/playlists/:playlistId/check-track", async (req, res) => {
+  try {
+    const { playlistId } = req.params;
+    const { trackId, trackName } = req.query;
+
+    if (!trackId && !trackName) {
+      return res.status(400).json({ error: "trackId or trackName required" });
+    }
+
+    // Find playlist record in DB
+    const playlist = await prisma.playlist.findUnique({
+      where: { id: playlistId },
+    });
+    if (!playlist || !playlist.spotifyId) {
+      return res
+        .status(404)
+        .json({ error: "Playlist not found or not linked to Spotify" });
+    }
+
+    const spotifyService = require("../../../services/spotifyService");
+    const accountId = playlist.accountId;
+    const detailsRes = await spotifyService.getSpotifyPlaylistDetails(
+      playlist.spotifyId,
+      accountId
+    );
+    if (!detailsRes || !detailsRes.success || !detailsRes.playlist) {
+      return res
+        .status(500)
+        .json({ error: "Failed to fetch playlist details" });
+    }
+
+    const pl = detailsRes.playlist;
+    const items = (pl.tracks && pl.tracks.items) || [];
+
+    // Normalization helper
+    function normalizeTitle(t) {
+      if (!t) return "";
+      return t
+        .toString()
+        .toLowerCase()
+        .replace(/\s*\(.*?\)\s*/g, " ") // remove parentheticals
+        .normalize("NFD")
+        .replace(/\p{Diacritic}/gu, "")
+        .replace(/[^a-z0-9\s]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+
+    function tokenSimilarity(a, b) {
+      if (!a || !b) return 0;
+      const ta = a.split(" ");
+      const tb = b.split(" ");
+      const sa = new Set(ta.filter(Boolean));
+      const sb = new Set(tb.filter(Boolean));
+      let inter = 0;
+      sa.forEach((x) => {
+        if (sb.has(x)) inter++;
+      });
+      if (inter === 0) return 0;
+      return (2 * inter) / (sa.size + sb.size);
+    }
+
+    const targetNorm = normalizeTitle(trackName || "");
+    let existsExact = false;
+    const similar = [];
+
+    for (const it of items) {
+      const t = it.track || it;
+      if (!t) continue;
+      // exact by id
+      if (trackId && (t.id === trackId || t.uri === trackId)) {
+        existsExact = true;
+        break;
+      }
+      // exact by normalized name
+      const nameNorm = normalizeTitle(t.name);
+      if (targetNorm && nameNorm && nameNorm === targetNorm) {
+        similar.push({
+          trackId: t.id,
+          name: t.name,
+          artists: t.artists,
+          score: 1,
+        });
+        continue;
+      }
+      // token similarity
+      if (targetNorm && nameNorm) {
+        const score = tokenSimilarity(targetNorm, nameNorm);
+        if (score >= 0.6) {
+          similar.push({
+            trackId: t.id,
+            name: t.name,
+            artists: t.artists,
+            score,
+          });
+        }
+      }
+    }
+
+    res.json({
+      existsExact,
+      similar,
+      playlistTrackCount: pl.tracks?.total || items.length,
+    });
+  } catch (err) {
+    console.error("[GroupsController] check-track error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
