@@ -765,7 +765,14 @@
               </div>
               <div class="playlist-details">
                 <h3 class="playlist-title">${p.name}</h3>
-                <p class="playlist-tracks">${p.trackCount || 0} tracks</p>
+                <p class="playlist-tracks">${(() => {
+                  const c =
+                    p.trackCount ||
+                    p.tracks ||
+                    (p.meta && (p.meta.tracks || p.meta.tracks_total)) ||
+                    0;
+                  return c;
+                })()} tracks</p>
                 <div class="playlist-actions">
                   <button class="btn-spotify-sync" data-id="${
                     p.id
