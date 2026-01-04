@@ -42,6 +42,9 @@ module.exports = {
     return await prisma.groupChat.update({
       where: { chatId },
       data: { playlistId },
+      include: {
+        playlist: true,
+      },
     });
   },
 

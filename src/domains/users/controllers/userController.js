@@ -96,9 +96,13 @@ router.get("/lookup", async (req, res) => {
       });
     }
 
+    // Check if user has Spotify account connected
+    const hasSpotify = !!(user.spotifyAccountId || user.spotifyAccount);
+
     return res.json({
       found: true,
       userId: user.id,
+      hasSpotify,
     });
   } catch (err) {
     console.log("[GET /api/users/lookup] Error:", err);
