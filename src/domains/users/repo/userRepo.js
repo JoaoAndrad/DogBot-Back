@@ -32,7 +32,7 @@ async function findByIdentifierExact(identifier) {
       },
     },
     include: {
-      spotifyAccount: true,
+      spotifyAccounts: true,
       pushNameHistory: {
         orderBy: { ts: "desc" },
         take: 5,
@@ -66,7 +66,7 @@ async function findByBaseNumber(baseNumber) {
       },
     },
     include: {
-      spotifyAccount: true,
+      spotifyAccounts: true,
       pushNameHistory: {
         orderBy: { ts: "desc" },
         take: 5,
