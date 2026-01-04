@@ -44,25 +44,58 @@ router.get("/sessions", adminAuth, async (req, res) => {
   try {
     const db = require("../db").getPrisma();
 
+    // Only include the related SpotifyAccount (which can include a User)
+    // CurrentPlayback does not have direct `user` or `track` relations.
     const sessions = await db.currentPlayback.findMany({
       orderBy: { startedAt: "desc" },
       take: 50,
-      include: { user: true, track: true },
+      include: { account: { include: { user: true } } },
     });
 
-    const result = sessions.map((s) => ({
-      id: s.id,
-      userId: s.userId,
-      userName: s.user
-        ? s.user.displayName || s.user.name || s.user.identifier
-        : null,
-      userAvatar: s.user ? s.user.avatarUrl || null : null,
-      trackId: s.trackId,
-      trackName: s.track ? s.track.name : null,
-      trackImage: s.track ? s.track.imageUrl : null,
-      startedAt: s.startedAt,
-      listenedMs: s.listenedMs || 0,
-    }));
+    // Fetch track metadata in batch for any trackIds present
+    const trackIds = Array.from(
+      new Set(sessions.map((s) => s.trackId).filter(Boolean))
+    );
+    const tracks =
+      trackIds.length > 0
+        ? await db.track.findMany({ where: { id: { in: trackIds } } })
+        : [];
+    const trackMap = {};
+    for (const t of tracks) trackMap[t.id] = t;
+
+    const result = sessions.map((s) => {
+      const acct = s.account || null;
+      const user = acct && acct.user ? acct.user : null;
+      const track = s.trackId ? trackMap[s.trackId] : null;
+
+      // try to extract listenedMs from metadata if available
+      let listenedMs = 0;
+      try {
+        if (s.metadata && typeof s.metadata === "object") {
+          listenedMs = s.metadata.listenedMs || s.metadata.listened_ms || 0;
+        }
+      } catch (e) {
+        listenedMs = 0;
+      }
+
+      return {
+        id: s.accountId,
+        accountId: s.accountId,
+        userId: acct ? acct.userId || null : null,
+        userName: user
+          ? user.display_name || user.push_name || user.displayName || null
+          : null,
+        userAvatar:
+          user && user.metadata && user.metadata.avatarUrl
+            ? user.metadata.avatarUrl
+            : null,
+        trackId: s.trackId,
+        trackName: track ? track.name : null,
+        trackImage: track ? track.imageUrl : null,
+        startedAt: s.startedAt,
+        listenedMs,
+      };
+    });
 
     res.json({ sessions: result });
   } catch (err) {
