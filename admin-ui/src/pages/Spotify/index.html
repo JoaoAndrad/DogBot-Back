@@ -476,17 +476,21 @@
           <div class="status-info">
             <h3>API Status</h3>
             <div class="api-status-box">
-              <span class="material-icons-outlined api-status-icon"
+              <span
+                id="apiStatusIcon"
+                class="material-icons-outlined api-status-icon"
                 >check_circle</span
               >
-              <div class="api-status-text">Connected<br />Token Valid</div>
+              <div id="apiStatusText" class="api-status-text">
+                Connected<br />Token Valid
+              </div>
             </div>
           </div>
         </div>
         <div class="card status-card">
           <div class="status-info">
             <h3>Requests Today</h3>
-            <p class="big-number">3,450</p>
+            <p id="requestsToday" class="big-number">—</p>
           </div>
           <span class="material-icons-outlined status-icon-right"
             >person_outline</span
@@ -495,7 +499,7 @@
         <div class="card status-card">
           <div class="status-info">
             <h3>Active Users Sessions</h3>
-            <p class="big-number">52</p>
+            <p id="activeSessions" class="big-number">—</p>
           </div>
           <span class="material-icons-outlined status-icon-right"
             >headphones</span
@@ -504,7 +508,7 @@
         <div class="card status-card">
           <div class="status-info">
             <h3>Managed Playlists</h3>
-            <p class="big-number">15</p>
+            <p id="managedPlaylistsCount" class="big-number">—</p>
           </div>
           <span class="material-icons-outlined status-icon-right spotify"
             >queue_music</span
@@ -774,6 +778,37 @@
           }
         }
 
+        async function loadStatus() {
+          try {
+            const resp = await fetchJson("/api/admin/spotify/status");
+            const s = (resp && (resp.status || resp)) || {};
+            const apiText = document.getElementById("apiStatusText");
+            const apiIcon = document.getElementById("apiStatusIcon");
+            const reqEl = document.getElementById("requestsToday");
+            const sessEl = document.getElementById("activeSessions");
+            const playlistsEl = document.getElementById(
+              "managedPlaylistsCount"
+            );
+
+            if (apiText) {
+              const conn = s.tokenConnected ? "Connected" : "Disconnected";
+              const token = s.tokenValid ? "Token Valid" : "Token Invalid";
+              apiText.innerHTML = `${conn}<br />${token}`;
+            }
+            if (apiIcon) {
+              apiIcon.textContent = s.tokenConnected ? "check_circle" : "error";
+              apiIcon.style.color = s.tokenConnected ? "" : "#ff5252";
+            }
+            if (reqEl)
+              reqEl.textContent = (s.requestsToday || 0).toLocaleString();
+            if (sessEl) sessEl.textContent = (s.activeSessions || 0).toString();
+            if (playlistsEl)
+              playlistsEl.textContent = (s.managedPlaylists || 0).toString();
+          } catch (e) {
+            console.error("Failed to load status", e);
+          }
+        }
+
         function renderPlaylists(list) {
           const container = document.getElementById("playlistsGrid");
           if (!container) return;
@@ -840,6 +875,7 @@
               });
               showToast("Sync started", "success");
               loadPlaylists();
+              loadStatus();
             } catch (e) {
               console.error("Sync failed", e);
               showToast("Sync failed", "error");
@@ -871,12 +907,14 @@
               showToast(`Vote cancelled: ${data.id}`, "info");
               loadTop();
               loadPlaylists();
+              loadStatus();
             });
             es.addEventListener("vote_forced", (ev) => {
               const data = JSON.parse(ev.data || "{}");
               showToast(`Vote forced: ${data.id}`, "success");
               loadTop();
               loadPlaylists();
+              loadStatus();
             });
             es.onopen = () => showToast("Live feed connected", "success", 3000);
             es.onerror = (e) => {
@@ -890,6 +928,7 @@
         }
 
         async function init() {
+          await loadStatus();
           await loadPlaylists();
           await loadTop();
 
