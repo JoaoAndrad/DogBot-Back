@@ -744,7 +744,12 @@
 
         async function loadPlaylists() {
           try {
-            const playlists = await fetchJson("/api/spotify/playlists/managed");
+            const resp = await fetchJson("/api/spotify/playlists/managed");
+            const playlists = Array.isArray(resp)
+              ? resp
+              : resp && Array.isArray(resp.playlists)
+              ? resp.playlists
+              : [];
             renderPlaylists(playlists || []);
           } catch (e) {
             console.error("Failed to load playlists", e);
@@ -754,7 +759,12 @@
 
         async function loadTop() {
           try {
-            const top = await fetchJson("/api/spotify/top");
+            const resp = await fetchJson("/api/spotify/top");
+            const top = Array.isArray(resp)
+              ? resp
+              : resp && Array.isArray(resp.top)
+              ? resp.top
+              : [];
             renderTrending(top || []);
           } catch (e) {
             console.error("Failed to load top tracks", e);
