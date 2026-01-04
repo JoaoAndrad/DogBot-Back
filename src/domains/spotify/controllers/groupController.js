@@ -265,4 +265,139 @@ router.patch("/:chatId/playlist", async (req, res) => {
   }
 });
 
+/**
+ * POST /api/groups/:chatId/playlist/create
+ * Create a new Spotify playlist and link to group
+ * Body: { userId: string, name: string, description?: string }
+ */
+router.post("/:chatId/playlist/create", async (req, res) => {
+  try {
+    const { chatId } = req.params;
+    const { userId, name, description } = req.body;
+
+    if (!userId || !name) {
+      return res.status(400).json({ error: "userId and name are required" });
+    }
+
+    // Create playlist on Spotify
+    const spotifyService = require("../../../services/spotifyService");
+    const createRes = await spotifyService.createSpotifyPlaylist(
+      userId,
+      name,
+      description || `Playlist do grupo ${chatId}`,
+      false
+    );
+
+    if (!createRes.success) {
+      return res.status(400).json({ error: createRes.error });
+    }
+
+    const spotifyPlaylist = createRes.playlist;
+
+    // Get user's account
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        spotifyAccounts: true,
+      },
+    });
+
+    if (!user || user.spotifyAccounts.length === 0) {
+      return res.status(400).json({ error: "User has no Spotify account" });
+    }
+
+    const accountId = user.spotifyAccounts[0].id;
+
+    // Save playlist to database
+    const dbPlaylist = await prisma.playlist.create({
+      data: {
+        name: spotifyPlaylist.name,
+        description: spotifyPlaylist.description || description,
+        spotifyId: spotifyPlaylist.id,
+        accountId,
+        coverUrl: spotifyPlaylist.images?.[0]?.url,
+        isManaged: true,
+        meta: {
+          spotifyUri: spotifyPlaylist.uri,
+          owner: spotifyPlaylist.owner,
+        },
+      },
+    });
+
+    // Link to group
+    const group = await groupChatRepo.updatePlaylist(chatId, dbPlaylist.id);
+
+    res.json({
+      success: true,
+      playlist: dbPlaylist,
+      group,
+      spotifyUrl: spotifyPlaylist.external_urls?.spotify,
+    });
+  } catch (error) {
+    console.error("[GroupsController] create playlist error:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * POST /api/groups/:chatId/playlist/link
+ * Link an existing Spotify playlist to group
+ * Body: { spotifyPlaylistId: string, accountId: string }
+ */
+router.post("/:chatId/playlist/link", async (req, res) => {
+  try {
+    const { chatId } = req.params;
+    const { spotifyPlaylistId, accountId } = req.body;
+
+    if (!spotifyPlaylistId || !accountId) {
+      return res.status(400).json({
+        error: "spotifyPlaylistId and accountId are required",
+      });
+    }
+
+    // Get playlist details from Spotify
+    const spotifyService = require("../../../services/spotifyService");
+    const detailsRes = await spotifyService.getSpotifyPlaylistDetails(
+      spotifyPlaylistId,
+      accountId
+    );
+
+    if (!detailsRes.success) {
+      return res.status(400).json({ error: detailsRes.error });
+    }
+
+    const spotifyPlaylist = detailsRes.playlist;
+
+    // Save playlist to database
+    const dbPlaylist = await prisma.playlist.create({
+      data: {
+        name: spotifyPlaylist.name,
+        description: spotifyPlaylist.description,
+        spotifyId: spotifyPlaylist.id,
+        accountId,
+        coverUrl: spotifyPlaylist.images?.[0]?.url,
+        isManaged: true,
+        meta: {
+          spotifyUri: spotifyPlaylist.uri,
+          owner: spotifyPlaylist.owner,
+          tracks: spotifyPlaylist.tracks?.total,
+        },
+      },
+    });
+
+    // Link to group
+    const group = await groupChatRepo.updatePlaylist(chatId, dbPlaylist.id);
+
+    res.json({
+      success: true,
+      playlist: dbPlaylist,
+      group,
+      spotifyUrl: spotifyPlaylist.external_urls?.spotify,
+    });
+  } catch (error) {
+    console.error("[GroupsController] link playlist error:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;

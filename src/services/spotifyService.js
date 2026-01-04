@@ -474,3 +474,114 @@ async function addTrackToPlaylist(playlistId, trackUri, accountId) {
 
 module.exports.skipTrack = skipTrack;
 module.exports.addTrackToPlaylist = addTrackToPlaylist;
+
+/**
+ * Create a new Spotify playlist for a user
+ * @param {string} userId - User ID
+ * @param {string} name - Playlist name
+ * @param {string} description - Playlist description
+ * @param {boolean} isPublic - Whether playlist is public
+ * @returns {Promise<{success: boolean, playlist?: object, error?: string}>}
+ */
+async function createSpotifyPlaylist(
+  userId,
+  name,
+  description = "",
+  isPublic = false
+) {
+  try {
+    // Find user's Spotify account
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        spotifyAccounts: {
+          include: {
+            tokens: {
+              orderBy: { createdAt: "desc" },
+              take: 1,
+            },
+          },
+        },
+      },
+    });
+
+    if (!user || user.spotifyAccounts.length === 0) {
+      return { success: false, error: "User has no connected Spotify account" };
+    }
+
+    const account = user.spotifyAccounts[0];
+    const accountId = account.id;
+
+    // Get Spotify user profile to get user ID
+    const profileRes = await spotifyFetch(
+      accountId,
+      "https://api.spotify.com/v1/me",
+      { method: "GET" }
+    );
+
+    if (!profileRes.ok) {
+      return { success: false, error: "Failed to get Spotify profile" };
+    }
+
+    const profile = await profileRes.json();
+    const spotifyUserId = profile.id;
+
+    // Create playlist
+    const createRes = await spotifyFetch(
+      accountId,
+      `https://api.spotify.com/v1/users/${spotifyUserId}/playlists`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name,
+          description,
+          public: isPublic,
+        }),
+      }
+    );
+
+    if (createRes.status === 201 || createRes.status === 200) {
+      const playlist = await createRes.json();
+      return { success: true, playlist };
+    }
+
+    const errorText = await createRes.text().catch(() => "Unknown error");
+    return { success: false, error: `Spotify API error: ${errorText}` };
+  } catch (error) {
+    console.error("[spotifyService] createSpotifyPlaylist error:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Get Spotify playlist details
+ * @param {string} playlistId - Spotify playlist ID
+ * @param {string} accountId - Account ID to use for authentication
+ * @returns {Promise<{success: boolean, playlist?: object, error?: string}>}
+ */
+async function getSpotifyPlaylistDetails(playlistId, accountId) {
+  try {
+    const res = await spotifyFetch(
+      accountId,
+      `https://api.spotify.com/v1/playlists/${playlistId}`,
+      { method: "GET" }
+    );
+
+    if (res.ok) {
+      const playlist = await res.json();
+      return { success: true, playlist };
+    }
+
+    const errorText = await res.text().catch(() => "Unknown error");
+    return { success: false, error: `Spotify API error: ${errorText}` };
+  } catch (error) {
+    console.error("[spotifyService] getSpotifyPlaylistDetails error:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+module.exports.createSpotifyPlaylist = createSpotifyPlaylist;
+module.exports.getSpotifyPlaylistDetails = getSpotifyPlaylistDetails;
