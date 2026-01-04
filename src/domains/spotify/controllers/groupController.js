@@ -430,4 +430,50 @@ router.post("/:chatId/playlist/link", async (req, res) => {
   }
 });
 
+/**
+ * GET /api/spotify/playlists/:playlistId
+ * Get playlist details from Spotify
+ */
+router.get("/playlists/:playlistId", async (req, res) => {
+  try {
+    const { playlistId } = req.params;
+
+    // Find any user with access to this playlist (or use first available account)
+    const users = await prisma.user.findMany({
+      where: {
+        spotifyAccount: {
+          isNot: null,
+        },
+      },
+      take: 1,
+    });
+
+    if (!users || users.length === 0) {
+      return res.status(404).json({ error: "No Spotify accounts available" });
+    }
+
+    const userSpotifyAdapter = require("../../../services/userSpotifyAdapter");
+    const playlist = await userSpotifyAdapter.getPlaylist(
+      users[0].id,
+      playlistId
+    );
+
+    if (!playlist) {
+      return res.status(404).json({ error: "Playlist not found" });
+    }
+
+    res.json({
+      id: playlist.id,
+      name: playlist.name,
+      description: playlist.description,
+      owner: playlist.owner?.display_name,
+      tracks: playlist.tracks?.total,
+      url: playlist.external_urls?.spotify,
+    });
+  } catch (error) {
+    console.error("[GroupsController] get playlist error:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;

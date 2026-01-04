@@ -96,4 +96,22 @@ module.exports = {
       return null;
     }
   },
+
+  async getPlaylist(userId, playlistId) {
+    const account = await prisma.spotifyAccount.findFirst({
+      where: { userId },
+    });
+    if (!account) return null;
+    try {
+      const res = await spotifyFetch(
+        account.id,
+        `https://api.spotify.com/v1/playlists/${playlistId}`
+      );
+      if (!res.ok) return null;
+      const data = await res.json();
+      return data;
+    } catch (e) {
+      return null;
+    }
+  },
 };
