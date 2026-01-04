@@ -54,23 +54,11 @@ async function createNoteSimple(req, res) {
       console.warn("createNoteSimple: live lookup failed", err && err.message);
     }
 
-    // Fallback: get most recent playback from DB
+    // Only allow notes when there's a live currently-playing track
     if (!trackId) {
-      const recent = await playbackRepo.getRecent(resolvedUserId, 1);
-      if (
-        recent &&
-        recent.length > 0 &&
-        recent[0].track &&
-        recent[0].track.id
-      ) {
-        trackId = recent[0].track.id;
-      }
-    }
-
-    if (!trackId) {
-      return res.status(404).json({
-        error: "no_track_playing",
-        message: "Não consegui detectar música atual",
+      return res.status(400).json({
+        error: "not_playing",
+        message: "Nenhuma música tocando no momento.",
       });
     }
 
