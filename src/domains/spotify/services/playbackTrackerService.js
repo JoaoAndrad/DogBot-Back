@@ -157,10 +157,10 @@ module.exports = {
             // No previous non-skipped playback -> count this one
             shouldIncrement = true;
           } else {
-            // Only allow counting again if previous >=90% and current >=80%
+            // Only allow counting again if previous >=40% and current >=30%
             const prevPct = Number(prev.percentPlayed || 0);
             const curPct = Number(percentPlayed || 0);
-            if (prevPct >= 90 && curPct >= 80) shouldIncrement = true;
+            if (prevPct >= 40 && curPct >= 30) shouldIncrement = true;
           }
         }
       }
