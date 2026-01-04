@@ -780,10 +780,32 @@
                   <button class="btn-icon-settings" data-id="${
                     p.id
                   }"><span class="material-icons-outlined">settings</span></button>
+                  <button class="btn-spotify-unlink" data-id="${
+                    p.id
+                  }" title="Remove link"><span class="material-icons-outlined">delete</span></button>
                 </div>
               </div>
             `;
             container.appendChild(el);
+          });
+
+          // attach action handlers
+          container.querySelectorAll(".btn-spotify-unlink").forEach((btn) => {
+            btn.addEventListener("click", async (ev) => {
+              const id = btn.getAttribute("data-id");
+              if (!id) return;
+              if (!confirm("Remove playlist link from group?")) return;
+              try {
+                await fetchJson(`/api/admin/spotify/playlists/${id}/unlink`, {
+                  method: "POST",
+                });
+                showToast("Playlist unlinked", "success");
+                await loadPlaylists();
+              } catch (e) {
+                console.error("Failed to unlink playlist", e);
+                showToast("Failed to unlink playlist", "error");
+              }
+            });
           });
         }
 

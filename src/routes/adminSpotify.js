@@ -368,3 +368,26 @@ router.get("/playlists/:id/settings", adminAuth, async (req, res) => {
     return res.status(500).json({ error: err.message });
   }
 });
+
+// POST /playlists/:id/unlink -> remove playlist linkage from any group
+router.post("/playlists/:id/unlink", adminAuth, async (req, res) => {
+  try {
+    const db = require("../db").getPrisma();
+    const { id } = req.params;
+
+    // Find any group linked to this playlist
+    const group = await db.groupChat.findFirst({ where: { playlistId: id } });
+    if (!group) return res.status(404).json({ error: "playlist_not_linked" });
+
+    const updated = await db.groupChat.update({
+      where: { id: group.id },
+      data: { playlistId: null },
+      include: { playlist: true },
+    });
+
+    return res.json({ success: true, group: updated });
+  } catch (err) {
+    console.error("[adminSpotify] unlink playlist error:", err);
+    return res.status(500).json({ error: err.message });
+  }
+});
