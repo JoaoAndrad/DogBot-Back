@@ -104,6 +104,7 @@ async function createNoteSimple(req, res) {
     }
 
     const album = track && track.album ? track.album : null;
+    const imageUrl = track && track.imageUrl ? track.imageUrl : null;
 
     return res.json({
       success: true,
@@ -112,6 +113,7 @@ async function createNoteSimple(req, res) {
       trackName: track ? track.name : null,
       artist: artist,
       album: album,
+      imageUrl: imageUrl,
       rating: rating,
       avgRating: stat && stat.avgRating ? stat.avgRating : null,
       ratingCount: stat && stat.ratingCount ? stat.ratingCount : 0,

@@ -20,6 +20,10 @@ model Poll {
   type        String?  @default("native")
   // metadata for flow navigation (flowId, path, etc.)
   metadata    Json?    @db.Json
+  // Collaborative voting info
+  vote_type   String?  // "add" or "skip"
+  vote_id     String?  // ID of the associated CollaborativeVote
+  group_id    String?  // ID of the group chat
   created_at  DateTime @default(now()) @db.Timestamptz(6)
 
   votes       Vote[]

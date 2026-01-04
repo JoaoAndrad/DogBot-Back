@@ -12,6 +12,9 @@ async function insertPoll(p) {
     options_obj: p.options_obj || p.optionsObj || null,
     type: p.type || "native",
     metadata: p.metadata || null,
+    vote_type: p.vote_type || p.voteType || null,
+    vote_id: p.vote_id || p.voteId || null,
+    group_id: p.group_id || p.groupId || null,
   };
   return prisma.poll.create({ data });
 }
