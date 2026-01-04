@@ -134,16 +134,56 @@ module.exports = {
 
     try {
       // Update playback record with cumulative listened time
+      // Load current playback row to check metadata/counting state
+      const currentPlayback = await playbackRepo.findById(session.playbackId);
+
+      // Decide whether to increment track stats.
+      let shouldIncrement = false;
+      if (!wasSkipped) {
+        const alreadyCounted =
+          currentPlayback &&
+          currentPlayback.metadata &&
+          currentPlayback.metadata.counted === true;
+
+        if (!alreadyCounted) {
+          // Check for a previous non-skipped playback by this user for the same track
+          const prev = await playbackRepo.findPreviousNonSkipped(
+            userId,
+            session.trackId,
+            session.playbackId
+          );
+
+          if (!prev) {
+            // No previous non-skipped playback -> count this one
+            shouldIncrement = true;
+          } else {
+            // Only allow counting again if previous >=90% and current >=80%
+            const prevPct = Number(prev.percentPlayed || 0);
+            const curPct = Number(percentPlayed || 0);
+            if (prevPct >= 90 && curPct >= 80) shouldIncrement = true;
+          }
+        }
+      }
+
+      // Update playback record (and mark counted if we incremented)
+      const newMetadata = Object.assign(
+        {},
+        currentPlayback && currentPlayback.metadata
+          ? currentPlayback.metadata
+          : {}
+      );
+      if (shouldIncrement) newMetadata.counted = true;
+
       await playbackRepo.update(session.playbackId, {
         listenedMs: totalMs,
         percentPlayed,
         wasSkipped,
         endedAt: new Date(),
+        metadata: newMetadata,
       });
 
-      // Only count towards stats if played > 30%
-      if (!wasSkipped) {
-        // Update track stats
+      // Only count towards stats if determined above
+      if (shouldIncrement) {
         await trackRepo.incrementStats(session.trackId, session.accumulatedMs);
 
         // Update user summary

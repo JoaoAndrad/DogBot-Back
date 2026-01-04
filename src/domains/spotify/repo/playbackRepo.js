@@ -160,4 +160,27 @@ module.exports = {
       },
     });
   },
+  /**
+   * Find playback by id
+   */
+  async findById(id) {
+    return prisma.trackPlayback.findUnique({ where: { id } });
+  },
+
+  /**
+   * Find the most recent non-skipped playback for this user/track excluding a playback id
+   */
+  async findPreviousNonSkipped(userId, trackId, excludeId = null) {
+    const where = {
+      userId,
+      trackId,
+      wasSkipped: false,
+    };
+    if (excludeId) where.id = { not: excludeId };
+
+    return prisma.trackPlayback.findFirst({
+      where,
+      orderBy: { endedAt: "desc" },
+    });
+  },
 };
