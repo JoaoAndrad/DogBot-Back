@@ -178,43 +178,157 @@ module.exports = {
    */
   async getStats(req, res) {
     try {
-      const { userId } = req.query;
+      const { userId: rawUserId, days = 7 } = req.query;
 
-      if (!userId) {
+      if (!rawUserId) {
         return res.status(400).json({ error: "userId is required" });
       }
 
-      // Get overall summary
-      const summary = await summaryRepo.getSummary(userId);
+      // Resolve external identifier to internal UUID when necessary.
+      let userId = rawUserId;
+      const isUUID =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+          rawUserId
+        );
+      if (!isUUID) {
+        try {
+          const userRepo = require("../../users/repo/userRepo");
+          const u = await userRepo.findByIdentifierExact(rawUserId);
+          if (u && u.id) userId = u.id;
+          else {
+            const base = userRepo.extractBaseNumber(rawUserId);
+            const u2 = await userRepo.findByBaseNumber(base);
+            if (u2 && u2.id) userId = u2.id;
+          }
+        } catch (e) {
+          // ignore resolution errors
+        }
+      }
 
-      // Get top tracks (all time)
-      const topTracks = await trackRepo.getTopTracks(10, userId);
+      const daysNum = Math.max(1, Math.min(365, Number(days)));
+      const periodEnd = new Date();
+      const periodStart = new Date(Date.now() - daysNum * 24 * 60 * 60 * 1000);
 
-      // Get recent plays
-      const recentPlays = await playbackRepo.getRecent(userId, 20);
+      // Fetch playbacks in period
+      const playbacks = await playbackRepo.getByPeriod(
+        userId,
+        periodStart,
+        periodEnd
+      );
+
+      const totalPlays = playbacks.length;
+      const uniqueTracks = new Set(playbacks.map((p) => p.trackId)).size;
+      const totalListenMs = playbacks.reduce(
+        (s, p) => s + Number(p.listenedMs || 0),
+        0
+      );
+
+      // Activity last N days by weekday (Mon-Sun)
+      const weekdayCounts = [0, 0, 0, 0, 0, 0, 0]; // Sun..Sat
+      playbacks.forEach((p) => {
+        const d = new Date(p.startedAt);
+        const w = d.getDay();
+        weekdayCounts[w] = (weekdayCounts[w] || 0) + 1;
+      });
+
+      // Map to Mon..Sun order for display
+      const daysLabels = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+      const activity = daysLabels.map((label, idx) => ({
+        day: label,
+        count: weekdayCounts[idx] || 0,
+      }));
+
+      // Top artists in period
+      const artistCounts = {};
+      playbacks.forEach((p) => {
+        const artists = (p.track && p.track.artists) || [];
+        if (Array.isArray(artists)) {
+          artists.forEach((a) => {
+            const name = String(a || "");
+            if (!name) return;
+            artistCounts[name] = (artistCounts[name] || 0) + 1;
+          });
+        } else if (artists) {
+          const name = String(artists);
+          artistCounts[name] = (artistCounts[name] || 0) + 1;
+        }
+      });
+      const topArtists = Object.entries(artistCounts)
+        .map(([name, count]) => ({ name, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 10);
+
+      // Recent discoveries (isFirstPlay true) - most recent
+      const discoveries = playbacks
+        .filter((p) => p.isFirstPlay)
+        .sort((a, b) => new Date(b.startedAt) - new Date(a.startedAt))
+        .slice(0, 10)
+        .map((p) => ({
+          track: p.track
+            ? { id: p.track.id, name: p.track.name, artists: p.track.artists }
+            : null,
+          whenMs: Date.now() - new Date(p.startedAt).getTime(),
+        }));
+
+      // Repeats: tracks with play count >1 in period
+      const trackCounts = {};
+      playbacks.forEach((p) => {
+        trackCounts[p.trackId] = (trackCounts[p.trackId] || 0) + 1;
+      });
+      const repeats = Object.entries(trackCounts)
+        .filter(([tid, cnt]) => cnt > 1)
+        .map(([tid, cnt]) => {
+          const t = playbacks.find((p) => p.trackId === tid).track;
+          return {
+            track: t
+              ? { id: t.id, name: t.name, artists: t.artists }
+              : { id: tid },
+            count: cnt,
+          };
+        })
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 20);
+
+      // Time-of-day distribution (by listenedMs)
+      const bins = { morning: 0, afternoon: 0, evening: 0, night: 0 };
+      playbacks.forEach((p) => {
+        const h = new Date(p.startedAt).getHours();
+        const ms = Number(p.listenedMs || 0);
+        if (h >= 6 && h < 12) bins.morning += ms;
+        else if (h >= 12 && h < 18) bins.afternoon += ms;
+        else if (h >= 18 && h < 24) bins.evening += ms;
+        else bins.night += ms;
+      });
+      const totalBinMs =
+        bins.morning + bins.afternoon + bins.evening + bins.night || 1;
+      const timeOfDay = {
+        morning: Math.round((bins.morning / totalBinMs) * 100),
+        afternoon: Math.round((bins.afternoon / totalBinMs) * 100),
+        evening: Math.round((bins.evening / totalBinMs) * 100),
+        night: Math.round((bins.night / totalBinMs) * 100),
+      };
+
+      // Last 3 songs (global recent)
+      const recent = await playbackRepo.getRecent(userId, 3);
+      const last3 = recent.map((p) => ({
+        track: p.track
+          ? { id: p.track.id, name: p.track.name, artists: p.track.artists }
+          : null,
+        whenMs: Date.now() - new Date(p.startedAt).getTime(),
+      }));
 
       res.json({
-        totalMinutes: summary
-          ? Math.floor(Number(summary.totalListenMs) / 60000)
-          : 0,
-        topTracks: topTracks.map((t) => ({
-          id: t.id,
-          name: t.name,
-          artists: t.artists,
-          imageUrl: t.imageUrl,
-          totalMinutes: Math.floor(t.totalListenedMs / 60000),
-          playCount: t.playCount,
-        })),
-        recentPlays: recentPlays.map((p) => ({
-          track: {
-            id: p.track.id,
-            name: p.track.name,
-            artists: p.track.artists,
-            imageUrl: p.track.imageUrl,
-          },
-          playedAt: p.startedAt,
-          listenedMinutes: Math.floor(Number(p.listenedMs) / 60000),
-        })),
+        summary: {
+          totalPlays,
+          uniqueTracks,
+          totalListenMs,
+        },
+        activity: activity, // array Mon..Sun with counts
+        topArtists,
+        discoveries,
+        repeats,
+        timeOfDay,
+        last3,
       });
     } catch (error) {
       console.log("[HistoryController] getStats error:", error);
