@@ -10,41 +10,42 @@ const prisma = new PrismaClient();
  */
 
 /**
- * GET /api/groups/:chatId/active-listeners
+ * POST /api/groups/:chatId/active-listeners
  * Get users in a group who are currently listening to Spotify
+ * Body: { memberIds: string[] }
  * Query params:
  * - trackId: optional, filter by specific track
  * - contextId: optional, filter by same context (Jam session)
  */
-router.get("/:chatId/active-listeners", async (req, res) => {
+router.post("/:chatId/active-listeners", async (req, res) => {
   try {
     const { chatId } = req.params;
+    const { memberIds } = req.body;
     const { trackId, contextId } = req.query;
 
-    // Get all users who have sent messages in this group
-    const groupMessages = await prisma.message.findMany({
-      where: {
-        chat_id: chatId,
-        is_group: true,
-      },
-      select: {
-        from_id: true,
-      },
-      distinct: ["from_id"],
-    });
-
-    const userIdentifiers = groupMessages.map((m) => m.from_id).filter(Boolean);
-
-    if (userIdentifiers.length === 0) {
+    if (!memberIds || !Array.isArray(memberIds) || memberIds.length === 0) {
       return res.json({ listeners: [] });
     }
 
-    // Find users by identifiers
+    // Find users by member identifiers and with Spotify accounts
     const users = await prisma.user.findMany({
       where: {
-        OR: [
-          { sender_number: { in: userIdentifiers } },
-          { identifiers: { hasSome: userIdentifiers } },
+        AND: [
+          {
+            OR: [
+              { sender_number: { in: memberIds } },
+              { identifiers: { hasSome: memberIds } },
+            ],
+          },
+          {
+            spotifyAccounts: {
+              some: {
+                currentPlayback: {
+                  isNot: null,
+                },
+              },
+            },
+          },
         ],
       },
       include: {
