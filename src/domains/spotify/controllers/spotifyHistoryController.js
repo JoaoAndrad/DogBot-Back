@@ -178,7 +178,7 @@ module.exports = {
    */
   async getStats(req, res) {
     try {
-      const { userId: rawUserId, days = 7 } = req.query;
+      const { userId: rawUserId, days = 7, from, to } = req.query;
 
       if (!rawUserId) {
         return res.status(400).json({ error: "userId is required" });
@@ -205,9 +205,15 @@ module.exports = {
         }
       }
 
-      const daysNum = Math.max(1, Math.min(365, Number(days)));
-      const periodEnd = new Date();
-      const periodStart = new Date(Date.now() - daysNum * 24 * 60 * 60 * 1000);
+      let periodStart, periodEnd;
+      if (from || to) {
+        periodStart = from ? new Date(from) : new Date(0);
+        periodEnd = to ? new Date(to) : new Date();
+      } else {
+        const daysNum = Math.max(1, Math.min(365, Number(days)));
+        periodEnd = new Date();
+        periodStart = new Date(Date.now() - daysNum * 24 * 60 * 60 * 1000);
+      }
 
       // Fetch playbacks in period
       const playbacks = await playbackRepo.getByPeriod(
