@@ -108,12 +108,15 @@ router.post("/:chatId/active-listeners", async (req, res) => {
           currentTrack: playback
             ? {
                 trackId: playback.trackId,
-                trackName: meta.track_name || meta.trackName,
-                artists: meta.artist_name || meta.artists,
-                albumName: meta.album_name || meta.albumName,
-                contextId: meta.context_id || meta.contextId,
-                contextType: meta.context_type || meta.contextType,
-                isPlaying: meta.is_playing ?? meta.isPlaying ?? true,
+                trackName: meta.name || meta.track_name || meta.trackName,
+                artists: meta.artists || meta.artist_name,
+                albumName: meta.album || meta.album_name || meta.albumName,
+                contextId:
+                  meta.context?.uri || meta.context_id || meta.contextId,
+                contextType:
+                  meta.context?.type || meta.context_type || meta.contextType,
+                isPlaying:
+                  meta.is_playing ?? meta.playing ?? meta.isPlaying ?? true,
               }
             : null,
         };
