@@ -129,6 +129,8 @@ async function createNoteSimple(req, res) {
       ratingCount: stat && stat.ratingCount ? stat.ratingCount : 0,
       previousRating:
         prevLatest && prevLatest.rating !== null ? prevLatest.rating : null,
+      previousRatingDate:
+        prevLatest && prevLatest.updatedAt ? prevLatest.updatedAt : null,
     });
   } catch (err) {
     console.error(
