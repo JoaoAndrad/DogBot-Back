@@ -75,6 +75,10 @@ model User {
   last_group_activity DateTime? @db.Timestamptz(6)
   last_known_lid     String?
   confissoes         Json?    @db.Json
+  // Confissões: saldo diário, última atualização e flag VIP (vitalício)
+  confessions_balance Int      @default(5)
+  confessions_last_update DateTime?
+  confessions_vip     Boolean  @default(false)
   metadata           Json?    @db.Json
 
   // relations

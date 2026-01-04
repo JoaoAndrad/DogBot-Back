@@ -65,6 +65,26 @@ try {
   router.use("/users", fallback);
 }
 
+// confessions (internal)
+try {
+  const confessions = require("./confessions");
+  router.use("/confessions", authHeader, confessions);
+  console.info("[routes/api] mounted /api/confessions");
+} catch (e) {
+  console.log(
+    "[routes/api] failed to mount /api/confessions routes:",
+    e && e.message ? e.message : e
+  );
+  const fallback = express.Router();
+  fallback.get("/", (req, res) =>
+    res.status(500).json({
+      error: "confessions_routes_failed_to_load",
+      details: String(e && e.message ? e.message : e),
+    })
+  );
+  router.use("/confessions", fallback);
+}
+
 // menu state for interactive flows
 try {
   const menuStateController = require("../domains/menu/controllers/menuStateController");
