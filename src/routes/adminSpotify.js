@@ -39,6 +39,38 @@ router.get("/status", adminAuth, async (req, res) => {
   }
 });
 
+// GET /api/admin/spotify/sessions - list current playback sessions (admin)
+router.get("/sessions", adminAuth, async (req, res) => {
+  try {
+    const db = require("../db").getPrisma();
+
+    const sessions = await db.currentPlayback.findMany({
+      orderBy: { startedAt: "desc" },
+      take: 50,
+      include: { user: true, track: true },
+    });
+
+    const result = sessions.map((s) => ({
+      id: s.id,
+      userId: s.userId,
+      userName: s.user
+        ? s.user.displayName || s.user.name || s.user.identifier
+        : null,
+      userAvatar: s.user ? s.user.avatarUrl || null : null,
+      trackId: s.trackId,
+      trackName: s.track ? s.track.name : null,
+      trackImage: s.track ? s.track.imageUrl : null,
+      startedAt: s.startedAt,
+      listenedMs: s.listenedMs || 0,
+    }));
+
+    res.json({ sessions: result });
+  } catch (err) {
+    console.error("[adminSpotify] sessions error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;
 
 // Admin endpoints to control collaborative votes
