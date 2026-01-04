@@ -380,5 +380,4 @@ async function fetchAndPersistUser({ accountId, userId, userSpotifyAPI }) {
 // export helpers
 module.exports.upsertCurrentPlayback = upsertCurrentPlayback;
 module.exports.createTrackPlayback = createTrackPlayback;
-module.exports.upsertSession = upsertSession;
 module.exports.fetchAndPersistUser = fetchAndPersistUser;
