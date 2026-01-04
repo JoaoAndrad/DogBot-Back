@@ -92,9 +92,7 @@ router.post("/:chatId/active-listeners", async (req, res) => {
             {
               trackId: activeAccount.currentPlayback.trackId,
               hasMetadata: !!activeAccount.currentPlayback.metadata,
-              metadataKeys: activeAccount.currentPlayback.metadata
-                ? Object.keys(activeAccount.currentPlayback.metadata)
-                : [],
+              metadata: activeAccount.currentPlayback.metadata,
             }
           );
         }
