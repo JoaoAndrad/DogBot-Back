@@ -38,7 +38,11 @@ router.get("/playlists/managed", async (req, res) => {
       coverUrl: p.coverUrl,
       isManaged: p.isManaged,
       syncedAt: p.syncedAt,
-      trackCount: p._count ? p._count.entries : 0,
+      trackCount:
+        (p._count && p._count.entries) ||
+        (p.meta && (p.meta.tracks || p.meta.tracks_total)) ||
+        0,
+      meta: p.meta || {},
     }));
 
     res.json({ playlists: result });
