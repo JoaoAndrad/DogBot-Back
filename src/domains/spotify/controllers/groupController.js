@@ -279,6 +279,9 @@ router.post("/:chatId/playlist/create", async (req, res) => {
       return res.status(400).json({ error: "userId and name are required" });
     }
 
+    // Find or create group first
+    const group = await groupChatRepo.findOrCreateByChatId(chatId);
+
     // Create playlist on Spotify
     const spotifyService = require("../../../services/spotifyService");
     const createRes = await spotifyService.createSpotifyPlaylist(
@@ -325,12 +328,15 @@ router.post("/:chatId/playlist/create", async (req, res) => {
     });
 
     // Link to group
-    const group = await groupChatRepo.updatePlaylist(chatId, dbPlaylist.id);
+    const updatedGroup = await groupChatRepo.updatePlaylist(
+      chatId,
+      dbPlaylist.id
+    );
 
     res.json({
       success: true,
       playlist: dbPlaylist,
-      group,
+      group: updatedGroup,
       spotifyUrl: spotifyPlaylist.external_urls?.spotify,
     });
   } catch (error) {
@@ -354,6 +360,9 @@ router.post("/:chatId/playlist/link", async (req, res) => {
         error: "spotifyPlaylistId and accountId are required",
       });
     }
+
+    // Find or create group first
+    const group = await groupChatRepo.findOrCreateByChatId(chatId);
 
     // Get playlist details from Spotify
     const spotifyService = require("../../../services/spotifyService");
@@ -386,12 +395,15 @@ router.post("/:chatId/playlist/link", async (req, res) => {
     });
 
     // Link to group
-    const group = await groupChatRepo.updatePlaylist(chatId, dbPlaylist.id);
+    const updatedGroup = await groupChatRepo.updatePlaylist(
+      chatId,
+      dbPlaylist.id
+    );
 
     res.json({
       success: true,
       playlist: dbPlaylist,
-      group,
+      group: updatedGroup,
       spotifyUrl: spotifyPlaylist.external_urls?.spotify,
     });
   } catch (error) {
