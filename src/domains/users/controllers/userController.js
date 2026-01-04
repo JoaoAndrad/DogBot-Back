@@ -2,6 +2,8 @@ const express = require("express");
 const router = express.Router();
 const userRepo = require("../repo/userRepo");
 const logger = require("../../../lib/logger");
+const { PrismaClient } = require("@prisma/client");
+const prisma = new PrismaClient();
 
 /**
  * POST /api/users/upsert
@@ -151,6 +153,16 @@ router.get("/by-identifier/:identifier", async (req, res) => {
       ts: h.ts ? String(h.ts) : h.ts,
     }));
 
+    // Get Spotify accounts for this user
+    const spotifyAccounts = await prisma.spotifyAccount.findMany({
+      where: { userId: user.id },
+      select: {
+        id: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
     return res.json({
       success: true,
       user: {
@@ -162,6 +174,7 @@ router.get("/by-identifier/:identifier", async (req, res) => {
         created_at: user.created_at ? String(user.created_at) : user.created_at,
         last_seen: user.last_seen ? String(user.last_seen) : user.last_seen,
         push_name_history: pushNameHistory,
+        spotifyAccounts,
       },
     });
   } catch (err) {
