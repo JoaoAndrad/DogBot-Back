@@ -17,12 +17,10 @@ async function createNoteSimple(req, res) {
     // Normalize and validate rating
     const rating = trackNoteService.normalizeRating(ratingRaw);
     if (!rating) {
-      return res
-        .status(400)
-        .json({
-          error: "invalid_rating",
-          message: "Use número entre 0.0 e 10.0",
-        });
+      return res.status(400).json({
+        error: "invalid_rating",
+        message: "Use número entre 0.0 e 10.0",
+      });
     }
 
     // Resolve userId to internal UUID if needed
@@ -70,12 +68,21 @@ async function createNoteSimple(req, res) {
     }
 
     if (!trackId) {
-      return res
-        .status(404)
-        .json({
-          error: "no_track_playing",
-          message: "Não consegui detectar música atual",
-        });
+      return res.status(404).json({
+        error: "no_track_playing",
+        message: "Não consegui detectar música atual",
+      });
+    }
+
+    // Read previous latest note (if any) so we can report user's previous rating
+    const prisma = require("../../../db").getPrisma();
+    let prevLatest = null;
+    try {
+      prevLatest = await prisma.trackNoteLatest.findUnique({
+        where: { trackId_userId: { trackId, userId: resolvedUserId } },
+      });
+    } catch (e) {
+      // ignore
     }
 
     // Create note
@@ -88,19 +95,40 @@ async function createNoteSimple(req, res) {
       contextId: null,
     });
 
-    // Fetch track info and stats for response
-    const prisma = require("../../../db").getPrisma();
+    // Fetch track info and stats for response (reuse prisma from above)
     const track = await prisma.track.findUnique({ where: { id: trackId } });
     const stat = await prisma.trackStat.findUnique({ where: { trackId } });
+
+    // extract artist name (first) and album if available
+    let artist = null;
+    try {
+      if (track && track.artists) {
+        const arts = Array.isArray(track.artists)
+          ? track.artists
+          : JSON.parse(track.artists || "[]");
+        if (arts && arts.length > 0) {
+          const first = arts[0];
+          artist = typeof first === "string" ? first : first.name || null;
+        }
+      }
+    } catch (e) {
+      artist = null;
+    }
+
+    const album = track && track.album ? track.album : null;
 
     return res.json({
       success: true,
       note: history,
       trackId,
       trackName: track ? track.name : null,
+      artist: artist,
+      album: album,
       rating: rating,
       avgRating: stat && stat.avgRating ? stat.avgRating : null,
       ratingCount: stat && stat.ratingCount ? stat.ratingCount : 0,
+      previousRating:
+        prevLatest && prevLatest.rating !== null ? prevLatest.rating : null,
     });
   } catch (err) {
     console.error(
