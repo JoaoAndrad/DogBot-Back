@@ -13,10 +13,38 @@ module.exports = {
    */
   async getHistory(req, res) {
     try {
-      const { userId, from, to, page = 1, limit = 50 } = req.query;
+      const {
+        userId: rawUserId,
+        from,
+        to,
+        page = 1,
+        limit = 50,
+        scope,
+      } = req.query;
 
-      if (!userId) {
+      if (!rawUserId) {
         return res.status(400).json({ error: "userId is required" });
+      }
+
+      // Resolve external identifier to internal UUID when necessary.
+      let userId = rawUserId;
+      const isUUID =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+          rawUserId
+        );
+      if (!isUUID) {
+        try {
+          const userRepo = require("../../users/repo/userRepo");
+          const u = await userRepo.findByIdentifierExact(rawUserId);
+          if (u && u.id) userId = u.id;
+          else {
+            const base = userRepo.extractBaseNumber(rawUserId);
+            const u2 = await userRepo.findByBaseNumber(base);
+            if (u2 && u2.id) userId = u2.id;
+          }
+        } catch (e) {
+          // resolution failed -> keep rawUserId (may be group-scoped call)
+        }
       }
 
       const filters = {};
@@ -32,7 +60,36 @@ module.exports = {
         limit: parseInt(limit),
       });
 
-      res.json(result);
+      // Normalize result to match frontend expectations: { items: [...], page, limit, total, totalPages }
+      const items = (result.data || []).map((p) => {
+        return {
+          id: p.id,
+          track: p.track
+            ? {
+                id: p.track.id,
+                name: p.track.name,
+                artists: p.track.artists,
+                album: p.track.album,
+                imageUrl: p.track.imageUrl,
+                durationMs: p.track.durationMs,
+              }
+            : undefined,
+          startedAt: p.startedAt,
+          endedAt: p.endedAt || null,
+          listenedMs: p.listenedMs !== undefined ? Number(p.listenedMs) : 0,
+          percentPlayed: p.percentPlayed !== undefined ? p.percentPlayed : null,
+          wasSkipped: !!p.wasSkipped,
+          metadata: p.metadata || {},
+        };
+      });
+
+      res.json({
+        items,
+        page: result.page,
+        limit: result.limit,
+        total: result.total,
+        totalPages: result.totalPages,
+      });
     } catch (error) {
       console.log("[HistoryController] getHistory error:", error);
       res.status(500).json({ error: error.message });
@@ -45,10 +102,31 @@ module.exports = {
    */
   async getSummary(req, res) {
     try {
-      const { userId, month } = req.query;
+      const { userId: rawUserId, month, scope } = req.query;
 
-      if (!userId) {
+      if (!rawUserId) {
         return res.status(400).json({ error: "userId is required" });
+      }
+
+      // Resolve external identifier to internal UUID when necessary.
+      let userId = rawUserId;
+      const isUUID =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+          rawUserId
+        );
+      if (!isUUID) {
+        try {
+          const userRepo = require("../../users/repo/userRepo");
+          const u = await userRepo.findByIdentifierExact(rawUserId);
+          if (u && u.id) userId = u.id;
+          else {
+            const base = userRepo.extractBaseNumber(rawUserId);
+            const u2 = await userRepo.findByBaseNumber(base);
+            if (u2 && u2.id) userId = u2.id;
+          }
+        } catch (e) {
+          // ignore and proceed with rawUserId
+        }
       }
 
       if (!month) {
