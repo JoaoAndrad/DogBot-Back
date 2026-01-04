@@ -848,16 +848,17 @@
           list.slice(0, 10).forEach((t, i) => {
             const li = document.createElement("li");
             li.className = "trending-item";
+            const image =
+              (t.track && t.track.imageUrl) ||
+              t.image ||
+              t.imageUrl ||
+              "https://placehold.co/50x50/888/FFF?text=?";
+            const title = (t.track && t.track.name) || t.name || "Unknown";
+            const plays = t.playCount || t.play_count || 0;
             li.innerHTML = `
               <span class="trending-rank">${i + 1}.</span>
-              <div class="trending-cover"><img src="${
-                t.image || "https://placehold.co/50x50/888/FFF?text=?"
-              }" alt="cover"/></div>
-              <div class="trending-info"><h4 class="trending-title">${
-                t.name
-              }</h4><p class="trending-requests">${
-              t.playCount || 0
-            } plays</p></div>
+              <div class="trending-cover"><img src="${image}" alt="cover"/></div>
+              <div class="trending-info"><h4 class="trending-title">${title}</h4><p class="trending-requests">${plays} plays</p></div>
             `;
             container.appendChild(li);
           });
