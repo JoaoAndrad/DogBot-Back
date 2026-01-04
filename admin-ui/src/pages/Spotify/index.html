@@ -881,13 +881,33 @@
           await loadPlaylists();
           await loadTop();
 
-          const secret = prompt(
-            "Enter admin internal secret for live feed (or cancel to skip)"
-          );
-          if (secret) {
-            internalSecret = secret;
-            // connect SSE using query param (EventSource cannot set headers)
-            connectSSE(secret);
+          // Load secret from injected global or fetch protected config; fallback to prompt
+          try {
+            if (window.__ADMIN_INTERNAL_SECRET__) {
+              internalSecret = window.__ADMIN_INTERNAL_SECRET__;
+              connectSSE(internalSecret);
+            } else {
+              // attempt to fetch /admin/config.js which is protected by admin auth
+              await fetch("/admin/config.js", { credentials: "include" })
+                .then(() => {
+                  if (window.__ADMIN_INTERNAL_SECRET__) {
+                    internalSecret = window.__ADMIN_INTERNAL_SECRET__;
+                    connectSSE(internalSecret);
+                  }
+                })
+                .catch(() => {
+                  // final fallback: prompt the user
+                  const s = prompt(
+                    "Enter admin internal secret for live feed (or cancel to skip)"
+                  );
+                  if (s) {
+                    internalSecret = s;
+                    connectSSE(s);
+                  }
+                });
+            }
+          } catch (e) {
+            console.error("Secret load failed", e);
           }
         }
 

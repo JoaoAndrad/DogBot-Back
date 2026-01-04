@@ -13,6 +13,7 @@ try {
 const { testConnection } = require("./db");
 const { buildAdminRouter } = require("./admin");
 const apiRouter = require("./routes/api");
+const adminAuth = require("./middleware/adminAuth");
 
 const app = express();
 app.use(express.json());
@@ -121,5 +122,16 @@ try {
     err && err.message ? err.message : err
   );
 }
+
+// Serve admin config JS with internal secret injected (protected by admin auth)
+app.get("/admin/config.js", adminAuth, (req, res) => {
+  const secret =
+    process.env.INTERNAL_SECRET ||
+    process.env.ADMIN_INTERNAL_SECRET ||
+    process.env.INTERNAL_API_SECRET ||
+    "";
+  res.type("application/javascript");
+  res.send(`window.__ADMIN_INTERNAL_SECRET__ = ${JSON.stringify(secret)};`);
+});
 
 module.exports = app;
