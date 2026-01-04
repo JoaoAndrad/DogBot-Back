@@ -91,36 +91,31 @@ router.post("/:chatId/active-listeners", async (req, res) => {
             `[GroupsController] currentPlayback for ${user.display_name}:`,
             {
               trackId: activeAccount.currentPlayback.trackId,
-              trackName: activeAccount.currentPlayback.trackName,
-              hasTrackName: !!activeAccount.currentPlayback.trackName,
-              artists: activeAccount.currentPlayback.artists,
-              allFields: Object.keys(activeAccount.currentPlayback),
+              hasMetadata: !!activeAccount.currentPlayback.metadata,
+              metadataKeys: activeAccount.currentPlayback.metadata
+                ? Object.keys(activeAccount.currentPlayback.metadata)
+                : [],
             }
           );
         }
+
+        // Extract track info from metadata
+        const playback = activeAccount?.currentPlayback;
+        const meta = playback?.metadata || {};
 
         const result = {
           userId: user.id,
           identifier: matchingId || user.sender_number,
           displayName: user.display_name || user.push_name,
-          currentTrack: activeAccount?.currentPlayback
+          currentTrack: playback
             ? {
-                trackId: activeAccount.currentPlayback.trackId,
-                trackName:
-                  activeAccount.currentPlayback.trackName ||
-                  activeAccount.currentPlayback.track_name,
-                artists:
-                  activeAccount.currentPlayback.artists ||
-                  activeAccount.currentPlayback.artist_name,
-                contextId:
-                  activeAccount.currentPlayback.contextId ||
-                  activeAccount.currentPlayback.context_id,
-                contextType:
-                  activeAccount.currentPlayback.contextType ||
-                  activeAccount.currentPlayback.context_type,
-                isPlaying:
-                  activeAccount.currentPlayback.isPlaying ??
-                  activeAccount.currentPlayback.is_playing,
+                trackId: playback.trackId,
+                trackName: meta.track_name || meta.trackName,
+                artists: meta.artist_name || meta.artists,
+                albumName: meta.album_name || meta.albumName,
+                contextId: meta.context_id || meta.contextId,
+                contextType: meta.context_type || meta.contextType,
+                isPlaying: meta.is_playing ?? meta.isPlaying ?? true,
               }
             : null,
         };
