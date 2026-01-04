@@ -34,4 +34,58 @@ router.get("/tracks/:trackId/notes/latest", trackNoteController.getLatestNotes);
 // GET /api/spotify/tracks/:trackId/stats
 router.get("/tracks/:trackId/stats", trackNoteController.getTrackStats);
 
+// Playback control
+// POST /api/spotify/skip - Skip to next track for a user
+router.post("/skip", async (req, res) => {
+  try {
+    const { userId } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({ error: "userId is required" });
+    }
+
+    const spotifyService = require("../services/spotifyService");
+    const result = await spotifyService.skipTrack(userId);
+
+    if (result.success) {
+      res.json({ success: true });
+    } else {
+      res.status(400).json({ success: false, error: result.error });
+    }
+  } catch (error) {
+    console.error("[Spotify] skip error:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// POST /api/spotify/playlists/:playlistId/tracks - Add track to playlist
+router.post("/playlists/:playlistId/tracks", async (req, res) => {
+  try {
+    const { playlistId } = req.params;
+    const { trackUri, accountId } = req.body;
+
+    if (!trackUri || !accountId) {
+      return res
+        .status(400)
+        .json({ error: "trackUri and accountId are required" });
+    }
+
+    const spotifyService = require("../services/spotifyService");
+    const result = await spotifyService.addTrackToPlaylist(
+      playlistId,
+      trackUri,
+      accountId
+    );
+
+    if (result.success) {
+      res.json({ success: true, data: result.data });
+    } else {
+      res.status(400).json({ success: false, error: result.error });
+    }
+  } catch (error) {
+    console.error("[Spotify] add track error:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;

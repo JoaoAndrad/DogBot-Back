@@ -381,3 +381,96 @@ async function fetchAndPersistUser({ accountId, userId, userSpotifyAPI }) {
 module.exports.upsertCurrentPlayback = upsertCurrentPlayback;
 module.exports.createTrackPlayback = createTrackPlayback;
 module.exports.fetchAndPersistUser = fetchAndPersistUser;
+
+/**
+ * Skip to next track for a user
+ * @param {string} userId - User ID
+ * @returns {Promise<{success: boolean, error?: string}>}
+ */
+async function skipTrack(userId) {
+  try {
+    // Find user's Spotify account
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        spotifyAccounts: {
+          include: {
+            tokens: {
+              orderBy: { createdAt: "desc" },
+              take: 1,
+            },
+          },
+        },
+      },
+    });
+
+    if (!user || user.spotifyAccounts.length === 0) {
+      return { success: false, error: "User has no connected Spotify account" };
+    }
+
+    const account = user.spotifyAccounts[0];
+    const accountId = account.id;
+
+    // Use spotifyFetch to call skip endpoint
+    const res = await spotifyFetch(
+      accountId,
+      "https://api.spotify.com/v1/me/player/next",
+      {
+        method: "POST",
+      }
+    );
+
+    if (res.status === 204 || res.status === 200) {
+      return { success: true };
+    }
+
+    const errorText = await res.text().catch(() => "Unknown error");
+    return { success: false, error: `Spotify API error: ${errorText}` };
+  } catch (error) {
+    console.error("[spotifyService] skipTrack error:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Add track to a playlist
+ * @param {string} playlistId - Spotify playlist ID
+ * @param {string} trackUri - Spotify track URI (spotify:track:...)
+ * @param {string} accountId - Account ID to use for authentication
+ * @returns {Promise<{success: boolean, error?: string}>}
+ */
+async function addTrackToPlaylist(playlistId, trackUri, accountId) {
+  try {
+    if (!trackUri.startsWith("spotify:track:")) {
+      trackUri = `spotify:track:${trackUri}`;
+    }
+
+    const res = await spotifyFetch(
+      accountId,
+      `https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          uris: [trackUri],
+        }),
+      }
+    );
+
+    if (res.status === 201 || res.status === 200) {
+      const data = await res.json().catch(() => ({}));
+      return { success: true, data };
+    }
+
+    const errorText = await res.text().catch(() => "Unknown error");
+    return { success: false, error: `Spotify API error: ${errorText}` };
+  } catch (error) {
+    console.error("[spotifyService] addTrackToPlaylist error:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+module.exports.skipTrack = skipTrack;
+module.exports.addTrackToPlaylist = addTrackToPlaylist;

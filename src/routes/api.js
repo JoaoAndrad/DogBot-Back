@@ -105,4 +105,24 @@ try {
   router.use("/spotify", fallback);
 }
 
+// collaborative group listening
+try {
+  const groupController = require("../domains/spotify/controllers/groupController");
+  router.use("/groups", authHeader, groupController);
+  console.info("[routes/api] mounted /api/groups");
+} catch (e) {
+  console.log(
+    "[routes/api] failed to mount /api/groups routes:",
+    e && e.message ? e.message : e
+  );
+  const fallback = express.Router();
+  fallback.get("/", (req, res) =>
+    res.status(500).json({
+      error: "groups_routes_failed_to_load",
+      details: String(e && e.message ? e.message : e),
+    })
+  );
+  router.use("/groups", fallback);
+}
+
 module.exports = router;

@@ -23,6 +23,7 @@ model Poll {
   created_at  DateTime @default(now()) @db.Timestamptz(6)
 
   votes       Vote[]
+  collaborativeVotes CollaborativeVote[]
   @@map("Poll")
 }
 
@@ -344,6 +345,7 @@ model Playlist {
   account    SpotifyAccount? @relation(fields: [accountId], references: [id])
   liveRequests LiveRequest[]
   syncLogs     PlaylistSyncLog[]
+  groupChats   GroupChat[]
 
   @@index([accountId])
 }
@@ -486,4 +488,49 @@ model MenuState {
   @@map("MenuState")
 }
 
+// =====================
+// Collaborative Group Listening
+// =====================
 
+model GroupChat {
+  id              String   @id @default(uuid())
+  chatId          String   @unique // WhatsApp group ID
+  name            String?
+  playlistId      String?  // Associated shared playlist
+  isActive        Boolean  @default(true)
+  settings        Json?    @db.Json // voting thresholds, etc.
+  createdAt       DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime @updatedAt @db.Timestamptz(6)
+
+  playlist        Playlist? @relation(fields: [playlistId], references: [id], onDelete: SetNull)
+  votes           CollaborativeVote[]
+
+  @@index([chatId])
+  @@index([playlistId])
+}
+
+model CollaborativeVote {
+  id              String   @id @default(uuid())
+  groupChatId     String
+  pollId          String?  // FK to Poll if using poll system
+  voteType        String   // 'skip' | 'add'
+  trackId         String?  // Track being voted on
+  trackName       String?
+  trackArtists    String?
+  initiatorUserId String   // Who started the vote
+  targetUserIds   Json     @db.Json // Array of user IDs eligible to vote
+  votesFor        Json     @db.Json // Array of user IDs who voted yes
+  votesAgainst    Json     @db.Json // Array of user IDs who voted no
+  status          String   @default("active") // active | passed | failed | expired
+  threshold       Float    @default(0.5) // Percentage needed (0.5 = 50%)
+  expiresAt       DateTime? @db.Timestamptz(6)
+  resolvedAt      DateTime? @db.Timestamptz(6)
+  createdAt       DateTime @default(now()) @db.Timestamptz(6)
+
+  groupChat       GroupChat @relation(fields: [groupChatId], references: [id], onDelete: Cascade)
+  poll            Poll?     @relation(fields: [pollId], references: [id], onDelete: SetNull)
+
+  @@index([groupChatId, status])
+  @@index([pollId])
+  @@index([expiresAt])
+}
