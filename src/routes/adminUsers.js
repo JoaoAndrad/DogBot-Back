@@ -59,6 +59,7 @@ router.patch("/:id", express.json(), async (req, res) => {
       "last_known_lid",
       "sender_number",
       "dogfort",
+      "confessions",
     ];
     const payload = {};
     for (const k of allowed) if (k in req.body) payload[k] = req.body[k];

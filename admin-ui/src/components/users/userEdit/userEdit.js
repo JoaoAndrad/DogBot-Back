@@ -110,6 +110,21 @@ export default async function initUserEdit() {
     const saldoVal = rootConfissoes.saldo ?? raw.saldo ?? metaDf.saldo;
     setValue("dfSaldo", saldoVal != null ? String(saldoVal) : "");
 
+    // Confissões (backend fields)
+    const confBal =
+      u.confessions_balance ??
+      rootConfissoes.balance ??
+      rootConfissoes.saldo ??
+      null;
+    setValue("confBalance", confBal != null ? String(confBal) : "");
+    const confVip =
+      typeof u.confessions_vip !== "undefined"
+        ? !!u.confessions_vip
+        : !!(rootConfissoes.vip || rootConfissoes.is_vip);
+    // set checkbox
+    const confVipEl = document.getElementById("confVip");
+    if (confVipEl) confVipEl.checked = !!confVip;
+
     // Mensal
     const mensalVal = raw.mensal ?? metaDf.mensal;
     setValue("dfMensal", mensalVal != null ? String(mensalVal) : "");
@@ -260,6 +275,15 @@ export default async function initUserEdit() {
             ? Number(getValue("dfMetaAnual"))
             : undefined,
           ultimo_treino: getValue("dfUltimoTreino") || undefined,
+        },
+        confessions: {
+          balance: getValue("confBalance")
+            ? Number(getValue("confBalance"))
+            : undefined,
+          vip:
+            (document.getElementById("confVip") &&
+              document.getElementById("confVip").checked) ||
+            undefined,
         },
       };
 
