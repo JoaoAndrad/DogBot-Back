@@ -41,8 +41,53 @@ router.get("/:id", async (req, res) => {
     if (!user) return res.status(404).json({ error: "User not found" });
     res.json(user);
   } catch (e) {
-    console.log("user detail error", e && e.message ? e.message : e);
-    res.status(500).json({ error: "Failed to get user" });
+    console.error(
+      "user detail error",
+      e && (e.stack || e.message) ? e.stack || e.message : e
+    );
+    // Return error details in admin API to aid debugging (admin auth required)
+    res
+      .status(500)
+      .json({
+        error: "Failed to get user",
+        message: e && e.message ? e.message : String(e),
+      });
+  }
+});
+
+// DEBUG: GET raw user record without joins (helps diagnose include-related failures)
+router.get("/:id/raw", async (req, res) => {
+  try {
+    const id = req.params.id;
+    const repo = require("../domains/users/repo/userRepo");
+    const prisma = require("../../db").getPrisma();
+    if (!prisma || !prisma.user)
+      return res.status(500).json({ error: "Prisma client not available" });
+    // Attempt a minimal select to avoid join issues
+    const user = await prisma.user.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        sender_number: true,
+        display_name: true,
+        metadata: true,
+        identifiers: true,
+        created_at: true,
+      },
+    });
+    if (!user) return res.status(404).json({ error: "User not found" });
+    res.json({ raw: user });
+  } catch (e) {
+    console.error(
+      "user raw detail error",
+      e && (e.stack || e.message) ? e.stack || e.message : e
+    );
+    res
+      .status(500)
+      .json({
+        error: "Failed to get raw user",
+        message: e && e.message ? e.message : String(e),
+      });
   }
 });
 
