@@ -31,45 +31,38 @@ module.exports = function requestLogger(req, res, next) {
     return next();
   }
 
-  // copy and mask headers we don't want to leak
-  const headers = Object.assign({}, req.headers || {});
-  if (headers.authorization) headers.authorization = "[masked]";
-  if (headers["x-internal-secret"])
-    headers["x-internal-secret"] = mask(headers["x-internal-secret"]);
-  if (headers["x-bot-secret"])
-    headers["x-bot-secret"] = mask(headers["x-bot-secret"]);
+  // Suppress logging for admin polling endpoints that are frequently
+  // requested by the admin UI (these generate noise):
+  if (
+    method === "GET" &&
+    (String(url).startsWith("/admin/db-status") ||
+      String(url).startsWith("/admin/logs") ||
+      String(url).startsWith("/api/polls"))
+  ) {
+    return next();
+  }
 
-  const bodyPreview = (() => {
-    if (!req.body) return null;
-    try {
-      const json =
-        typeof req.body === "string" ? JSON.parse(req.body) : req.body;
-      // avoid logging huge payloads
-      const s = safeStringify(json);
-      return s.length > 1000 ? s.slice(0, 1000) + "...[truncated]" : s;
-    } catch (e) {
-      try {
-        const s = String(req.body);
-        return s.length > 1000 ? s.slice(0, 1000) + "...[truncated]" : s;
-      } catch (e2) {
-        return null;
-      }
-    }
-  })();
-
-  console.info(
-    `[REQ] ${method} ${url} headers=${safeStringify(
-      headers
-    )} body=${bodyPreview}`
-  );
+  // Minimal request log: method, url and remote address. Avoid logging
+  // headers/body by default to keep logs compact and avoid leaking info.
+  const remote =
+    req.ip ||
+    req.headers["x-forwarded-for"] ||
+    req.connection?.remoteAddress ||
+    "-";
+  console.info(`[REQ] ${method} ${url} from=${remote}`);
 
   // Hook finish to log response status and duration
   function onFinish() {
     res.removeListener("finish", onFinish);
     res.removeListener("close", onFinish);
     const duration = Date.now() - start;
+    const remote =
+      req.ip ||
+      req.headers["x-forwarded-for"] ||
+      req.connection?.remoteAddress ||
+      "-";
     console.info(
-      `[RES] ${method} ${url} status=${res.statusCode} duration=${duration}ms`
+      `[RES] ${method} ${url} from=${remote} status=${res.statusCode} duration=${duration}ms`
     );
   }
 
