@@ -29,10 +29,6 @@ module.exports = {
     const now = Date.now();
     const session = activeSessions.get(userId);
 
-    console.log(
-      `[PlaybackTracker] recordPlayback userId=${userId} track=${trackData.id}`
-    );
-
     // Check if track changed
     const isNewTrack = !session || session.trackId !== trackData.id;
 
@@ -90,9 +86,6 @@ module.exports = {
         durationMs: trackData.duration_ms || 180000, // default 3min
       });
 
-      console.log(
-        `[PlaybackTracker] New track detected for ${userId}: ${trackData.name}`
-      );
       return;
     }
 
@@ -125,12 +118,6 @@ module.exports = {
       ? (totalMs / session.durationMs) * 100
       : 0;
     const wasSkipped = percentPlayed < 30; // consider skipped if < 30%
-
-    console.log(
-      `[PlaybackTracker] Flushing session for ${userId}: ${
-        session.accumulatedMs
-      }ms (${percentPlayed.toFixed(1)}%)`
-    );
 
     try {
       // Update playback record with cumulative listened time
@@ -272,10 +259,6 @@ module.exports = {
         genres,
         forceUpdate: true,
       });
-
-      console.log(
-        `[PlaybackTracker] Enriched track ${trackId} with audio features and genres`
-      );
     } catch (error) {
       console.warn(
         `[PlaybackTracker] Failed to enrich track ${trackId}:`,
@@ -322,10 +305,6 @@ module.exports = {
    * Force flush all active sessions (on shutdown)
    */
   async flushAll() {
-    console.log(
-      `[PlaybackTracker] Flushing ${activeSessions.size} active sessions`
-    );
-
     for (const [userId, session] of activeSessions.entries()) {
       await this.flushSession(userId, session);
     }
