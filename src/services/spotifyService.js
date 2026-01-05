@@ -292,16 +292,9 @@ async function createTrackPlayback({
  * userSpotifyAPI must implement: getCurrentlyPlaying(userId) and getConnectedUsers()/getConnectionStatus
  */
 async function fetchAndPersistUser({ accountId, userId, userSpotifyAPI }) {
-  console.log(
-    `[fetchAndPersistUser] START userId=${userId} accountId=${accountId}`
-  );
   if (!userSpotifyAPI) throw new Error("userSpotifyAPI is required");
 
   const result = await userSpotifyAPI.getCurrentlyPlaying(userId);
-  console.log(
-    `[fetchAndPersistUser] getCurrentlyPlaying returned:`,
-    result ? `playing=${result.playing} error=${!!result.error}` : "null"
-  );
 
   // Resolve accountId if not provided
   let resolvedAccountId = accountId;
@@ -314,20 +307,7 @@ async function fetchAndPersistUser({ accountId, userId, userSpotifyAPI }) {
 
   // if error or not playing, return
   if (!result || result.error || result.playing === false) {
-    // Diagnostic log to help identify why no playback was detected
-    try {
-      console.log(
-        `[fetchAndPersistUser] no playback for user=${userId} account=${accountId} result=`,
-        result && typeof result === "object"
-          ? JSON.stringify(result).slice(0, 2000)
-          : result
-      );
-    } catch (e) {
-      console.warn(
-        "[fetchAndPersistUser] failed to stringify result",
-        e && e.message
-      );
-    }
+    // no playback detected
 
     // Delete currentPlayback if it exists (user stopped playing)
     if (resolvedAccountId) {
@@ -335,22 +315,16 @@ async function fetchAndPersistUser({ accountId, userId, userSpotifyAPI }) {
         await prisma.currentPlayback.deleteMany({
           where: { accountId: resolvedAccountId },
         });
-        console.log(
-          `[fetchAndPersistUser] Deleted stale currentPlayback for account=${resolvedAccountId}`
-        );
         try {
           sseHub.sendEvent("playlist_sync", {
             accountId: resolvedAccountId,
             action: "deleted",
           });
         } catch (e) {
-          console.error("[fetchAndPersistUser] sse send error:", e);
+          // ignore SSE send errors
         }
       } catch (err) {
-        console.warn(
-          `[fetchAndPersistUser] Failed to delete currentPlayback:`,
-          err.message
-        );
+        // ignore delete errors
       }
     }
 
@@ -361,9 +335,6 @@ async function fetchAndPersistUser({ accountId, userId, userSpotifyAPI }) {
   const trackId = result.url ? result.url.split("/").pop() : result.id || null;
 
   if (!trackId || !resolvedAccountId) {
-    console.warn(
-      `[fetchAndPersistUser] Missing trackId or accountId, skipping persist`
-    );
     return { status: "playing", track: result };
   }
 
@@ -391,7 +362,7 @@ async function fetchAndPersistUser({ accountId, userId, userSpotifyAPI }) {
       progressMs: result.progress_ms,
     });
   } catch (err) {
-    console.log(`[fetchAndPersistUser] playbackTracker error:`, err);
+    // ignore playback tracker errors
   }
 
   // Update current playback pointer
@@ -407,7 +378,7 @@ async function fetchAndPersistUser({ accountId, userId, userSpotifyAPI }) {
       trackId,
     });
   } catch (e) {
-    console.error("[fetchAndPersistUser] sse send error:", e);
+    // ignore SSE send errors
   }
 
   return { status: "playing", track: result };
