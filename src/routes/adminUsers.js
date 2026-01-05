@@ -6,6 +6,17 @@ const router = express.Router();
 
 router.use(basicAuth);
 
+// helper: sanitize BigInt values from Prisma results
+function sanitizeBigInt(obj) {
+  try {
+    return JSON.parse(
+      JSON.stringify(obj, (k, v) => (typeof v === "bigint" ? v.toString() : v))
+    );
+  } catch (e) {
+    return obj;
+  }
+}
+
 // GET /admin/api/users
 router.get("/", async (req, res) => {
   try {
@@ -122,19 +133,17 @@ router.patch("/:id", express.json(), async (req, res) => {
     if (Object.keys(payload).length === 0)
       return res.status(400).json({ error: "No updatable fields provided" });
     const updated = await userService.updateUser(id, payload);
-    res.json(updated);
+    res.json(sanitizeBigInt(updated));
   } catch (e) {
     console.error(
       "user update error",
       e && (e.stack || e.message) ? e.stack || e.message : e
     );
     // return error details for admin UI debugging
-    res
-      .status(500)
-      .json({
-        error: "Failed to update user",
-        message: e && e.message ? e.message : String(e),
-      });
+    res.status(500).json({
+      error: "Failed to update user",
+      message: e && e.message ? e.message : String(e),
+    });
   }
 });
 
