@@ -39,19 +39,32 @@ router.get("/:id", async (req, res) => {
   try {
     const user = await userService.getUser(req.params.id);
     if (!user) return res.status(404).json({ error: "User not found" });
-    res.json(user);
+
+    // sanitize BigInt values (Prisma returns BigInt for some numeric fields)
+    function sanitizeBigInt(obj) {
+      try {
+        return JSON.parse(
+          JSON.stringify(obj, (k, v) =>
+            typeof v === "bigint" ? v.toString() : v
+          )
+        );
+      } catch (e) {
+        // fallback: return original object if serialization fails
+        return obj;
+      }
+    }
+
+    res.json(sanitizeBigInt(user));
   } catch (e) {
     console.error(
       "user detail error",
       e && (e.stack || e.message) ? e.stack || e.message : e
     );
     // Return error details in admin API to aid debugging (admin auth required)
-    res
-      .status(500)
-      .json({
-        error: "Failed to get user",
-        message: e && e.message ? e.message : String(e),
-      });
+    res.status(500).json({
+      error: "Failed to get user",
+      message: e && e.message ? e.message : String(e),
+    });
   }
 });
 
@@ -82,12 +95,10 @@ router.get("/:id/raw", async (req, res) => {
       "user raw detail error",
       e && (e.stack || e.message) ? e.stack || e.message : e
     );
-    res
-      .status(500)
-      .json({
-        error: "Failed to get raw user",
-        message: e && e.message ? e.message : String(e),
-      });
+    res.status(500).json({
+      error: "Failed to get raw user",
+      message: e && e.message ? e.message : String(e),
+    });
   }
 });
 
