@@ -165,8 +165,13 @@ router.get("/callback", async (req, res) => {
               console.log(
                 `[SpotifyAuth] Resolved identifier ${userId} → User.id ${resolvedUserId}`
               );
+              console.log(
+                `[SpotifyAuth] User info: ${user.name || "(sem nome)"} (${
+                  user.sender_number || "sem número"
+                })`
+              );
             } else {
-              console.warn(
+              console.log(
                 `[SpotifyAuth] Could not resolve identifier ${userId} to User - account will be created without userId`
               );
               resolvedUserId = null;
@@ -188,6 +193,42 @@ router.get("/callback", async (req, res) => {
             accountType: "user",
           })
         : await upsertAccountForUser({ accountType: "bot" });
+
+      console.log(
+        `[SpotifyAuth] ✅ Spotify account ${
+          account.isNew ? "created" : "found"
+        }: ${account.id}`
+      );
+
+      // Get user details for logging
+      if (resolvedUserId) {
+        try {
+          const user = await prisma.user.findUnique({
+            where: { id: resolvedUserId },
+            select: { id: true, name: true, sender_number: true },
+          });
+          if (user) {
+            console.log(
+              `[SpotifyAuth] 🎵 Nova conta Spotify atribuída ao usuário: ${
+                user.name || "(sem nome)"
+              } (ID: ${user.id})`
+            );
+            console.log(
+              `[SpotifyAuth] 📞 Telefone: ${user.sender_number || "n/a"}`
+            );
+          }
+        } catch (logErr) {
+          console.log(
+            "[SpotifyAuth] Could not fetch user details for logging:",
+            logErr.message
+          );
+        }
+      } else {
+        console.log(
+          `[SpotifyAuth] ⚠️ Conta Spotify criada sem usuário associado (bot account)`
+        );
+      }
+
       const result = await upsertAccountTokens({
         accountId: account.id,
         accessToken: data.access_token,
@@ -195,6 +236,13 @@ router.get("/callback", async (req, res) => {
         expiresIn: data.expires_in,
         scope: data.scope,
       });
+
+      console.log(
+        `[SpotifyAuth] 🔑 Tokens salvos para conta ${account.id} (expires in ${data.expires_in}s)`
+      );
+      console.log(
+        `[SpotifyAuth] 🎯 Scopes concedidos: ${data.scope || "none"}`
+      );
 
       // mark session used and attach accountId if we have a session
       try {
