@@ -124,8 +124,17 @@ router.patch("/:id", express.json(), async (req, res) => {
     const updated = await userService.updateUser(id, payload);
     res.json(updated);
   } catch (e) {
-    console.log("user update error", e && e.message ? e.message : e);
-    res.status(500).json({ error: "Failed to update user" });
+    console.error(
+      "user update error",
+      e && (e.stack || e.message) ? e.stack || e.message : e
+    );
+    // return error details for admin UI debugging
+    res
+      .status(500)
+      .json({
+        error: "Failed to update user",
+        message: e && e.message ? e.message : String(e),
+      });
   }
 });
 
