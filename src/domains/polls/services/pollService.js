@@ -17,7 +17,7 @@ async function getPoll(id) {
 }
 
 async function listPolls(opts) {
-  console.info("[pollService] listPolls", opts || {});
+  //console.info("[pollService] listPolls", opts || {});
   const r = await repo.listPolls(opts || {});
   console.info(
     "[pollService] listPolls count",
