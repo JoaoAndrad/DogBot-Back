@@ -225,12 +225,9 @@ module.exports = {
     });
 
     // Enrich with audio features in background (don't await)
-    this.enrichTrackInBackground(trackData.id).catch((err) => {
-      console.warn(
-        `[PlaybackTracker] Failed to enrich track ${trackData.id}:`,
-        err.message
-      );
-    });
+    // Suppress enrichment errors to avoid noisy logs when track metadata
+    // is in an unexpected format (some sources store artists as plain strings).
+    this.enrichTrackInBackground(trackData.id).catch(() => {});
 
     return track;
   },
@@ -248,8 +245,35 @@ module.exports = {
       // Fetch audio features from Spotify API
       const audioFeatures = await this.fetchAudioFeatures(trackId);
 
-      // Fetch genres from artists
-      const artists = JSON.parse(track.artists || "[]");
+      // Fetch genres from artists. Track repo may store `artists` either as
+      // a JSON string (array) or as a simple string like "Eminem".
+      let artists = [];
+      try {
+        if (!track.artists) {
+          artists = [];
+        } else if (Array.isArray(track.artists)) {
+          artists = track.artists;
+        } else if (typeof track.artists === "string") {
+          const s = track.artists.trim();
+          if (s.startsWith("[") || s.startsWith("{")) {
+            // Attempt parse when it looks like JSON
+            try {
+              artists = JSON.parse(s);
+            } catch (e) {
+              // fallback to single-name artist
+              artists = [{ name: s }];
+            }
+          } else {
+            // Plain string — treat as single artist name
+            artists = [{ name: s }];
+          }
+        } else {
+          artists = [];
+        }
+      } catch (e) {
+        artists = [];
+      }
+
       const genres = await this.fetchGenres(artists);
 
       // Update track
@@ -260,10 +284,8 @@ module.exports = {
         forceUpdate: true,
       });
     } catch (error) {
-      console.warn(
-        `[PlaybackTracker] Failed to enrich track ${trackId}:`,
-        error.message
-      );
+      // Suppress enrichment errors to avoid noisy logs for malformed metadata
+      // (enrichment is best-effort).
     }
   },
 
