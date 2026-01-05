@@ -531,6 +531,7 @@ model CollaborativeVote {
   votesAgainst    Json     @db.Json // Array of user IDs who voted no
   status          String   @default("active") // active | passed | failed | expired
   threshold       Float    @default(0.5) // Percentage needed (0.5 = 50%)
+  processed       Boolean  @default(false) // Flag to prevent duplicate resolution actions
   expiresAt       DateTime? @db.Timestamptz(6)
   resolvedAt      DateTime? @db.Timestamptz(6)
   createdAt       DateTime @default(now()) @db.Timestamptz(6)
@@ -541,4 +542,5 @@ model CollaborativeVote {
   @@index([groupChatId, status])
   @@index([pollId])
   @@index([expiresAt])
+  @@index([status, processed])
 }

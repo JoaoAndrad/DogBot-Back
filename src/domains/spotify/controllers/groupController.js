@@ -216,28 +216,81 @@ router.get("/votes/:voteId", async (req, res) => {
 router.post("/votes/:voteId/cast", async (req, res) => {
   try {
     const { voteId } = req.params;
-    const { userId, isFor } = req.body;
+    const { userId, isFor, pollId } = req.body;
 
     if (!userId || typeof isFor !== "boolean") {
       return res.status(400).json({ error: "userId and isFor are required" });
     }
 
-    // Add vote
-    let vote = await collaborativeVoteRepo.addVote(voteId, userId, isFor);
+    // Validate user exists and has Spotify connected
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        spotifyAccounts: true,
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    if (!user.spotifyAccounts || user.spotifyAccounts.length === 0) {
+      return res.status(400).json({
+        error: "User has no Spotify account connected",
+        needsSpotify: true,
+      });
+    }
+
+    // Get vote to validate pollId if provided
+    let vote = await prisma.collaborativeVote.findUnique({
+      where: { id: voteId },
+    });
 
     if (!vote) {
       return res.status(404).json({ error: "Vote not found" });
     }
 
-    // Check if resolved - pode retornar null se já resolvido
+    // Validate pollId matches if provided
+    if (pollId && vote.pollId && vote.pollId !== pollId) {
+      console.warn(
+        `[GroupsController] pollId mismatch: expected ${vote.pollId}, got ${pollId}`
+      );
+      return res.status(400).json({ error: "pollId mismatch" });
+    }
+
+    // Check if vote is already resolved
+    if (vote.status !== "active") {
+      console.log(
+        `[GroupsController] Vote ${voteId} already resolved with status: ${vote.status}`
+      );
+      const stats = await collaborativeVoteRepo.getVoteStats(voteId);
+      return res.json({ vote, stats, alreadyResolved: true });
+    }
+
+    // Add vote (idempotent - uses Set internally)
+    vote = await collaborativeVoteRepo.addVote(voteId, userId, isFor);
+
+    if (!vote) {
+      return res.status(404).json({ error: "Vote not found" });
+    }
+
+    // Check if resolved - can return null if already resolved or use transaction lock
     const resolvedVote = await collaborativeVoteRepo.checkAndResolve(voteId);
     if (resolvedVote) {
       vote = resolvedVote;
+
+      // Mark as processed to prevent duplicate actions
+      if (vote.status !== "active" && !vote.processed) {
+        await prisma.collaborativeVote.update({
+          where: { id: voteId },
+          data: { processed: true },
+        });
+      }
     }
 
     const stats = await collaborativeVoteRepo.getVoteStats(voteId);
 
-    res.json({ vote, stats });
+    res.json({ vote, stats, alreadyResolved: false });
   } catch (error) {
     console.error("[GroupsController] cast vote error:", error);
     res.status(500).json({ error: error.message });
