@@ -29,7 +29,6 @@ router.post("/", async (req, res) => {
 router.get("/", async (req, res) => {
   try {
     const { chat_id } = req.query || {};
-    console.info("[pollController] GET /api/polls/", { chat_id });
     const rows = await service.listPolls({ chat_id });
     res.json(rows);
   } catch (err) {

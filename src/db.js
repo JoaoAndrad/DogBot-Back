@@ -128,7 +128,7 @@ async function testConnection() {
     const client = getPrisma();
     await client.$connect();
     await client.$queryRaw`SELECT 1`;
-    console.log("Teste de conexão Prisma: OK");
+    // Connection succeeded — keep silent to avoid noisy periodic logs
     _lastPrismaError = null;
     return true;
   } catch (err) {
