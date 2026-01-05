@@ -163,7 +163,7 @@ router.post("/:chatId/vote", async (req, res) => {
       trackArtists,
       initiatorUserId,
       targetUserIds,
-      threshold: threshold || 0.5,
+      threshold: threshold || 0.6,
       expiresAt,
     });
 

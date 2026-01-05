@@ -24,7 +24,7 @@ module.exports = {
         trackArtists,
         initiatorUserId: data.initiatorUserId,
         targetUserIds: data.targetUserIds || [],
-        votesFor: data.votesFor || [data.initiatorUserId], // Initiator auto-votes yes
+        votesFor: data.votesFor || [data.initiatorUserId], // Initiator auto-votes yes (doesn't vote manually)
         votesAgainst: data.votesAgainst || [],
         threshold: data.threshold || 0.5,
         expiresAt: data.expiresAt,
