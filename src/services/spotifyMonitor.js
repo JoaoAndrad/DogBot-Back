@@ -33,11 +33,8 @@ class SpotifyMonitor {
     const connected = await Promise.resolve(
       this.userSpotifyAPI.getConnectedUsers()
     );
-    console.log(
-      "[SpotifyMonitor] Usuários conectados ao spotify:",
-      connected && connected.length ? connected.join(", ") : "nenhum"
-    );
-    console.log("[SpotifyMonitor] Verificando músicas atuais dos usuários...");
+    // Suppress verbose connected-users log to avoid leaking user ids in logs
+    // and reduce noise. Keep a lightweight status check instead.
     if (!connected || connected.length === 0) return { processed: 0 };
 
     this.lastRun = new Date();

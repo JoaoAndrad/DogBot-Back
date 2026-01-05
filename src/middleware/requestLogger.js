@@ -25,6 +25,12 @@ module.exports = function requestLogger(req, res, next) {
   const method = req.method;
   const url = req.originalUrl || req.url;
 
+  // Suppress logging for high-frequency message ingestion endpoint
+  // to avoid noisy logs in production.
+  if (method === "POST" && String(url).startsWith("/api/messages")) {
+    return next();
+  }
+
   // copy and mask headers we don't want to leak
   const headers = Object.assign({}, req.headers || {});
   if (headers.authorization) headers.authorization = "[masked]";
