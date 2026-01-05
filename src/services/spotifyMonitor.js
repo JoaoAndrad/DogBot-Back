@@ -11,6 +11,8 @@ class SpotifyMonitor {
     this.isRunning = false;
     this.lastRun = null;
     this.consecutiveErrors = {};
+    // Cache last printed log per user to avoid duplicate console lines
+    this._lastPrinted = new Map();
   }
 
   async _checkOne(userId, accountId = null) {
@@ -74,9 +76,12 @@ class SpotifyMonitor {
             }
             const trackTitle = track.name || track.trackName || "Unknown track";
             const trackId = track.id || track.trackId || "unknown";
-            console.log(
-              `[SpotifyMonitor] ${display} (${userId}) — ${trackTitle} (${trackId})`
-            );
+            const line = `${display} (${userId}) — ${trackTitle} (${trackId})`;
+            const prev = this._lastPrinted.get(userId);
+            if (prev !== line) {
+              console.log(`[SpotifyMonitor] ${line}`);
+              this._lastPrinted.set(userId, line);
+            }
           })
         );
       }
