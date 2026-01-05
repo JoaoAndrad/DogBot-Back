@@ -92,5 +92,7 @@ async function refreshAll() {
 
 window.addEventListener("load", () => {
   refreshAll();
-  setInterval(refreshAll, 30_000);
+  // Removed periodic refresh (was setInterval(refreshAll, 30_000))
+  // This polling was added for debugging and caused repeated requests to
+  // /admin/db-status and /api/polls. Kept a single refresh on load only.
 });

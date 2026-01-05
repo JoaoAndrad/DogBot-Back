@@ -75,10 +75,10 @@ class SpotifyMonitor {
             } catch (e) {
               // ignore
             }
+            const trackTitle = track.name || track.trackName || "Unknown track";
+            const trackId = track.id || track.trackId || "unknown";
             console.log(
-              `[SpotifyMonitor] ${
-                track.name || track.trackName || "Unknown track"
-              } — ${display}`
+              `[SpotifyMonitor] ${display} (${userId}) — ${trackTitle} (${trackId})`
             );
           })
         );
