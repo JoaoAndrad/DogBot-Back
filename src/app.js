@@ -29,9 +29,16 @@ try {
 }
 
 // Serve admin static SPA assets
+// Serve admin static SPA assets with no-cache to ensure updated scripts are fetched
 app.use(
   "/admin/static",
-  express.static(path.join(__dirname, "..", "admin-ui"))
+  express.static(path.join(__dirname, "..", "admin-ui"), {
+    maxAge: 0,
+    etag: false,
+    setHeaders: (res) => {
+      res.setHeader("Cache-Control", "no-store, must-revalidate");
+    },
+  })
 );
 
 // Serve a top-level admin logo at /admin/logo.svg for AdminJS or direct requests
