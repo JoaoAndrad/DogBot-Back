@@ -1,13 +1,75 @@
 const { PrismaClient } = require("@prisma/client");
 const fetch = require("node-fetch");
-const playbackTracker = require("../domains/spotify/services/playbackTrackerService");
-const sseHub = require("../lib/sseHub");
 
 const prisma = new PrismaClient();
 
 // Global block state when Spotify indicates rate limit (Retry-After)
 let spotifyBlockedUntil = 0; // timestamp (ms) until which requests should be blocked
 let spotifyBlockedHeader = null; // raw Retry-After header value
+
+/**
+ * Check if Spotify is globally rate-limited (blocked)
+ * Returns { blocked: boolean, blockedUntil?: number, message?: string }
+ */
+function isSpotifyBlocked() {
+  if (spotifyBlockedUntil && spotifyBlockedUntil > Date.now()) {
+    const msLeft = spotifyBlockedUntil - Date.now();
+    const blockedDate = new Date(spotifyBlockedUntil);
+    const pad = (n) => String(n).padStart(2, "0");
+    const formatted = `${pad(blockedDate.getDate())}/${pad(
+      blockedDate.getMonth() + 1
+    )}/${blockedDate.getFullYear()} às ${pad(blockedDate.getHours())}:${pad(
+      blockedDate.getMinutes()
+    )}`;
+    return {
+      blocked: true,
+      blockedUntil: spotifyBlockedUntil,
+      blockedHeader: spotifyBlockedHeader,
+      message: `O Spotify está passando por algumas instabilidades então as requisições foram suspensas por hora.\n\nPrevisão de retorno: ${formatted}`,
+    };
+  }
+  return { blocked: false };
+}
+
+// Export early to avoid circular dependency issues
+module.exports = {
+  isSpotifyBlocked,
+  get prisma() {
+    return prisma;
+  },
+  get spotifyFetch() {
+    return spotifyFetch;
+  },
+  get upsertAccountForUser() {
+    return upsertAccountForUser;
+  },
+  get upsertAccountTokens() {
+    return upsertAccountTokens;
+  },
+  get getLatestTokenByAccountId() {
+    return getLatestTokenByAccountId;
+  },
+  get refreshTokenForAccount() {
+    return refreshTokenForAccount;
+  },
+  get getValidAccessTokenForAccount() {
+    return getValidAccessTokenForAccount;
+  },
+  get upsertCurrentPlayback() {
+    return upsertCurrentPlayback;
+  },
+  get createTrackPlayback() {
+    return createTrackPlayback;
+  },
+  get fetchAndPersistUser() {
+    return fetchAndPersistUser;
+  },
+};
+
+// Now safe to import modules that depend on spotifyService
+const playbackTracker = require("../domains/spotify/services/playbackTrackerService");
+const sseHub = require("../lib/sseHub");
+
 const SPOTIFY_TOKEN_URL = "https://accounts.spotify.com/api/token";
 
 async function upsertAccountForUser({ userId }) {
@@ -282,41 +344,6 @@ async function spotifyFetch(accountId, url, options = {}) {
   return res;
 }
 
-/**
- * Check if Spotify is globally rate-limited (blocked)
- * Returns { blocked: boolean, blockedUntil?: number, message?: string }
- */
-function isSpotifyBlocked() {
-  if (spotifyBlockedUntil && spotifyBlockedUntil > Date.now()) {
-    const msLeft = spotifyBlockedUntil - Date.now();
-    const blockedDate = new Date(spotifyBlockedUntil);
-    const pad = (n) => String(n).padStart(2, "0");
-    const formatted = `${pad(blockedDate.getDate())}/${pad(
-      blockedDate.getMonth() + 1
-    )}/${blockedDate.getFullYear()} às ${pad(blockedDate.getHours())}:${pad(
-      blockedDate.getMinutes()
-    )}`;
-    return {
-      blocked: true,
-      blockedUntil: spotifyBlockedUntil,
-      blockedHeader: spotifyBlockedHeader,
-      message: `O Spotify está passando por algumas instabilidades então as requisições foram suspensas por hora.\n\nPrevisão de retorno: ${formatted}`,
-    };
-  }
-  return { blocked: false };
-}
-
-module.exports = {
-  prisma,
-  upsertAccountForUser,
-  upsertAccountTokens,
-  getLatestTokenByAccountId,
-  refreshTokenForAccount,
-  getValidAccessTokenForAccount,
-  spotifyFetch,
-  isSpotifyBlocked,
-};
-
 // -------------------------
 // Persistence helpers for monitoring
 // -------------------------
@@ -472,11 +499,6 @@ async function fetchAndPersistUser({ accountId, userId, userSpotifyAPI }) {
 
   return { status: "playing", track: result };
 }
-
-// export helpers
-module.exports.upsertCurrentPlayback = upsertCurrentPlayback;
-module.exports.createTrackPlayback = createTrackPlayback;
-module.exports.fetchAndPersistUser = fetchAndPersistUser;
 
 /**
  * Skip to next track for a user
