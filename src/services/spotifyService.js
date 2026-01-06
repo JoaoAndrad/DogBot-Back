@@ -3,6 +3,8 @@ const fetch = require("node-fetch");
 
 const prisma = new PrismaClient();
 
+// v2025-01-06: synchronous isSpotifyBlocked with DB persistence
+
 // Global block state when Spotify indicates rate limit (Retry-After)
 // NOTE: This is now backed by database for persistence across restarts
 let spotifyBlockedUntil = 0; // timestamp (ms) until which requests should be blocked
