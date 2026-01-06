@@ -143,6 +143,11 @@ router.get("/callback", async (req, res) => {
 
     // Persist tokens in DB
     try {
+      // Log the received userId for debugging
+      console.log(
+        `[SpotifyAuth] Received userId from callback: ${userId || "(null)"}`
+      );
+
       // Resolve userId: if it's a WhatsApp identifier, find the User.id UUID
       let resolvedUserId = userId;
       if (userId) {
@@ -154,30 +159,37 @@ router.get("/callback", async (req, res) => {
 
         if (!isUUID) {
           // It's a WhatsApp identifier, resolve to User.id
+          console.log(
+            `[SpotifyAuth] Attempting to resolve WhatsApp identifier: ${userId}`
+          );
           try {
             let user = await userRepo.findByIdentifierExact(userId);
             if (!user) {
               const baseNumber = userRepo.extractBaseNumber(userId);
+              console.log(`[SpotifyAuth] Trying by base number: ${baseNumber}`);
               user = await userRepo.findByBaseNumber(baseNumber);
             }
             if (user) {
               resolvedUserId = user.id;
               console.log(
-                `[SpotifyAuth] Resolved identifier ${userId} → User.id ${resolvedUserId}`
+                `[SpotifyAuth] ✅ Resolved identifier ${userId} → User.id ${resolvedUserId}`
               );
               console.log(
-                `[SpotifyAuth] User info: ${user.name || "(sem nome)"} (${
-                  user.sender_number || "sem número"
-                })`
+                `[SpotifyAuth] User info: ${
+                  user.push_name || user.display_name || "(sem nome)"
+                } (${user.sender_number || "sem número"})`
               );
             } else {
-              console.log(
-                `[SpotifyAuth] Could not resolve identifier ${userId} to User - account will be created without userId`
+              console.warn(
+                `[SpotifyAuth] ⚠️ Could not resolve identifier ${userId} to User - account will be created without userId`
+              );
+              console.warn(
+                `[SpotifyAuth] Hint: If this is a @lid, ensure frontend uses getContact() to get the real @c.us number`
               );
               resolvedUserId = null;
             }
           } catch (resolveErr) {
-            console.log(
+            console.error(
               `[SpotifyAuth] Error resolving identifier ${userId}:`,
               resolveErr
             );
