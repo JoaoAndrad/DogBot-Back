@@ -5,6 +5,9 @@ const sseHub = require("../lib/sseHub");
 
 const prisma = new PrismaClient();
 
+// Global block state when Spotify indicates rate limit (Retry-After)
+let spotifyBlockedUntil = 0; // timestamp (ms) until which requests should be blocked
+let spotifyBlockedHeader = null; // raw Retry-After header value
 const SPOTIFY_TOKEN_URL = "https://accounts.spotify.com/api/token";
 
 async function upsertAccountForUser({ userId }) {
@@ -179,6 +182,23 @@ async function getValidAccessTokenForAccount(accountId) {
 async function spotifyFetch(accountId, url, options = {}) {
   if (!accountId) throw new Error("accountId is required for spotifyFetch");
 
+  // If global block is active, immediately return a 429-like response
+  if (spotifyBlockedUntil && spotifyBlockedUntil > Date.now()) {
+    const msLeft = spotifyBlockedUntil - Date.now();
+    const minutes = Math.ceil(msLeft / 60000);
+    const message = `O Spotify está passando por alguns problemas em seu servidor, o tempo de espera informado foi de ${minutes} minutos.`;
+    console.warn(
+      `[spotifyFetch] global block active. blockedUntil=${new Date(
+        spotifyBlockedUntil
+      ).toISOString()} retryHeader=${spotifyBlockedHeader}`
+    );
+    return {
+      status: 429,
+      ok: false,
+      text: async () => message,
+      json: async () => ({ error: message }),
+    };
+  }
   const token = await getValidAccessTokenForAccount(accountId);
   if (!token)
     throw new Error("No access token available for account " + accountId);
@@ -188,6 +208,44 @@ async function spotifyFetch(accountId, url, options = {}) {
 
   let res = await fetch(url, options);
 
+  // If Spotify replied with 429, parse Retry-After and set global block
+  if (res.status === 429) {
+    try {
+      const ra = res.headers.get("retry-after");
+      spotifyBlockedHeader = ra;
+      let ms = 0;
+      if (ra) {
+        // Normalize and parse various formats ("10", "10000", "10000ms", HTTP-date)
+        const raw = ra.trim();
+        // If contains 'ms' explicitly, take numeric part as ms
+        if (/ms$/i.test(raw)) {
+          const digits = raw.replace(/[^0-9]/g, "");
+          ms = Number(digits) || 0;
+        } else if (/^[0-9]+$/.test(raw)) {
+          const numeric = Number(raw);
+          // Heuristic: values > 1000 are likely milliseconds, otherwise seconds
+          ms = numeric > 1000 ? numeric : numeric * 1000;
+        } else {
+          // Try parsing as HTTP-date
+          const d = Date.parse(raw);
+          if (!isNaN(d)) ms = Math.max(0, d - Date.now());
+        }
+      }
+      // Fallback to 30s if header absent or parsing failed
+      if (!ms) ms = 30000;
+      spotifyBlockedUntil = Date.now() + ms;
+      const minutes = Math.ceil(ms / 60000);
+      console.warn(
+        `[spotifyFetch] account=${accountId} url=${url} status=429 Retry-After=${spotifyBlockedHeader} computedMs=${ms} blockedUntil=${new Date(
+          spotifyBlockedUntil
+        ).toISOString()} -> waiting ${minutes} minutes`
+      );
+    } catch (e) {
+      console.warn("[spotifyFetch] failed parsing Retry-After", e && e.message);
+      // ensure a short block to avoid hammering
+      spotifyBlockedUntil = Date.now() + 30000;
+    }
+  }
   if (res.status === 401) {
     // try refresh and retry once
     try {
