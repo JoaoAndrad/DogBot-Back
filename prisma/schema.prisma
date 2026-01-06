@@ -544,3 +544,16 @@ model CollaborativeVote {
   @@index([expiresAt])
   @@index([status, processed])
 }
+
+// Global service state (rate limits, circuit breakers, etc.)
+model ServiceState {
+  id          String    @id @default(uuid())
+  service     String    @unique // 'spotify', 'openai', etc.
+  blocked     Boolean   @default(false)
+  blockedUntil DateTime? @db.Timestamptz(6)
+  metadata    Json?     @db.Json // Store retry-after header, reason, etc.
+  updatedAt   DateTime  @updatedAt @db.Timestamptz(6)
+
+  @@index([service, blocked])
+  @@index([blockedUntil])
+}
