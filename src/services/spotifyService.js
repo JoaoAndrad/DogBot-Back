@@ -185,16 +185,22 @@ async function spotifyFetch(accountId, url, options = {}) {
   // If global block is active, immediately return a 429-like response
   if (spotifyBlockedUntil && spotifyBlockedUntil > Date.now()) {
     const msLeft = spotifyBlockedUntil - Date.now();
-    const minutes = Math.ceil(msLeft / 60000);
-    const message = `O Spotify está passando por alguns problemas em seu servidor, o tempo de espera informado foi de ${minutes} minutos.`;
+    const blockedDate = new Date(spotifyBlockedUntil);
+    const pad = (n) => String(n).padStart(2, "0");
+    const formatted = `${pad(blockedDate.getDate())}/${pad(
+      blockedDate.getMonth() + 1
+    )}/${blockedDate.getFullYear()} às ${pad(blockedDate.getHours())}:${pad(
+      blockedDate.getMinutes()
+    )}`;
+    const message = `O Spotify está passando por algumas instabilidades então as requisições foram suspensas por hora.\n\nPrevisão de retorno: ${formatted}`;
     console.warn(
-      `[spotifyFetch] global block active. blockedUntil=${new Date(
-        spotifyBlockedUntil
-      ).toISOString()} retryHeader=${spotifyBlockedHeader}`
+      `[spotifyFetch] global block active. blockedUntil=${blockedDate.toISOString()} retryHeader=${spotifyBlockedHeader}`
     );
     return {
       status: 429,
       ok: false,
+      blockedUntil: spotifyBlockedUntil,
+      blockedHeader: spotifyBlockedHeader,
       text: async () => message,
       json: async () => ({ error: message }),
     };

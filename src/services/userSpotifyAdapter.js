@@ -34,6 +34,15 @@ module.exports = {
         account.id,
         "https://api.spotify.com/v1/me/player/currently-playing"
       );
+      // If Spotify service is globally blocked, propagate friendly message
+      if (res && res.status === 429) {
+        const text = (await (res.text ? res.text() : null)) || null;
+        return {
+          playing: false,
+          message: text,
+          blockedUntil: res.blockedUntil || null,
+        };
+      }
       if (res.status === 204) {
         return { playing: false, message: "Nenhuma música tocando" };
       }

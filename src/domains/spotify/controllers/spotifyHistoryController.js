@@ -381,6 +381,14 @@ module.exports = {
         const live = await userSpotifyAdapter.getCurrentlyPlaying(
           resolvedUserId
         );
+        // If adapter returned a friendly message (e.g., Spotify global block), surface it
+        if (live && !live.playing && live.message) {
+          return res.json({
+            playing: false,
+            notice: live.message,
+            blockedUntil: live.blockedUntil || null,
+          });
+        }
         if (live && live.playing && !live.error) {
           const durationMs = live.duration_ms || live.durationMs || 0;
           const progressMs = live.progress_ms || live.progressMs || 0;
