@@ -88,6 +88,17 @@ try {
 try {
   const UserSpotifyAdapter = require("./services/userSpotifyAdapter");
   const SpotifyMonitor = require("./services/spotifyMonitor");
+  const { loadSpotifyBlockState } = require("./services/spotifyService");
+
+  // Load block state from DB before starting monitor
+  loadSpotifyBlockState()
+    .then(() => {
+      console.log("[App] Spotify block state loaded from database");
+    })
+    .catch((err) => {
+      console.warn("[App] Failed to load Spotify block state:", err.message);
+    });
+
   const monitor = new SpotifyMonitor({
     userSpotifyAPI: UserSpotifyAdapter,
     intervalMs: Number(process.env.SPOTIFY_MONITOR_INTERVAL_MS) || 30000,

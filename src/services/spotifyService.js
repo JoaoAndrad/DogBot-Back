@@ -10,7 +10,7 @@ let spotifyBlockedHeader = null; // raw Retry-After header value
 let blockStateLoaded = false; // flag to track if we loaded state from DB
 
 /**
- * Load Spotify block state from database
+ * Load Spotify block state from database (call on startup)
  */
 async function loadSpotifyBlockState() {
   try {
@@ -41,7 +41,7 @@ async function loadSpotifyBlockState() {
 }
 
 /**
- * Save Spotify block state to database
+ * Save Spotify block state to database (async, fire-and-forget)
  */
 async function saveSpotifyBlockState(blockedUntil, retryAfter) {
   try {
@@ -65,15 +65,11 @@ async function saveSpotifyBlockState(blockedUntil, retryAfter) {
 }
 
 /**
- * Check if Spotify is globally rate-limited (blocked)
+ * Check if Spotify is globally rate-limited (blocked) - SYNCHRONOUS
+ * Uses in-memory state loaded from DB on startup
  * Returns { blocked: boolean, blockedUntil?: number, message?: string }
  */
-async function isSpotifyBlocked() {
-  // Ensure we loaded state from DB on first call
-  if (!blockStateLoaded) {
-    await loadSpotifyBlockState();
-  }
-
+function isSpotifyBlocked() {
   const now = Date.now();
   const isBlocked = spotifyBlockedUntil && spotifyBlockedUntil > now;
 
@@ -99,6 +95,7 @@ async function isSpotifyBlocked() {
 // Export early to avoid circular dependency issues
 module.exports = {
   isSpotifyBlocked,
+  loadSpotifyBlockState,
   get prisma() {
     return prisma;
   },
@@ -310,8 +307,8 @@ async function getValidAccessTokenForAccount(accountId) {
 async function spotifyFetch(accountId, url, options = {}) {
   if (!accountId) throw new Error("accountId is required for spotifyFetch");
 
-  // CRITICAL: Always check block state from DB-backed source
-  const blockStatus = await isSpotifyBlocked();
+  // CRITICAL: Always check block state (synchronous check from memory)
+  const blockStatus = isSpotifyBlocked();
   if (blockStatus.blocked) {
     const blockedDate = new Date(blockStatus.blockedUntil);
     console.warn(
@@ -363,8 +360,10 @@ async function spotifyFetch(accountId, url, options = {}) {
       if (!ms) ms = 30000;
       spotifyBlockedUntil = Date.now() + ms;
       
-      // Persist block state to database
-      await saveSpotifyBlockState(spotifyBlockedUntil, spotifyBlockedHeader);
+      // Persist block state to database (fire-and-forget)
+      saveSpotifyBlockState(spotifyBlockedUntil, spotifyBlockedHeader).catch(e => 
+        console.warn("[spotifyFetch] Failed to persist block state:", e.message)
+      );
       
       const minutes = Math.ceil(ms / 60000);
       console.warn(
@@ -376,7 +375,7 @@ async function spotifyFetch(accountId, url, options = {}) {
       console.warn("[spotifyFetch] failed parsing Retry-After", e && e.message);
       // ensure a short block to avoid hammering
       spotifyBlockedUntil = Date.now() + 30000;
-      await saveSpotifyBlockState(spotifyBlockedUntil, null);
+      saveSpotifyBlockState(spotifyBlockedUntil, null).catch(() => {});
     }
   }
   
