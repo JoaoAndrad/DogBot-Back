@@ -1,4 +1,4 @@
-const { fetchAndPersistUser } = require("./spotifyService");
+const { fetchAndPersistUser, isSpotifyBlocked } = require("./spotifyService");
 
 class SpotifyMonitor {
   constructor({ userSpotifyAPI, intervalMs = 10000, concurrency = 5 } = {}) {
@@ -32,6 +32,25 @@ class SpotifyMonitor {
 
   // Simple concurrency limiter using chunks
   async _runOnce() {
+    // Check if Spotify is globally blocked; if so, skip cycle
+    const blockStatus = isSpotifyBlocked();
+    if (blockStatus.blocked) {
+      // Suppress spam: log once per block window (track last logged blockedUntil)
+      if (
+        !this._lastBlockedUntil ||
+        this._lastBlockedUntil !== blockStatus.blockedUntil
+      ) {
+        console.log(
+          `[SpotifyMonitor] skipping cycle — Spotify bloqueado até ${new Date(
+            blockStatus.blockedUntil
+          ).toLocaleString("pt-BR")}`
+        );
+        this._lastBlockedUntil = blockStatus.blockedUntil;
+      }
+      return { processed: 0, skipped: true, reason: "spotify_blocked" };
+    }
+    this._lastBlockedUntil = null; // reset when unblocked
+
     const connected = await Promise.resolve(
       this.userSpotifyAPI.getConnectedUsers()
     );

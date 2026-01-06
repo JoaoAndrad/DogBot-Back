@@ -282,6 +282,30 @@ async function spotifyFetch(accountId, url, options = {}) {
   return res;
 }
 
+/**
+ * Check if Spotify is globally rate-limited (blocked)
+ * Returns { blocked: boolean, blockedUntil?: number, message?: string }
+ */
+function isSpotifyBlocked() {
+  if (spotifyBlockedUntil && spotifyBlockedUntil > Date.now()) {
+    const msLeft = spotifyBlockedUntil - Date.now();
+    const blockedDate = new Date(spotifyBlockedUntil);
+    const pad = (n) => String(n).padStart(2, "0");
+    const formatted = `${pad(blockedDate.getDate())}/${pad(
+      blockedDate.getMonth() + 1
+    )}/${blockedDate.getFullYear()} às ${pad(blockedDate.getHours())}:${pad(
+      blockedDate.getMinutes()
+    )}`;
+    return {
+      blocked: true,
+      blockedUntil: spotifyBlockedUntil,
+      blockedHeader: spotifyBlockedHeader,
+      message: `O Spotify está passando por algumas instabilidades então as requisições foram suspensas por hora.\n\nPrevisão de retorno: ${formatted}`,
+    };
+  }
+  return { blocked: false };
+}
+
 module.exports = {
   prisma,
   upsertAccountForUser,
@@ -290,6 +314,7 @@ module.exports = {
   refreshTokenForAccount,
   getValidAccessTokenForAccount,
   spotifyFetch,
+  isSpotifyBlocked,
 };
 
 // -------------------------
