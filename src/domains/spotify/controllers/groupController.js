@@ -498,8 +498,8 @@ router.get("/playlists/:playlistId", async (req, res) => {
     // Find any user with access to this playlist (or use first available account)
     const users = await prisma.user.findMany({
       where: {
-        spotifyAccount: {
-          isNot: null,
+        spotifyAccounts: {
+          some: {},
         },
       },
       take: 1,
