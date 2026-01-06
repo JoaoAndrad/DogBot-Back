@@ -16,16 +16,6 @@ class SpotifyMonitor {
   }
 
   async _checkOne(userId, accountId = null) {
-    // Double-check block status before making request (synchronous check)
-    const blockStatus = isSpotifyBlocked();
-    if (blockStatus.blocked) {
-      return {
-        userId,
-        ok: true,
-        res: { status: "blocked", message: blockStatus.message },
-      };
-    }
-
     try {
       const res = await fetchAndPersistUser({
         accountId,
@@ -42,8 +32,8 @@ class SpotifyMonitor {
 
   // Simple concurrency limiter using chunks
   async _runOnce() {
-    // Check if Spotify is globally blocked; if so, skip cycle (synchronous check)
-    const blockStatus = isSpotifyBlocked();
+    // Check if Spotify is globally blocked; if so, skip cycle
+    const blockStatus = await isSpotifyBlocked();
     if (blockStatus.blocked) {
       // Suppress spam: log once per block window (track last logged blockedUntil)
       if (

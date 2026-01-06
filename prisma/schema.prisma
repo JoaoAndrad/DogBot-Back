@@ -413,6 +413,16 @@ model SpotifyAuthSession {
   @@index([accountId])
 }
 
+// Global Spotify rate limit state (singleton table)
+model SpotifyRateLimit {
+  id              Int      @id @default(1) // Always 1 (singleton)
+  blockedUntil    DateTime? @db.Timestamptz(6)
+  retryAfterHeader String?
+  lastUpdated     DateTime @default(now()) @db.Timestamptz(6)
+  
+  @@map("SpotifyRateLimit")
+}
+
 // Listening sessions - groups playbacks into temporal sessions
 model ListeningSession {
   id         String   @id @default(uuid())
@@ -543,17 +553,4 @@ model CollaborativeVote {
   @@index([pollId])
   @@index([expiresAt])
   @@index([status, processed])
-}
-
-// Global service state (rate limits, circuit breakers, etc.)
-model ServiceState {
-  id          String    @id @default(uuid())
-  service     String    @unique // 'spotify', 'openai', etc.
-  blocked     Boolean   @default(false)
-  blockedUntil DateTime? @db.Timestamptz(6)
-  metadata    Json?     @db.Json // Store retry-after header, reason, etc.
-  updatedAt   DateTime  @updatedAt @db.Timestamptz(6)
-
-  @@index([service, blocked])
-  @@index([blockedUntil])
 }

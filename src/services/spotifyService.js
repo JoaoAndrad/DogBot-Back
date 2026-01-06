@@ -3,101 +3,76 @@ const fetch = require("node-fetch");
 
 const prisma = new PrismaClient();
 
-// v2025-01-06: synchronous isSpotifyBlocked with DB persistence
-
-// Global block state when Spotify indicates rate limit (Retry-After)
-// NOTE: This is now backed by database for persistence across restarts
-let spotifyBlockedUntil = 0; // timestamp (ms) until which requests should be blocked
-let spotifyBlockedHeader = null; // raw Retry-After header value
-let blockStateLoaded = false; // flag to track if we loaded state from DB
-
 /**
- * Load Spotify block state from database (call on startup)
- */
-async function loadSpotifyBlockState() {
-  try {
-    const state = await prisma.serviceState.findUnique({
-      where: { service: "spotify" },
-    });
-    if (state && state.blocked && state.blockedUntil) {
-      const until = new Date(state.blockedUntil).getTime();
-      if (until > Date.now()) {
-        spotifyBlockedUntil = until;
-        spotifyBlockedHeader = state.metadata?.retryAfter || null;
-        console.log(
-          `[spotifyService] Loaded block state from DB: blocked until ${state.blockedUntil}`
-        );
-      } else {
-        // Block expired, clear it
-        await prisma.serviceState.update({
-          where: { service: "spotify" },
-          data: { blocked: false, blockedUntil: null },
-        });
-      }
-    }
-    blockStateLoaded = true;
-  } catch (e) {
-    console.warn("[spotifyService] Failed to load block state from DB:", e.message);
-    blockStateLoaded = true;
-  }
-}
-
-/**
- * Save Spotify block state to database (async, fire-and-forget)
- */
-async function saveSpotifyBlockState(blockedUntil, retryAfter) {
-  try {
-    await prisma.serviceState.upsert({
-      where: { service: "spotify" },
-      create: {
-        service: "spotify",
-        blocked: true,
-        blockedUntil: new Date(blockedUntil),
-        metadata: { retryAfter },
-      },
-      update: {
-        blocked: true,
-        blockedUntil: new Date(blockedUntil),
-        metadata: { retryAfter },
-      },
-    });
-  } catch (e) {
-    console.warn("[spotifyService] Failed to save block state to DB:", e.message);
-  }
-}
-
-/**
- * Check if Spotify is globally rate-limited (blocked) - SYNCHRONOUS
- * Uses in-memory state loaded from DB on startup
+ * Check if Spotify is globally rate-limited (blocked) - reads from DB
  * Returns { blocked: boolean, blockedUntil?: number, message?: string }
  */
-function isSpotifyBlocked() {
-  const now = Date.now();
-  const isBlocked = spotifyBlockedUntil && spotifyBlockedUntil > now;
+async function isSpotifyBlocked() {
+  try {
+    const rateLimitRecord = await prisma.spotifyRateLimit.findUnique({
+      where: { id: 1 },
+    });
 
-  if (isBlocked) {
-    const msLeft = spotifyBlockedUntil - now;
-    const blockedDate = new Date(spotifyBlockedUntil);
-    const pad = (n) => String(n).padStart(2, "0");
-    const formatted = `${pad(blockedDate.getDate())}/${pad(
-      blockedDate.getMonth() + 1
-    )}/${blockedDate.getFullYear()} às ${pad(blockedDate.getHours())}:${pad(
-      blockedDate.getMinutes()
-    )}`;
-    return {
-      blocked: true,
-      blockedUntil: spotifyBlockedUntil,
-      blockedHeader: spotifyBlockedHeader,
-      message: `O Spotify está passando por algumas instabilidades então as requisições foram suspensas por hora.\n\nPrevisão de retorno: ${formatted}`,
-    };
+    if (
+      rateLimitRecord &&
+      rateLimitRecord.blockedUntil &&
+      new Date(rateLimitRecord.blockedUntil).getTime() > Date.now()
+    ) {
+      const blockedUntil = new Date(rateLimitRecord.blockedUntil).getTime();
+      const blockedDate = new Date(blockedUntil);
+      const pad = (n) => String(n).padStart(2, "0");
+      const formatted = `${pad(blockedDate.getDate())}/${pad(
+        blockedDate.getMonth() + 1
+      )}/${blockedDate.getFullYear()} às ${pad(blockedDate.getHours())}:${pad(
+        blockedDate.getMinutes()
+      )}`;
+      return {
+        blocked: true,
+        blockedUntil: blockedUntil,
+        blockedHeader: rateLimitRecord.retryAfterHeader,
+        message: `O Spotify está passando por algumas instabilidades então as requisições foram suspensas por hora.\n\nPrevisão de retorno: ${formatted}`,
+      };
+    }
+    return { blocked: false };
+  } catch (e) {
+    console.warn("[isSpotifyBlocked] DB read failed:", e.message);
+    return { blocked: false };
   }
-  return { blocked: false };
+}
+
+/**
+ * Set global Spotify rate limit block (persists to DB)
+ */
+async function setSpotifyBlock(blockedUntilMs, retryAfterHeader) {
+  try {
+    await prisma.spotifyRateLimit.upsert({
+      where: { id: 1 },
+      create: {
+        id: 1,
+        blockedUntil: new Date(blockedUntilMs),
+        retryAfterHeader: retryAfterHeader || null,
+        lastUpdated: new Date(),
+      },
+      update: {
+        blockedUntil: new Date(blockedUntilMs),
+        retryAfterHeader: retryAfterHeader || null,
+        lastUpdated: new Date(),
+      },
+    });
+    console.log(
+      `[SpotifyService] Rate limit persisted: blockedUntil=${new Date(
+        blockedUntilMs
+      ).toISOString()} retryAfter=${retryAfterHeader}`
+    );
+  } catch (e) {
+    console.warn("[setSpotifyBlock] DB write failed:", e.message);
+  }
 }
 
 // Export early to avoid circular dependency issues
 module.exports = {
   isSpotifyBlocked,
-  loadSpotifyBlockState,
+  setSpotifyBlock,
   get prisma() {
     return prisma;
   },
@@ -305,16 +280,17 @@ async function getValidAccessTokenForAccount(accountId) {
 
 // Wrapper for calling Spotify API using stored account tokens.
 // Automatically refreshes once on 401 and retries.
-// ALWAYS checks global block state before making requests.
+// Checks global block state from DB before making requests.
 async function spotifyFetch(accountId, url, options = {}) {
   if (!accountId) throw new Error("accountId is required for spotifyFetch");
 
-  // CRITICAL: Always check block state (synchronous check from memory)
-  const blockStatus = isSpotifyBlocked();
+  // Check DB for global block state
+  const blockStatus = await isSpotifyBlocked();
   if (blockStatus.blocked) {
-    const blockedDate = new Date(blockStatus.blockedUntil);
     console.warn(
-      `[spotifyFetch] BLOCKED - not making request. blockedUntil=${blockedDate.toISOString()}`
+      `[spotifyFetch] global block active (from DB). blockedUntil=${new Date(
+        blockStatus.blockedUntil
+      ).toISOString()} retryHeader=${blockStatus.blockedHeader}`
     );
     return {
       status: 429,
@@ -335,11 +311,10 @@ async function spotifyFetch(accountId, url, options = {}) {
 
   let res = await fetch(url, options);
 
-  // If Spotify replied with 429, parse Retry-After and set global block
+  // If Spotify replied with 429, parse Retry-After and persist block to DB
   if (res.status === 429) {
     try {
       const ra = res.headers.get("retry-after");
-      spotifyBlockedHeader = ra;
       let ms = 0;
       if (ra) {
         // Normalize and parse various formats ("10", "10000", "10000ms", HTTP-date)
@@ -360,56 +335,25 @@ async function spotifyFetch(accountId, url, options = {}) {
       }
       // Fallback to 30s if header absent or parsing failed
       if (!ms) ms = 30000;
-      spotifyBlockedUntil = Date.now() + ms;
-      
-      // Persist block state to database (fire-and-forget)
-      saveSpotifyBlockState(spotifyBlockedUntil, spotifyBlockedHeader).catch(e => 
-        console.warn("[spotifyFetch] Failed to persist block state:", e.message)
-      );
-      
+
+      const blockedUntilMs = Date.now() + ms;
       const minutes = Math.ceil(ms / 60000);
+
       console.warn(
-        `[spotifyFetch] 429 RECEIVED - GLOBAL BLOCK ACTIVATED account=${accountId} url=${url} Retry-After=${spotifyBlockedHeader} computedMs=${ms} blockedUntil=${new Date(
-          spotifyBlockedUntil
-        ).toISOString()} -> blocking ALL requests for ${minutes} minutes`
+        `[spotifyFetch] account=${accountId} url=${url} status=429 Retry-After=${ra} computedMs=${ms} blockedUntil=${new Date(
+          blockedUntilMs
+        ).toISOString()} -> waiting ${minutes} minutes`
       );
+
+      // Persist block to DB
+      await setSpotifyBlock(blockedUntilMs, ra);
     } catch (e) {
       console.warn("[spotifyFetch] failed parsing Retry-After", e && e.message);
       // ensure a short block to avoid hammering
-      spotifyBlockedUntil = Date.now() + 30000;
-      saveSpotifyBlockState(spotifyBlockedUntil, null).catch(() => {});
-    }
-  }
-  
-  if (res.status === 401) {
-    // try refresh and retry once
-    try {
-      const refreshed = await refreshTokenForAccount(accountId);
-      const newToken = refreshed.token.accessToken;
-      options.headers["Authorization"] = `Bearer ${newToken}`;
-      res = await fetch(url, options);
-    } catch (err) {
-      // swallow refresh error and return original 401 response
-      console.log("spotifyFetch: refresh failed", err);
+      await setSpotifyBlock(Date.now() + 30000, null);
     }
   }
 
-  // Diagnostic logging for non-OK responses (except 401 handled above)
-  try {
-    if (!res.ok) {
-      const text = await res.text().catch(() => null);
-      console.warn(
-        `[spotifyFetch] account=${accountId} url=${url} status=${
-          res.status
-        } body=${text ? text.slice(0, 1000) : "<no-body>"}`
-      );
-    }
-  } catch (e) {
-    console.warn("[spotifyFetch] failed to log response body", e && e.message);
-  }
-
-  return res;
-}
   if (res.status === 401) {
     // try refresh and retry once
     try {
