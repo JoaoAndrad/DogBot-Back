@@ -16,6 +16,16 @@ class SpotifyMonitor {
   }
 
   async _checkOne(userId, accountId = null) {
+    // Double-check block status before making request
+    const blockStatus = isSpotifyBlocked();
+    if (blockStatus.blocked) {
+      return {
+        userId,
+        ok: true,
+        res: { status: "blocked", message: blockStatus.message },
+      };
+    }
+
     try {
       const res = await fetchAndPersistUser({
         accountId,

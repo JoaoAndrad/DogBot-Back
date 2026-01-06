@@ -12,8 +12,11 @@ let spotifyBlockedHeader = null; // raw Retry-After header value
  * Returns { blocked: boolean, blockedUntil?: number, message?: string }
  */
 function isSpotifyBlocked() {
-  if (spotifyBlockedUntil && spotifyBlockedUntil > Date.now()) {
-    const msLeft = spotifyBlockedUntil - Date.now();
+  const now = Date.now();
+  const isBlocked = spotifyBlockedUntil && spotifyBlockedUntil > now;
+
+  if (isBlocked) {
+    const msLeft = spotifyBlockedUntil - now;
     const blockedDate = new Date(spotifyBlockedUntil);
     const pad = (n) => String(n).padStart(2, "0");
     const formatted = `${pad(blockedDate.getDate())}/${pad(
