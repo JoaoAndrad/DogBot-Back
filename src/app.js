@@ -90,7 +90,7 @@ try {
   const SpotifyMonitor = require("./services/spotifyMonitor");
   const monitor = new SpotifyMonitor({
     userSpotifyAPI: UserSpotifyAdapter,
-    intervalMs: Number(process.env.SPOTIFY_MONITOR_INTERVAL_MS) || 10000,
+    intervalMs: Number(process.env.SPOTIFY_MONITOR_INTERVAL_MS) || 30000,
     concurrency: Number(process.env.SPOTIFY_MONITOR_CONCURRENCY) || 5,
   });
   // start monitoring in background
