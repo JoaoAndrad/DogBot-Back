@@ -62,11 +62,11 @@ router.post("/upsert", async (req, res) => {
 });
 
 /**
- * GET /api/users/lookup
+ * GET/POST /api/users/lookup
  * Check if user exists by identifier (no auto-create)
  *
- * Query: ?identifier=558182132346@c.us
- * Returns: { found: boolean, userId?: string }
+ * Query: ?identifier=558182132346@c.us OR Body: { identifier: "..." }
+ * Returns: { found: boolean, userId?: string, hasSpotify?: boolean }
  */
 router.get("/lookup", async (req, res) => {
   try {
@@ -108,6 +108,59 @@ router.get("/lookup", async (req, res) => {
     });
   } catch (err) {
     console.log("[GET /api/users/lookup] Error:", err);
+    return res.status(500).json({
+      error: "lookup_failed",
+      message: err.message,
+    });
+  }
+});
+
+/**
+ * POST /api/users/lookup
+ * Same as GET but accepts body instead of query
+ * Body: { identifier: "558182132346@c.us" }
+ * Returns: { found: boolean, userId?: string, hasSpotify?: boolean }
+ */
+router.post("/lookup", async (req, res) => {
+  try {
+    const { identifier } = req.body;
+
+    if (!identifier) {
+      return res.status(400).json({
+        error: "missing_identifier",
+        message: "Body parameter 'identifier' is required",
+      });
+    }
+
+    // Try exact match first
+    let user = await userRepo.findByIdentifierExact(identifier);
+
+    // Fallback to base number
+    if (!user) {
+      const baseNumber = userRepo.extractBaseNumber(identifier);
+      if (baseNumber && baseNumber !== identifier) {
+        user = await userRepo.findByBaseNumber(baseNumber);
+      }
+    }
+
+    if (!user) {
+      return res.json({
+        found: false,
+      });
+    }
+
+    // Check if user has Spotify account connected
+    const hasSpotify = !!(
+      user.spotifyAccounts && user.spotifyAccounts.length > 0
+    );
+
+    return res.json({
+      found: true,
+      userId: user.id,
+      hasSpotify,
+    });
+  } catch (err) {
+    console.log("[POST /api/users/lookup] Error:", err);
     return res.status(500).json({
       error: "lookup_failed",
       message: err.message,

@@ -217,12 +217,17 @@ router.get("/callback", async (req, res) => {
         try {
           const user = await prisma.user.findUnique({
             where: { id: resolvedUserId },
-            select: { id: true, name: true, sender_number: true },
+            select: {
+              id: true,
+              push_name: true,
+              display_name: true,
+              sender_number: true,
+            },
           });
           if (user) {
             console.log(
               `[SpotifyAuth] 🎵 Nova conta Spotify atribuída ao usuário: ${
-                user.name || "(sem nome)"
+                user.push_name || user.display_name || "(sem nome)"
               } (ID: ${user.id})`
             );
             console.log(
