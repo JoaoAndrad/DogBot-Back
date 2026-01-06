@@ -371,10 +371,32 @@ async function spotifyFetch(accountId, url, options = {}) {
   try {
     if (!res.ok) {
       const text = await res.text().catch(() => null);
+
+      // If Spotify replies with a 403 indicating the user isn't registered
+      // on the developer dashboard, try to include the push_name of the
+      // local user associated to this spotify account for easier debugging.
+      let pushNameExtra = "";
+      try {
+        if (
+          res.status === 403 &&
+          text &&
+          text.toLowerCase().includes("developer.spotify.com/dashboard")
+        ) {
+          const acct = await prisma.spotifyAccount.findUnique({
+            where: { id: accountId },
+            include: { user: true },
+          });
+          const pn = acct?.user?.push_name;
+          if (pn) pushNameExtra = ` push_name=${pn.replace(/\s+/g, "_")}`;
+        }
+      } catch (e) {
+        // best-effort lookup; ignore failures
+      }
+
       console.warn(
         `[spotifyFetch] account=${accountId} url=${url} status=${
           res.status
-        } body=${text ? text.slice(0, 1000) : "<no-body>"}`
+        } body=${text ? text.slice(0, 1000) : "<no-body>"}${pushNameExtra}`
       );
     }
   } catch (e) {
