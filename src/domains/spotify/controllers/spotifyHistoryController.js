@@ -405,6 +405,8 @@ module.exports = {
               album: live.album,
               imageUrl: live.image,
               durationMs: durationMs,
+              previewUrl: live.preview_url,
+              preview_url: live.preview_url,
             },
             startedAt: new Date(Date.now() - progressMs),
             listenedMs: progressMs,
@@ -439,6 +441,10 @@ module.exports = {
           album: current.track.album,
           imageUrl: current.track.imageUrl,
           durationMs: current.track.durationMs,
+          previewUrl:
+            current.track.previewUrl || current.track.preview_url || null,
+          preview_url:
+            current.track.previewUrl || current.track.preview_url || null,
         },
         startedAt: current.startedAt,
         listenedMs: Number(current.listenedMs),
