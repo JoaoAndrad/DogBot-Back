@@ -323,30 +323,8 @@ module.exports = {
         whenMs: Date.now() - new Date(p.startedAt).getTime(),
       }));
 
-      // Prefer explicit `period` query param from frontend (new behavior).
-      // If not provided, compute a simple token so older clients still work.
       let periodToken =
         req.query && req.query.period ? String(req.query.period) : null;
-      if (!periodToken) {
-        if (from || to) {
-          try {
-            const diffDays = Math.max(
-              1,
-              Math.round(
-                (periodEnd.getTime() - periodStart.getTime()) /
-                  (24 * 60 * 60 * 1000)
-              )
-            );
-            periodToken = `${diffDays}d`;
-          } catch (e) {
-            periodToken = null;
-          }
-        } else {
-          const daysNum = Math.max(0, Math.min(365, Number(days)));
-          periodToken = daysNum === 0 ? "all" : `${daysNum}d`;
-        }
-      }
-
       res.json({
         period: periodToken,
         summary: {
