@@ -430,6 +430,44 @@ module.exports = {
 
       const current = recent[0];
 
+      // If preview is not present in DB, try to fetch from Spotify Tracks API
+      let preview =
+        current.track.previewUrl || current.track.preview_url || null;
+      if (!preview) {
+        try {
+          const spotifyService = require("../../../services/spotifyService");
+          const prisma = spotifyService.prisma;
+          // Try to find a spotify account linked to this user to auth the track request
+          const acct = await prisma.spotifyAccount.findFirst({
+            where: { userId },
+          });
+          if (acct && acct.id) {
+            try {
+              const trackRes = await spotifyService.spotifyFetch(
+                acct.id,
+                `https://api.spotify.com/v1/tracks/${encodeURIComponent(
+                  current.track.id
+                )}`
+              );
+              if (trackRes && trackRes.ok) {
+                const trackJson = await trackRes.json();
+                preview =
+                  trackJson && (trackJson.preview_url || trackJson.previewUrl)
+                    ? trackJson.preview_url || trackJson.previewUrl
+                    : null;
+              }
+            } catch (innerErr) {
+              console.warn(
+                "/api/spotify/current: failed fetching track metadata",
+                innerErr && innerErr.message
+              );
+            }
+          }
+        } catch (e) {
+          // ignore and continue without preview
+        }
+      }
+
       res.json({
         playing:
           !current.endedAt ||
@@ -441,10 +479,8 @@ module.exports = {
           album: current.track.album,
           imageUrl: current.track.imageUrl,
           durationMs: current.track.durationMs,
-          previewUrl:
-            current.track.previewUrl || current.track.preview_url || null,
-          preview_url:
-            current.track.previewUrl || current.track.preview_url || null,
+          previewUrl: preview,
+          preview_url: preview,
         },
         startedAt: current.startedAt,
         listenedMs: Number(current.listenedMs),

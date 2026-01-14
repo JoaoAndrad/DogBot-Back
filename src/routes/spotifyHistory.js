@@ -2,6 +2,23 @@ const express = require("express");
 const router = express.Router();
 const historyController = require("../domains/spotify/controllers/spotifyHistoryController");
 const trackNoteController = require("../domains/spotify/controllers/trackNoteController");
+const path = require("path");
+const fs = require("fs");
+const fetch = require("node-fetch");
+
+// Directory to cache preview MP3s
+const PREVIEW_CACHE_DIR = path.resolve(
+  __dirname,
+  "../../../tmp/spotify-previews"
+);
+const PREVIEW_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
+
+// Ensure cache dir exists
+try {
+  fs.mkdirSync(PREVIEW_CACHE_DIR, { recursive: true });
+} catch (e) {
+  console.warn("Could not create preview cache dir", e && e.message);
+}
 
 /**
  * Spotify history and stats routes
@@ -150,6 +167,104 @@ router.post("/playlists/:playlistId/tracks", async (req, res) => {
   } catch (error) {
     console.error("[Spotify] add track error:", error);
     res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /api/spotify/preview?trackId=...&userId=...&accountId=...
+router.get("/preview", async (req, res) => {
+  try {
+    const { trackId, userId, accountId } = req.query;
+    if (!trackId) return res.status(400).json({ error: "trackId is required" });
+
+    const spotifyService = require("../services/spotifyService");
+    const prisma = spotifyService.prisma;
+
+    // Determine which spotify account to use for authenticated calls
+    let acct = null;
+    if (accountId) {
+      acct = await prisma.spotifyAccount.findUnique({
+        where: { id: accountId },
+      });
+    } else if (userId) {
+      acct = await prisma.spotifyAccount.findFirst({ where: { userId } });
+    } else {
+      // fallback: pick any account (prefer one with tokens)
+      acct = await prisma.spotifyAccount.findFirst();
+    }
+
+    if (!acct || !acct.id) {
+      return res
+        .status(400)
+        .json({ error: "No spotify account available to fetch preview" });
+    }
+
+    const cacheFile = path.join(PREVIEW_CACHE_DIR, `${trackId}.mp3`);
+    // Serve cached file if fresh
+    try {
+      const st = await fs.promises.stat(cacheFile).catch(() => null);
+      if (st && Date.now() - st.mtimeMs < PREVIEW_CACHE_TTL) {
+        res.setHeader("Content-Type", "audio/mpeg");
+        res.setHeader("Cache-Control", "public, max-age=86400");
+        return fs.createReadStream(cacheFile).pipe(res);
+      }
+    } catch (e) {
+      // ignore cache errors
+    }
+
+    // Fetch track metadata to get preview_url
+    const trackEndpoint = `https://api.spotify.com/v1/tracks/${encodeURIComponent(
+      trackId
+    )}`;
+    const trackRes = await spotifyService.spotifyFetch(acct.id, trackEndpoint);
+    if (!trackRes || !trackRes.ok) {
+      const status = (trackRes && trackRes.status) || 502;
+      const text =
+        trackRes && trackRes.text
+          ? await trackRes.text().catch(() => null)
+          : null;
+      return res
+        .status(status)
+        .json({ error: "Failed to fetch track metadata", details: text });
+    }
+
+    const trackJson = await trackRes.json();
+    const previewUrl =
+      trackJson && (trackJson.preview_url || trackJson.previewUrl);
+    if (!previewUrl)
+      return res.status(404).json({ error: "preview_unavailable" });
+
+    // Download preview and write to cache file
+    const previewResp = await fetch(previewUrl);
+    if (!previewResp || !previewResp.ok) {
+      return res
+        .status(previewResp ? previewResp.status : 502)
+        .json({ error: "failed_to_download_preview" });
+    }
+
+    // Stream to temp file and then pipe to response
+    const tmpFile = cacheFile + ".tmp";
+    const dest = fs.createWriteStream(tmpFile);
+    await new Promise((resolve, reject) => {
+      previewResp.body.pipe(dest);
+      previewResp.body.on("error", (err) => reject(err));
+      dest.on("finish", resolve);
+      dest.on("error", (err) => reject(err));
+    });
+
+    // Move tmp file to cache atomically
+    await fs.promises.rename(tmpFile, cacheFile);
+
+    res.setHeader("Content-Type", "audio/mpeg");
+    res.setHeader("Cache-Control", "public, max-age=86400");
+    return fs.createReadStream(cacheFile).pipe(res);
+  } catch (err) {
+    console.error(
+      "/api/spotify/preview error:",
+      err && err.stack ? err.stack : err
+    );
+    return res
+      .status(500)
+      .json({ error: err && err.message ? err.message : String(err) });
   }
 });
 
