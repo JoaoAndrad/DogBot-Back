@@ -1,6 +1,7 @@
 const express = require("express");
 const basicAuth = require("../middleware/adminAuth");
 const { recreatePrismaClient, getPrisma } = require("../db");
+const confessionsService = require("../services/confessionsService");
 
 const router = express.Router();
 
@@ -14,6 +15,18 @@ router.post("/recreate-prisma", async (req, res) => {
   } catch (e) {
     console.log("recreate-prisma error", e && e.message ? e.message : e);
     res.status(500).json({ error: "Falha ao recriar Prisma client" });
+  }
+});
+
+// POST /admin/api/maintenance/reset-confessions
+// Force-reset confessions balances for all users who need it
+router.post("/reset-confessions", async (req, res) => {
+  try {
+    const count = await confessionsService.resetAllBalancesIfNeeded();
+    return res.json({ success: true, resetCount: count });
+  } catch (e) {
+    console.log("reset-confessions error", e && e.message ? e.message : e);
+    return res.status(500).json({ error: "failed_to_reset_confessions" });
   }
 });
 
