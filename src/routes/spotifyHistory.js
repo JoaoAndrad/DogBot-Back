@@ -228,8 +228,53 @@ router.get("/preview", async (req, res) => {
     }
 
     const trackJson = await trackRes.json();
-    const previewUrl =
+    let previewUrl =
       trackJson && (trackJson.preview_url || trackJson.previewUrl);
+
+    // If Spotify does not provide a preview_url, try spotify-preview-finder
+    if (!previewUrl) {
+      try {
+        const spotifyPreviewFinder = require("spotify-preview-finder");
+        const trackName = trackJson && trackJson.name;
+        // artist may be array of objects or strings
+        let artistName = null;
+        if (trackJson && trackJson.artists) {
+          if (Array.isArray(trackJson.artists) && trackJson.artists.length) {
+            const a = trackJson.artists[0];
+            artistName = (typeof a === "string" ? a : a.name) || null;
+          }
+        }
+
+        const finderRes = await spotifyPreviewFinder(
+          trackName || "",
+          artistName || 3,
+          3
+        );
+        if (
+          finderRes &&
+          finderRes.success &&
+          Array.isArray(finderRes.results) &&
+          finderRes.results.length > 0
+        ) {
+          const found = finderRes.results.find(
+            (r) => r.previewUrls && r.previewUrls.length
+          );
+          const picked = found || finderRes.results[0];
+          if (picked && picked.previewUrls && picked.previewUrls.length) {
+            previewUrl = picked.previewUrls[0];
+            console.info(
+              `/api/spotify/preview: found preview via spotify-preview-finder for ${trackId} -> ${previewUrl}`
+            );
+          }
+        }
+      } catch (err) {
+        console.warn(
+          "/api/spotify/preview: spotify-preview-finder attempt failed",
+          err && err.message
+        );
+      }
+    }
+
     if (!previewUrl)
       return res.status(404).json({ error: "preview_unavailable" });
 
