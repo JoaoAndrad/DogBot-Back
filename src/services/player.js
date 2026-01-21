@@ -39,16 +39,21 @@ async function queueTracksSequential(
   return results;
 }
 
-async function startPlayback(accountId, uris = [], deviceId = null) {
+async function startPlayback(
+  accountId,
+  uris = [],
+  deviceId = null,
+  contextUri = null,
+) {
   if (!accountId) throw new Error("accountId required");
-  if (!Array.isArray(uris) || uris.length === 0)
-    throw new Error("uris required");
+  if (!contextUri && (!Array.isArray(uris) || uris.length === 0))
+    throw new Error("uris or contextUri required");
 
   const url = deviceId
     ? `https://api.spotify.com/v1/me/player/play?device_id=${encodeURIComponent(deviceId)}`
     : `https://api.spotify.com/v1/me/player/play`;
 
-  const body = { uris };
+  const body = contextUri ? { context_uri: contextUri } : { uris };
 
   const res = await withRetry(
     () =>

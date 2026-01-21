@@ -104,9 +104,14 @@ async function playRandomUnique(accountId, playlistId, options = {}) {
 
   logger.info(`[SpotifyShuffle] selected seeds count=${seeds.length}`);
 
-  // 3) Use Last.fm as primary candidate generator with controlled concurrency.
+  // 3) Collect all Last.fm candidates first, dedupe by normalized metadata,
+  // then resolve unique pairs to Spotify with a cached resolver to minimize searches.
   let resolved = [];
   try {
+    const {
+      collectCandidatesFromSeeds,
+      resolveToSpotifyCached,
+    } = require("../domains/spotify/lastfm/lastfmResolver");
     // build a normalized set of playlist name|artist to filter by metadata
     const playlistNormalized = new Set();
     for (const t of tracks) {
@@ -118,47 +123,68 @@ async function playRandomUnique(accountId, playlistId, options = {}) {
       playlistNormalized.add(key);
     }
 
-    function chunkArray(arr, size) {
+    // 3a) collect Last.fm candidates for all seeds
+    const rawCandidates = await collectCandidatesFromSeeds(seeds, {
+      limit: LIMIT_PER_SEED,
+      concurrency: CONCURRENCY,
+    });
+    logger.info(
+      `[SpotifyShuffle] lastfm raw candidates=${rawCandidates.length}`,
+    );
+
+    // 3b) dedupe candidates by normalized name||artist and filter against playlist
+    const candidateMap = new Map();
+    for (const c of rawCandidates) {
+      const name = sanitizeSeedInput(c.name || "");
+      const artist = sanitizeSeedInput(c.artist || "");
+      const key = `${normalizeName(name)}||${normalizeName(artist)}`;
+      if (playlistNormalized.has(key)) continue;
+      if (!candidateMap.has(key))
+        candidateMap.set(key, { name, artist, match: c.match });
+    }
+
+    const uniqueCandidates = Array.from(candidateMap.values());
+    logger.info(
+      `[SpotifyShuffle] unique lastfm candidates=${uniqueCandidates.length}`,
+    );
+
+    // 3c) resolve unique candidates to Spotify with controlled concurrency
+    const chunkArray = (arr, size) => {
       const out = [];
       for (let i = 0; i < arr.length; i += size)
         out.push(arr.slice(i, i + size));
       return out;
-    }
+    };
 
-    const batches = chunkArray(seeds, CONCURRENCY);
+    const batches = chunkArray(uniqueCandidates, CONCURRENCY);
     const resolvedByKey = new Set();
-
     for (const batch of batches) {
-      const promises = batch.map((s) =>
-        generateCandidatesFromSeed(accountId, s.name, s.artist, {
-          limit: LIMIT_PER_SEED,
-        }).catch((e) => {
+      const promises = batch.map((c) =>
+        resolveToSpotifyCached(accountId, c.name, c.artist).catch((e) => {
           logger.warn(
-            `[SpotifyShuffle] seed resolution failed for "${s.name}" - ${e && e.message}`,
+            `[SpotifyShuffle] resolve failed ${c.name} - ${e && e.message}`,
           );
-          return [];
+          return null;
         }),
       );
       const results = await Promise.all(promises);
-      for (const r of results) {
-        if (!Array.isArray(r) || r.length === 0) continue;
-        for (const item of r) {
-          const sp = item && item.spotify ? item.spotify : null;
-          if (!sp) continue;
-          const trackName = sp.name || sp.track || "";
-          const artistName =
-            (sp.artists && sp.artists[0] && sp.artists[0].name) || "";
-          const key = `${normalizeName(trackName)}||${normalizeName(artistName)}`;
-          if (playlistNormalized.has(key)) continue; // already in playlist by metadata
-          if (resolvedByKey.has(key)) continue; // already added
-          resolvedByKey.add(key);
-          resolved.push(sp);
-          if (resolved.length >= MAX_CANDIDATES) break;
-        }
+      for (let i = 0; i < results.length; i++) {
+        const sp = results[i];
+        const cand = batch[i];
+        if (!sp) continue;
+        const trackName = sp.name || "";
+        const artistName =
+          (sp.artists && sp.artists[0] && sp.artists[0].name) || "";
+        const key = `${normalizeName(trackName)}||${normalizeName(artistName)}`;
+        if (playlistNormalized.has(key)) continue;
+        if (resolvedByKey.has(key)) continue;
+        resolvedByKey.add(key);
+        resolved.push(sp);
         if (resolved.length >= MAX_CANDIDATES) break;
       }
       if (resolved.length >= MAX_CANDIDATES) break;
-      // tiny delay between batches could be added here in future for backoff
+      // small pause between batches
+      await new Promise((r) => setTimeout(r, 120));
     }
   } catch (e) {
     logger.error(
@@ -206,21 +232,68 @@ async function playRandomUnique(accountId, playlistId, options = {}) {
 
   if (uris.length === 0) return { success: false, error: "No playable URIs" };
 
-  // If playNow, start playback with first track and queue the rest; otherwise queue all
-  if (playNow) {
-    const first = uris.slice(0, 1);
-    const rest = uris.slice(1);
-    const startRes = await startPlayback(accountId, first, deviceId).catch(
-      (e) => ({ success: false, error: e.message }),
+  // Create a private playlist for these URIs and start playback using the playlist context
+  const {
+    createSpotifyPlaylistForAccount,
+    addTracksToPlaylistBatch,
+  } = require("../services/spotifyService");
+
+  const playlistName = `Recomendações - ${new Date().toISOString().slice(0, 19).replace("T", " ")}`;
+  const desc = `Playlist gerada automaticamente com recomendações do Last.fm (${new Date().toLocaleString()})`;
+
+  const createRes = await createSpotifyPlaylistForAccount(
+    accountId,
+    playlistName,
+    desc,
+    false,
+  );
+  if (!createRes || !createRes.success) {
+    logger.warn(
+      `[SpotifyShuffle] failed create playlist: ${createRes && createRes.error}`,
     );
-    let queueRes = [];
-    if (rest.length)
-      queueRes = await queueTracksSequential(accountId, rest, deviceId);
-    return { success: true, started: startRes, queued: queueRes };
+    return {
+      success: false,
+      error: "Não foi possível criar a playlist de recomendações",
+    };
   }
 
-  const queued = await queueTracksSequential(accountId, uris, deviceId);
-  return { success: true, queued };
+  const playlist = createRes.playlist;
+  const createdPlaylistId = playlist.id;
+  const createdPlaylistUri = playlist.uri;
+
+  // Add tracks in batches (100 per request)
+  const addRes = await addTracksToPlaylistBatch(
+    createdPlaylistId,
+    uris,
+    accountId,
+  );
+  if (!addRes || !addRes.success) {
+    logger.warn(
+      `[SpotifyShuffle] failed adding tracks to playlist: ${addRes && addRes.error}`,
+    );
+    // still attempt to start playback of whatever was added
+  }
+
+  // Start playback using playlist context URI
+  if (playNow) {
+    const startRes = await startPlayback(
+      accountId,
+      [],
+      deviceId,
+      playlistUri,
+    ).catch((e) => ({ success: false, error: e.message }));
+    return {
+      success: true,
+      playlist: { id: createdPlaylistId, uri: createdPlaylistUri },
+      started: startRes,
+    };
+  }
+
+  // If not playNow, just return the playlist created
+  return {
+    success: true,
+    playlist: { id: createdPlaylistId, uri: createdPlaylistUri },
+  };
 }
 
 module.exports = { playRandomUnique };

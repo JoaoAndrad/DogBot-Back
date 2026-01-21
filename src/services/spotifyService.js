@@ -22,9 +22,9 @@ async function isSpotifyBlocked() {
       const blockedDate = new Date(blockedUntil);
       const pad = (n) => String(n).padStart(2, "0");
       const formatted = `${pad(blockedDate.getDate())}/${pad(
-        blockedDate.getMonth() + 1
+        blockedDate.getMonth() + 1,
       )}/${blockedDate.getFullYear()} às ${pad(blockedDate.getHours())}:${pad(
-        blockedDate.getMinutes()
+        blockedDate.getMinutes(),
       )}`;
       return {
         blocked: true,
@@ -61,8 +61,8 @@ async function setSpotifyBlock(blockedUntilMs, retryAfterHeader) {
     });
     console.log(
       `[SpotifyService] Rate limit persisted: blockedUntil=${new Date(
-        blockedUntilMs
-      ).toISOString()} retryAfter=${retryAfterHeader}`
+        blockedUntilMs,
+      ).toISOString()} retryAfter=${retryAfterHeader}`,
     );
   } catch (e) {
     console.warn("[setSpotifyBlock] DB write failed:", e.message);
@@ -217,7 +217,7 @@ async function upsertAccountTokens({
     // ignore prune errors (best-effort)
     console.warn(
       "spotifyService: prune tokens failed",
-      e && e.message ? e.message : e
+      e && e.message ? e.message : e,
     );
   }
 
@@ -289,8 +289,8 @@ async function spotifyFetch(accountId, url, options = {}) {
   if (blockStatus.blocked) {
     console.warn(
       `[spotifyFetch] global block active (from DB). blockedUntil=${new Date(
-        blockStatus.blockedUntil
-      ).toISOString()} retryHeader=${blockStatus.blockedHeader}`
+        blockStatus.blockedUntil,
+      ).toISOString()} retryHeader=${blockStatus.blockedHeader}`,
     );
     return {
       status: 429,
@@ -341,8 +341,8 @@ async function spotifyFetch(accountId, url, options = {}) {
 
       console.warn(
         `[spotifyFetch] account=${accountId} url=${url} status=429 Retry-After=${ra} computedMs=${ms} blockedUntil=${new Date(
-          blockedUntilMs
-        ).toISOString()} -> waiting ${minutes} minutes`
+          blockedUntilMs,
+        ).toISOString()} -> waiting ${minutes} minutes`,
       );
 
       // Persist block to DB
@@ -396,7 +396,7 @@ async function spotifyFetch(accountId, url, options = {}) {
       console.warn(
         `[spotifyFetch] account=${accountId} url=${url} status=${
           res.status
-        } body=${text ? text.slice(0, 1000) : "<no-body>"}${pushNameExtra}`
+        } body=${text ? text.slice(0, 1000) : "<no-body>"}${pushNameExtra}`,
       );
     }
   } catch (e) {
@@ -605,7 +605,7 @@ async function skipTrack() {
       "https://api.spotify.com/v1/me/player/next",
       {
         method: "POST",
-      }
+      },
     );
 
     if (res.status === 204 || res.status === 200) {
@@ -644,7 +644,7 @@ async function addTrackToPlaylist(playlistId, trackUri, accountId) {
         body: JSON.stringify({
           uris: [trackUri],
         }),
-      }
+      },
     );
 
     if (res.status === 201 || res.status === 200) {
@@ -675,7 +675,7 @@ async function createSpotifyPlaylist(
   userId,
   name,
   description = "",
-  isPublic = false
+  isPublic = false,
 ) {
   try {
     // Find user's Spotify account
@@ -704,7 +704,7 @@ async function createSpotifyPlaylist(
     const profileRes = await spotifyFetch(
       accountId,
       "https://api.spotify.com/v1/me",
-      { method: "GET" }
+      { method: "GET" },
     );
 
     if (!profileRes.ok) {
@@ -728,7 +728,7 @@ async function createSpotifyPlaylist(
           description,
           public: isPublic,
         }),
-      }
+      },
     );
 
     if (createRes.status === 201 || createRes.status === 200) {
@@ -755,7 +755,7 @@ async function getSpotifyPlaylistDetails(playlistId, accountId) {
     const res = await spotifyFetch(
       accountId,
       `https://api.spotify.com/v1/playlists/${playlistId}`,
-      { method: "GET" }
+      { method: "GET" },
     );
 
     if (res.ok) {
@@ -773,3 +773,110 @@ async function getSpotifyPlaylistDetails(playlistId, accountId) {
 
 module.exports.createSpotifyPlaylist = createSpotifyPlaylist;
 module.exports.getSpotifyPlaylistDetails = getSpotifyPlaylistDetails;
+
+/**
+ * Create a Spotify playlist using a specific spotifyAccount (accountId) rather than local userId.
+ * This is useful when we only have accountId and want to create a playlist for that account.
+ */
+async function createSpotifyPlaylistForAccount(
+  accountId,
+  name,
+  description = "",
+  isPublic = false,
+) {
+  try {
+    if (!accountId) return { success: false, error: "accountId required" };
+
+    // Get Spotify user profile to get user ID
+    const profileRes = await spotifyFetch(
+      accountId,
+      "https://api.spotify.com/v1/me",
+      {
+        method: "GET",
+      },
+    );
+
+    if (!profileRes.ok) {
+      return { success: false, error: "Failed to get Spotify profile" };
+    }
+
+    const profile = await profileRes.json();
+    const spotifyUserId = profile.id;
+
+    // Create playlist
+    const createRes = await spotifyFetch(
+      accountId,
+      `https://api.spotify.com/v1/users/${spotifyUserId}/playlists`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name,
+          description,
+          public: isPublic,
+        }),
+      },
+    );
+
+    if (createRes.status === 201 || createRes.status === 200) {
+      const playlist = await createRes.json();
+      return { success: true, playlist };
+    }
+
+    const errorText = await createRes.text().catch(() => "Unknown error");
+    return { success: false, error: `Spotify API error: ${errorText}` };
+  } catch (error) {
+    console.error(
+      "[spotifyService] createSpotifyPlaylistForAccount error:",
+      error,
+    );
+    return { success: false, error: error.message };
+  }
+}
+
+module.exports.createSpotifyPlaylistForAccount =
+  createSpotifyPlaylistForAccount;
+
+/**
+ * Add many tracks to a playlist in batch (up to 100 URIs per request).
+ */
+async function addTracksToPlaylistBatch(playlistId, trackUris = [], accountId) {
+  try {
+    if (!Array.isArray(trackUris)) trackUris = [trackUris];
+    const CHUNK = 100;
+    for (let i = 0; i < trackUris.length; i += CHUNK) {
+      const chunk = trackUris
+        .slice(i, i + CHUNK)
+        .map((u) => (u.startsWith("spotify:") ? u : `spotify:track:${u}`));
+      const res = await spotifyFetch(
+        accountId,
+        `https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ uris: chunk }),
+        },
+      );
+      if (!(res.status === 201 || res.status === 200)) {
+        const t = await res.text().catch(() => null);
+        return {
+          success: false,
+          error: `Spotify API error: ${t || res.status}`,
+        };
+      }
+      // small delay between batches
+      await new Promise((r) => setTimeout(r, 150));
+    }
+    return { success: true };
+  } catch (e) {
+    console.error(
+      "[spotifyService] addTracksToPlaylistBatch error:",
+      e && e.message,
+    );
+    return { success: false, error: e.message };
+  }
+}
+
+module.exports.addTracksToPlaylistBatch = addTracksToPlaylistBatch;

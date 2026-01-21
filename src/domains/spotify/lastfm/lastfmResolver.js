@@ -4,6 +4,30 @@ const { spotifyFetch } = require(
 );
 const { getSimilarTracks, getArtistTopTracks } = require("./lastfmService");
 
+// Simple in-memory cache for resolved Spotify matches across process lifetime
+const _resolveCache = new Map();
+
+async function resolveToSpotifyCached(accountId, trackName, artistName) {
+  const key = `${normalizeName(trackName)}||${normalizeName(artistName)}`;
+  if (_resolveCache.has(key)) return _resolveCache.get(key);
+  const p = (async () => {
+    try {
+      const match = await findBestSpotifyMatch(
+        accountId,
+        trackName,
+        artistName,
+      );
+      return match;
+    } catch (e) {
+      return null;
+    }
+  })();
+  _resolveCache.set(key, p);
+  return p;
+}
+
+module.exports.resolveToSpotifyCached = resolveToSpotifyCached;
+
 function normalizeName(s) {
   if (!s) return "";
   return s
@@ -118,3 +142,60 @@ module.exports = {
   resolveCandidatesToSpotify,
   generateCandidatesFromSeed,
 };
+
+/**
+ * Collect raw Last.fm candidates for multiple seeds without resolving to Spotify.
+ * seeds: array of {name, artist}
+ * opts: { limit, concurrency }
+ * returns: array of { name, artist, match, seedName, seedArtist }
+ */
+async function collectCandidatesFromSeeds(seeds = [], opts = {}) {
+  const limit = opts.limit || 8;
+  const concurrency = opts.concurrency || 4;
+  const out = [];
+
+  function chunk(arr, n) {
+    const r = [];
+    for (let i = 0; i < arr.length; i += n) r.push(arr.slice(i, i + n));
+    return r;
+  }
+
+  const batches = chunk(seeds, concurrency);
+  for (const batch of batches) {
+    const promises = batch.map(async (s) => {
+      try {
+        const t = await getSimilarTracks(s.name, s.artist, limit);
+        if (Array.isArray(t) && t.length) {
+          return t.map((c) => ({
+            ...c,
+            seedName: s.name,
+            seedArtist: s.artist,
+          }));
+        }
+        // fallback to artist top tracks
+        const a = await getArtistTopTracks(s.artist, limit);
+        if (Array.isArray(a) && a.length) {
+          return a.map((c) => ({
+            ...c,
+            seedName: s.name,
+            seedArtist: s.artist,
+          }));
+        }
+        return [];
+      } catch (e) {
+        return [];
+      }
+    });
+
+    const results = await Promise.all(promises);
+    for (const r of results) {
+      if (Array.isArray(r) && r.length) out.push(...r);
+    }
+    // small delay between batches to avoid bursts
+    await new Promise((res) => setTimeout(res, 80));
+  }
+
+  return out;
+}
+
+module.exports.collectCandidatesFromSeeds = collectCandidatesFromSeeds;
