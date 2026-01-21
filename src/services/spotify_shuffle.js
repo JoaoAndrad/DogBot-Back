@@ -293,6 +293,25 @@ async function playRandomUnique(accountId, playlistId, options = {}) {
 
   // Start playback using playlist context URI
   if (playNow) {
+    // Enable shuffle on the user's player (best-effort) before starting playback
+    try {
+      const { spotifyFetch } = require("../services/spotifyService");
+      const shuffleUrl = `https://api.spotify.com/v1/me/player/shuffle?state=true$${
+        deviceId ? `&device_id=${encodeURIComponent(deviceId)}` : ""
+      }`;
+      // note: spotifyFetch expects accountId as first arg
+      const shRes = await spotifyFetch(accountId, shuffleUrl, {
+        method: "PUT",
+      }).catch((e) => null);
+      if (!shRes || !shRes.ok) {
+        logger.warn(
+          `[SpotifyShuffle] failed to enable shuffle (non-fatal): ${shRes && (shRes.status || shRes.blockedHeader)}`,
+        );
+      }
+    } catch (e) {
+      logger.warn(`[SpotifyShuffle] enable shuffle failed: ${e && e.message}`);
+    }
+
     const startRes = await startPlayback(
       accountId,
       [],
