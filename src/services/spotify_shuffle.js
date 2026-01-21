@@ -3,7 +3,17 @@ const { filterExistingTracks } = require("../domains/spotify/filter");
 const { queueTracksSequential, startPlayback } = require("./player");
 const {
   generateCandidatesFromSeed,
+  sanitizeSeedInput,
+  normalizeName,
 } = require("../domains/spotify/lastfm/lastfmResolver");
+
+const SEEDS_TOTAL = parseInt(process.env.SHUFFLE_SEEDS_TOTAL || "20", 10);
+const LIMIT_PER_SEED = parseInt(process.env.SHUFFLE_LIMIT_PER_SEED || "25", 10);
+const CONCURRENCY = parseInt(process.env.SHUFFLE_CONCURRENCY || "4", 10);
+const MAX_CANDIDATES = parseInt(
+  process.env.SHUFFLE_MAX_CANDIDATES || "250",
+  10,
+);
 
 /**
  * Orchestrator to play/queue random unique tracks (not present in playlist)
@@ -32,39 +42,125 @@ async function playRandomUnique(accountId, playlistId, options = {}) {
       error: "Não foi possível gerar recomendações no momento",
     };
 
-  // sample up to 3 seeds randomly from playlist
-  const seedCount = Math.min(3, Math.max(1, Math.floor(tracks.length / 2)));
-  const seeds = [];
-  const indices = new Set();
-  while (indices.size < seedCount) {
-    indices.add(Math.floor(Math.random() * tracks.length));
+  // Build seed set using full playlist coverage:
+  // - pick one representative track from top artists
+  // - supplement with weighted random tracks until SEEDS_TOTAL
+  const artistMap = new Map();
+  for (const t of tracks) {
+    if (!t || !t.name || !Array.isArray(t.artists) || !t.artists.length)
+      continue;
+    const artist = t.artists[0];
+    if (!artist) continue;
+    if (!artistMap.has(artist)) artistMap.set(artist, []);
+    artistMap.get(artist).push(t);
   }
-  for (const i of indices) {
-    const t = tracks[i];
-    if (t && t.name && Array.isArray(t.artists) && t.artists.length) {
-      seeds.push({ name: t.name, artist: t.artists[0] });
-    }
-  }
-  logger.info(`[SpotifyShuffle] selected seeds=${JSON.stringify(seeds)}`);
 
-  // 3) Use Last.fm as primary candidate generator. For each seed, ask Last.fm and resolve to Spotify.
+  // sort artists by number of tracks in playlist (frequency)
+  const artistsSorted = Array.from(artistMap.keys()).sort((a, b) => {
+    return artistMap.get(b).length - artistMap.get(a).length;
+  });
+
+  const seeds = [];
+  const seenSeedKeys = new Set();
+
+  // pick representative tracks from top artists (up to half of SEEDS_TOTAL)
+  const topArtistCount = Math.min(
+    Math.ceil(SEEDS_TOTAL / 2),
+    artistsSorted.length,
+  );
+  for (let i = 0; i < topArtistCount; i++) {
+    const artist = artistsSorted[i];
+    const list = artistMap.get(artist) || [];
+    // pick the most common / first track for that artist
+    const pick = list[0];
+    if (!pick) continue;
+    const name = sanitizeSeedInput(pick.name || "");
+    const art = sanitizeSeedInput(artist || "");
+    const key = `${normalizeName(name)}||${normalizeName(art)}`;
+    if (seenSeedKeys.has(key)) continue;
+    seenSeedKeys.add(key);
+    seeds.push({ name, artist: art });
+    if (seeds.length >= SEEDS_TOTAL) break;
+  }
+
+  // supplement with weighted-random seeds from playlist until SEEDS_TOTAL
+  const remaining = SEEDS_TOTAL - seeds.length;
+  const shuffledIndices = Array.from(
+    { length: tracks.length },
+    (_, i) => i,
+  ).sort(() => Math.random() - 0.5);
+  for (const idx of shuffledIndices) {
+    if (seeds.length >= SEEDS_TOTAL) break;
+    const t = tracks[idx];
+    if (!t || !t.name || !Array.isArray(t.artists) || !t.artists.length)
+      continue;
+    const name = sanitizeSeedInput(t.name || "");
+    const art = sanitizeSeedInput(t.artists[0] || "");
+    const key = `${normalizeName(name)}||${normalizeName(art)}`;
+    if (seenSeedKeys.has(key)) continue;
+    seenSeedKeys.add(key);
+    seeds.push({ name, artist: art });
+  }
+
+  logger.info(`[SpotifyShuffle] selected seeds count=${seeds.length}`);
+
+  // 3) Use Last.fm as primary candidate generator with controlled concurrency.
   let resolved = [];
   try {
-    for (const s of seeds) {
-      logger.info(
-        `[SpotifyShuffle] generating candidates for seed="${s.name}" artist="${s.artist}"`,
+    // build a normalized set of playlist name|artist to filter by metadata
+    const playlistNormalized = new Set();
+    for (const t of tracks) {
+      const nm = sanitizeSeedInput(t.name || "");
+      const art = sanitizeSeedInput(
+        (Array.isArray(t.artists) && t.artists[0]) || "",
       );
-      const r = await generateCandidatesFromSeed(accountId, s.name, s.artist, {
-        limit: 8,
-      });
-      logger.info(
-        `[SpotifyShuffle] resolved candidates for seed count=${r?.length || 0}`,
+      const key = `${normalizeName(nm)}||${normalizeName(art)}`;
+      playlistNormalized.add(key);
+    }
+
+    function chunkArray(arr, size) {
+      const out = [];
+      for (let i = 0; i < arr.length; i += size)
+        out.push(arr.slice(i, i + size));
+      return out;
+    }
+
+    const batches = chunkArray(seeds, CONCURRENCY);
+    const resolvedByKey = new Set();
+
+    for (const batch of batches) {
+      const promises = batch.map((s) =>
+        generateCandidatesFromSeed(accountId, s.name, s.artist, {
+          limit: LIMIT_PER_SEED,
+        }).catch((e) => {
+          logger.warn(
+            `[SpotifyShuffle] seed resolution failed for "${s.name}" - ${e && e.message}`,
+          );
+          return [];
+        }),
       );
-      if (Array.isArray(r) && r.length)
-        resolved.push(...r.map((x) => x.spotify));
+      const results = await Promise.all(promises);
+      for (const r of results) {
+        if (!Array.isArray(r) || r.length === 0) continue;
+        for (const item of r) {
+          const sp = item && item.spotify ? item.spotify : null;
+          if (!sp) continue;
+          const trackName = sp.name || sp.track || "";
+          const artistName =
+            (sp.artists && sp.artists[0] && sp.artists[0].name) || "";
+          const key = `${normalizeName(trackName)}||${normalizeName(artistName)}`;
+          if (playlistNormalized.has(key)) continue; // already in playlist by metadata
+          if (resolvedByKey.has(key)) continue; // already added
+          resolvedByKey.add(key);
+          resolved.push(sp);
+          if (resolved.length >= MAX_CANDIDATES) break;
+        }
+        if (resolved.length >= MAX_CANDIDATES) break;
+      }
+      if (resolved.length >= MAX_CANDIDATES) break;
+      // tiny delay between batches could be added here in future for backoff
     }
   } catch (e) {
-    // On any resolution error fail gracefully per user requirement
     logger.error(
       "[SpotifyShuffle] error generating candidates:",
       e && e.message ? e.message : e,

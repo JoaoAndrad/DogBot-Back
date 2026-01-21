@@ -15,6 +15,21 @@ function normalizeName(s) {
     .trim();
 }
 
+function sanitizeSeedInput(s) {
+  if (!s) return "";
+  // remove parentheticals like (Ao Vivo), (Live), (Remastered)
+  let out = String(s).replace(/\([^)]*\)/g, "");
+  // remove trailing separators and parts like " - Live" or " – Ao Vivo"
+  out = out.replace(/\s*[-–—].*$/g, "");
+  // remove common live markers and variants
+  out = out.replace(/\b(ao vivo|aovivo|live)\b/gi, "");
+  // remove featuring qualifiers and anything after (feat, ft, featuring)
+  out = out.replace(/\b(feat\.?|ft\.?|featuring)\b.*$/gi, "");
+  // collapse whitespace and trim
+  out = out.replace(/\s+/g, " ").trim();
+  return out;
+}
+
 async function findBestSpotifyMatch(accountId, trackName, artistName) {
   const logger = require("../../../lib/logger");
   logger.info(
@@ -98,6 +113,7 @@ async function generateCandidatesFromSeed(
 
 module.exports = {
   normalizeName,
+  sanitizeSeedInput,
   findBestSpotifyMatch,
   resolveCandidatesToSpotify,
   generateCandidatesFromSeed,
