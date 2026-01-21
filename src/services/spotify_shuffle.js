@@ -1,7 +1,9 @@
 const { fetchPlaylistTrackIds } = require("../domains/spotify/playlist");
-const { getRecommendations } = require("../domains/spotify/recommendations");
 const { filterExistingTracks } = require("../domains/spotify/filter");
 const { queueTracksSequential, startPlayback } = require("./player");
+const {
+  generateCandidatesFromSeed,
+} = require("../domains/spotify/lastfm/lastfmResolver");
 
 /**
  * Orchestrator to play/queue random unique tracks (not present in playlist)
@@ -15,44 +17,61 @@ async function playRandomUnique(accountId, playlistId, options = {}) {
   // 1) fetch playlist existing ids/uris
   const playlistSet = await fetchPlaylistTrackIds(accountId, playlistId);
 
-  // 2) build seed strategy
-  const fallbackGenres = ["pop", "rock", "electronic", "hip-hop", "indie"];
-  const seeds = options.seeds || {
-    seed_genres: [
-      fallbackGenres[Math.floor(Math.random() * fallbackGenres.length)],
-    ],
-  };
-
-  // 3) fetch candidate recommendations
-  // request more than needed to allow filtering
-  const requested = Math.max(limit * 2, 20);
-  let candidates = [];
-  try {
-    candidates = await getRecommendations(accountId, seeds, requested);
-  } catch (e) {
-    return { success: false, error: e.message };
-  }
-
-  // 4) filter existing tracks
-  let unique = filterExistingTracks(candidates, playlistSet);
-
-  // If none left, try a different genre seed and one more attempt
-  if (!unique || unique.length === 0) {
-    const altSeed = {
-      seed_genres: [
-        fallbackGenres[Math.floor(Math.random() * fallbackGenres.length)],
-      ],
+  // 2) build seeds from playlist tracks (use names+artists for Last.fm)
+  const tracks = Array.isArray(playlistSet.tracks) ? playlistSet.tracks : [];
+  if (!tracks.length)
+    return {
+      success: false,
+      error: "Não foi possível gerar recomendações no momento",
     };
-    try {
-      const alt = await getRecommendations(accountId, altSeed, requested);
-      unique = filterExistingTracks(alt, playlistSet);
-    } catch (e) {
-      // ignore second attempt error
+
+  // sample up to 3 seeds randomly from playlist
+  const seedCount = Math.min(3, Math.max(1, Math.floor(tracks.length / 2)));
+  const seeds = [];
+  const indices = new Set();
+  while (indices.size < seedCount) {
+    indices.add(Math.floor(Math.random() * tracks.length));
+  }
+  for (const i of indices) {
+    const t = tracks[i];
+    if (t && t.name && Array.isArray(t.artists) && t.artists.length) {
+      seeds.push({ name: t.name, artist: t.artists[0] });
     }
   }
 
+  // 3) Use Last.fm as primary candidate generator. For each seed, ask Last.fm and resolve to Spotify.
+  let resolved = [];
+  try {
+    for (const s of seeds) {
+      const r = await generateCandidatesFromSeed(accountId, s.name, s.artist, {
+        limit: 8,
+      });
+      if (Array.isArray(r) && r.length)
+        resolved.push(...r.map((x) => x.spotify));
+    }
+  } catch (e) {
+    // On any resolution error fail gracefully per user requirement
+    return {
+      success: false,
+      error: "Não foi possível gerar recomendações no momento",
+    };
+  }
+
+  if (!resolved || resolved.length === 0) {
+    return {
+      success: false,
+      error: "Não foi possível gerar recomendações no momento",
+    };
+  }
+
+  // 4) filter existing tracks
+  let unique = filterExistingTracks(resolved, playlistSet);
+
   if (!unique || unique.length === 0) {
-    return { success: false, error: "No unique candidates found" };
+    return {
+      success: false,
+      error: "Não foi possível gerar recomendações no momento",
+    };
   }
 
   // Limit to requested number
