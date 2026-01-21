@@ -7,13 +7,11 @@ const {
   normalizeName,
 } = require("../domains/spotify/lastfm/lastfmResolver");
 
-const SEEDS_TOTAL = parseInt(process.env.SHUFFLE_SEEDS_TOTAL || "20", 10);
-const LIMIT_PER_SEED = parseInt(process.env.SHUFFLE_LIMIT_PER_SEED || "25", 10);
-const CONCURRENCY = parseInt(process.env.SHUFFLE_CONCURRENCY || "4", 10);
-const MAX_CANDIDATES = parseInt(
-  process.env.SHUFFLE_MAX_CANDIDATES || "250",
-  10,
-);
+// Safer defaults to avoid hitting Spotify rate limits in large playlists
+const SEEDS_TOTAL = parseInt(process.env.SHUFFLE_SEEDS_TOTAL || "8", 10);
+const LIMIT_PER_SEED = parseInt(process.env.SHUFFLE_LIMIT_PER_SEED || "8", 10);
+const CONCURRENCY = parseInt(process.env.SHUFFLE_CONCURRENCY || "2", 10);
+const MAX_CANDIDATES = parseInt(process.env.SHUFFLE_MAX_CANDIDATES || "60", 10);
 
 /**
  * Orchestrator to play/queue random unique tracks (not present in playlist)
@@ -183,8 +181,8 @@ async function playRandomUnique(accountId, playlistId, options = {}) {
         if (resolved.length >= MAX_CANDIDATES) break;
       }
       if (resolved.length >= MAX_CANDIDATES) break;
-      // small pause between batches
-      await new Promise((r) => setTimeout(r, 120));
+      // small pause between resolution batches to avoid bursts
+      await new Promise((r) => setTimeout(r, 250));
     }
   } catch (e) {
     logger.error(
