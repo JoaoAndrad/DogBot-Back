@@ -72,18 +72,18 @@ router.post("/:chatId/active-listeners", async (req, res) => {
 
       if (contextId && playback.context?.uri !== contextId) {
         console.log(
-          `[GroupsController] ${user.display_name}: different context`
+          `[GroupsController] ${user.display_name}: different context`,
         );
         continue;
       }
 
       // Find matching identifier
       const matchingId = memberIds.find(
-        (mid) => user.sender_number === mid || user.identifiers?.includes(mid)
+        (mid) => user.sender_number === mid || user.identifiers?.includes(mid),
       );
 
       console.log(
-        `[GroupsController] ${user.display_name}: ACTIVE - ${playback.name}`
+        `[GroupsController] ${user.display_name}: ACTIVE - ${playback.name}`,
       );
 
       activeListeners.push({
@@ -104,7 +104,7 @@ router.post("/:chatId/active-listeners", async (req, res) => {
     }
 
     console.log(
-      `[GroupsController] Active listeners: ${activeListeners.length}`
+      `[GroupsController] Active listeners: ${activeListeners.length}`,
     );
 
     res.json({ listeners: activeListeners });
@@ -253,7 +253,7 @@ router.post("/votes/:voteId/cast", async (req, res) => {
     // Validate pollId matches if provided
     if (pollId && vote.pollId && vote.pollId !== pollId) {
       console.warn(
-        `[GroupsController] pollId mismatch: expected ${vote.pollId}, got ${pollId}`
+        `[GroupsController] pollId mismatch: expected ${vote.pollId}, got ${pollId}`,
       );
       return res.status(400).json({ error: "pollId mismatch" });
     }
@@ -261,7 +261,7 @@ router.post("/votes/:voteId/cast", async (req, res) => {
     // Check if vote is already resolved
     if (vote.status !== "active") {
       console.log(
-        `[GroupsController] Vote ${voteId} already resolved with status: ${vote.status}`
+        `[GroupsController] Vote ${voteId} already resolved with status: ${vote.status}`,
       );
       const stats = await collaborativeVoteRepo.getVoteStats(voteId);
       return res.json({ vote, stats, alreadyResolved: true });
@@ -363,7 +363,7 @@ router.post("/:chatId/playlist/create", async (req, res) => {
       userId,
       name,
       description || `Playlist do grupo ${chatId}`,
-      false
+      false,
     );
 
     if (!createRes.success) {
@@ -405,7 +405,7 @@ router.post("/:chatId/playlist/create", async (req, res) => {
     // Link to group
     const updatedGroup = await groupChatRepo.updatePlaylist(
       chatId,
-      dbPlaylist.id
+      dbPlaylist.id,
     );
 
     res.json({
@@ -443,7 +443,7 @@ router.post("/:chatId/playlist/link", async (req, res) => {
     const spotifyService = require("../../../services/spotifyService");
     const detailsRes = await spotifyService.getSpotifyPlaylistDetails(
       spotifyPlaylistId,
-      accountId
+      accountId,
     );
 
     if (!detailsRes.success) {
@@ -472,7 +472,7 @@ router.post("/:chatId/playlist/link", async (req, res) => {
     // Link to group
     const updatedGroup = await groupChatRepo.updatePlaylist(
       chatId,
-      dbPlaylist.id
+      dbPlaylist.id,
     );
 
     res.json({
@@ -484,6 +484,49 @@ router.post("/:chatId/playlist/link", async (req, res) => {
   } catch (error) {
     console.error("[GroupsController] link playlist error:", error);
     res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * POST /api/groups/:chatId/playlist/shuffle
+ * Body: { playNow?: boolean, limit?: number, deviceId?: string }
+ * Triggers playRandomUnique using the playlist's stored Spotify playlist and account
+ */
+router.post("/:chatId/playlist/shuffle", async (req, res) => {
+  try {
+    const { chatId } = req.params;
+    const { playNow = true, limit = 6, deviceId = null } = req.body || {};
+
+    const group = await groupChatRepo.findByChatId(chatId);
+    if (!group) return res.status(404).json({ error: "Group not found" });
+    if (
+      !group.playlist ||
+      !group.playlist.spotifyId ||
+      !group.playlist.accountId
+    ) {
+      return res
+        .status(400)
+        .json({
+          error: "Group has no linked Spotify playlist or missing account",
+        });
+    }
+
+    const spotifyShuffle = require("../../../../services/spotify_shuffle");
+
+    const result = await spotifyShuffle.playRandomUnique(
+      group.playlist.accountId,
+      group.playlist.spotifyId,
+      {
+        playNow,
+        limit,
+        deviceId,
+      },
+    );
+
+    return res.json({ success: true, result });
+  } catch (error) {
+    console.error("[GroupsController] playlist shuffle error:", error);
+    return res.status(500).json({ error: error.message });
   }
 });
 
@@ -512,7 +555,7 @@ router.get("/playlists/:playlistId", async (req, res) => {
     const userSpotifyAdapter = require("../../../services/userSpotifyAdapter");
     const playlist = await userSpotifyAdapter.getPlaylist(
       users[0].id,
-      playlistId
+      playlistId,
     );
 
     if (!playlist) {
@@ -563,7 +606,7 @@ router.get("/playlists/:playlistId/check-track", async (req, res) => {
     const accountId = playlist.accountId;
     const detailsRes = await spotifyService.getSpotifyPlaylistDetails(
       playlist.spotifyId,
-      accountId
+      accountId,
     );
     if (!detailsRes || !detailsRes.success || !detailsRes.playlist) {
       return res
