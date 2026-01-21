@@ -20,6 +20,9 @@ async function getSimilarTracks(trackName, artistName, limit = 10) {
     autocorrect: "1",
     limit: String(limit),
   });
+  console.log(
+    `[LastfmService] getSimilarTracks track="${trackName}" artist="${artistName}" limit=${limit}`,
+  );
 
   const url = `${API_ROOT}?${params.toString()}`;
   const res = await fetch(url, {
@@ -35,6 +38,16 @@ async function getSimilarTracks(trackName, artistName, limit = 10) {
   const data = await res.json();
   // data.similartracks.track is expected
   const tracks = (data && data.similartracks && data.similartracks.track) || [];
+  try {
+    const names = tracks
+      .slice(0, 5)
+      .map((t) => `${t.name} - ${t.artist?.name || t.artist}`);
+    console.log(
+      `[LastfmService] getSimilarTracks resultCount=${tracks.length} sample=${JSON.stringify(names)}`,
+    );
+  } catch (e) {
+    // ignore logging errors
+  }
   // Normalize into simple objects: { name, artist, match }
   return tracks.map((t) => ({
     name: t.name,

@@ -15,7 +15,13 @@ async function playRandomUnique(accountId, playlistId, options = {}) {
   const limit = typeof options.limit === "number" ? options.limit : 6;
 
   // 1) fetch playlist existing ids/uris
+  console.log(
+    `[SpotifyShuffle] playRandomUnique account=${accountId} playlist=${playlistId} options=${JSON.stringify(options)}`,
+  );
   const playlistSet = await fetchPlaylistTrackIds(accountId, playlistId);
+  console.log(
+    `[SpotifyShuffle] fetched playlist tracks count=${playlistSet.tracks?.length || 0}`,
+  );
 
   // 2) build seeds from playlist tracks (use names+artists for Last.fm)
   const tracks = Array.isArray(playlistSet.tracks) ? playlistSet.tracks : [];
@@ -38,26 +44,42 @@ async function playRandomUnique(accountId, playlistId, options = {}) {
       seeds.push({ name: t.name, artist: t.artists[0] });
     }
   }
+  console.log(`[SpotifyShuffle] selected seeds=${JSON.stringify(seeds)}`);
 
   // 3) Use Last.fm as primary candidate generator. For each seed, ask Last.fm and resolve to Spotify.
   let resolved = [];
   try {
     for (const s of seeds) {
+      console.log(
+        `[SpotifyShuffle] generating candidates for seed="${s.name}" artist="${s.artist}"`,
+      );
       const r = await generateCandidatesFromSeed(accountId, s.name, s.artist, {
         limit: 8,
       });
+      console.log(
+        `[SpotifyShuffle] resolved candidates for seed count=${r?.length || 0}`,
+      );
       if (Array.isArray(r) && r.length)
         resolved.push(...r.map((x) => x.spotify));
     }
   } catch (e) {
     // On any resolution error fail gracefully per user requirement
+    console.error(
+      "[SpotifyShuffle] error generating candidates:",
+      e && e.message ? e.message : e,
+    );
     return {
       success: false,
       error: "Não foi possível gerar recomendações no momento",
     };
   }
 
+  console.log(
+    `[SpotifyShuffle] total resolved spotify candidates=${resolved.length}`,
+  );
+
   if (!resolved || resolved.length === 0) {
+    console.log("[SpotifyShuffle] no resolved candidates found");
     return {
       success: false,
       error: "Não foi possível gerar recomendações no momento",
@@ -66,6 +88,10 @@ async function playRandomUnique(accountId, playlistId, options = {}) {
 
   // 4) filter existing tracks
   let unique = filterExistingTracks(resolved, playlistSet);
+
+  console.log(
+    `[SpotifyShuffle] unique candidates after filtering=${unique.length}`,
+  );
 
   if (!unique || unique.length === 0) {
     return {

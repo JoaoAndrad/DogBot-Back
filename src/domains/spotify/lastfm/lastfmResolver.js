@@ -16,6 +16,9 @@ function normalizeName(s) {
 }
 
 async function findBestSpotifyMatch(accountId, trackName, artistName) {
+  console.log(
+    `[LastfmResolver] findBestSpotifyMatch track="${trackName}" artist="${artistName}" account=${accountId}`,
+  );
   // Search Spotify by track + artist exact first
   const q = `track:"${trackName}" artist:"${artistName}"`;
   const params = new URLSearchParams({ q, type: "track", limit: "5" });
@@ -35,6 +38,9 @@ async function findBestSpotifyMatch(accountId, trackName, artistName) {
   }
   const data = await res.json();
   const items = (data && data.tracks && data.tracks.items) || [];
+  console.log(
+    `[LastfmResolver] spotify search results count=${items.length} for track="${trackName}" artist="${artistName}"`,
+  );
   if (!items.length) return null;
 
   const targetArtistNorm = normalizeName(artistName);
@@ -44,6 +50,10 @@ async function findBestSpotifyMatch(accountId, trackName, artistName) {
     const artistNames = (it.artists || []).map((a) => normalizeName(a.name));
     if (artistNames.includes(targetArtistNorm)) return it;
   }
+
+  console.log(
+    `[LastfmResolver] no exact artist match; returning top item for track="${trackName}" artist="${artistName}"`,
+  );
 
   // No exact artist match; accept top item only if Last.fm confidence high is handled by caller
   return items[0] || null;
