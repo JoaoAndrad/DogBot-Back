@@ -272,6 +272,25 @@ async function playRandomUnique(accountId, playlistId, options = {}) {
     // still attempt to start playback of whatever was added
   }
 
+  // Final log: playlist created and list added
+  try {
+    const addedLines = (unique || []).map((t) => {
+      const artist = (t.artists && t.artists[0] && t.artists[0].name) || "";
+      const name = t.name || t.uri || t.id || "<unknown>";
+      return `"${name}" + "${artist}"`;
+    });
+    logger.info(
+      `[SpotifyShuffle] Playlist: "${playlistName}" Criada id=${createdPlaylistId}`,
+    );
+    if (addedLines.length)
+      logger.info(
+        `[SpotifyShuffle] Músicas adicionadas: ${addedLines.join(", ")}`,
+      );
+  } catch (e) {
+    // best-effort logging
+    logger.warn("[SpotifyShuffle] failed to log added tracks", e && e.message);
+  }
+
   // Start playback using playlist context URI
   if (playNow) {
     const startRes = await startPlayback(
