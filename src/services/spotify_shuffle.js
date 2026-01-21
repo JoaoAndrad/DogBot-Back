@@ -221,8 +221,8 @@ async function playRandomUnique(accountId, playlistId, options = {}) {
     };
   }
 
-  // Limit to requested number
-  unique = unique.slice(0, limit);
+  // Note: do not truncate the final playlist here — create the playlist
+  // with all unique suggestions returned by Last.fm (up to MAX_CANDIDATES).
 
   const uris = unique
     .map((t) => (t.uri ? t.uri : t.id ? `spotify:track:${t.id}` : null))
