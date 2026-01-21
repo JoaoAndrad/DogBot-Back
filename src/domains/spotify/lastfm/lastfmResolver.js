@@ -26,8 +26,6 @@ async function resolveToSpotifyCached(accountId, trackName, artistName) {
   return p;
 }
 
-module.exports.resolveToSpotifyCached = resolveToSpotifyCached;
-
 function normalizeName(s) {
   if (!s) return "";
   return s
@@ -142,6 +140,9 @@ module.exports = {
   resolveCandidatesToSpotify,
   generateCandidatesFromSeed,
 };
+
+// Ensure process-lifetime helpers are exported (avoid earlier overwrite issues)
+module.exports.resolveToSpotifyCached = resolveToSpotifyCached;
 
 /**
  * Collect raw Last.fm candidates for multiple seeds without resolving to Spotify.

@@ -280,7 +280,7 @@ async function playRandomUnique(accountId, playlistId, options = {}) {
       accountId,
       [],
       deviceId,
-      playlistUri,
+      createdPlaylistUri,
     ).catch((e) => ({ success: false, error: e.message }));
     return {
       success: true,
