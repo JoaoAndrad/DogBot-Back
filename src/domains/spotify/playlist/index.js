@@ -1,4 +1,7 @@
-const { spotifyFetch } = require("../../../services/spotifyService");
+const path = require("path");
+const { spotifyFetch } = require(
+  path.join(__dirname, "..", "..", "..", "services", "spotifyService"),
+);
 
 /**
  * Fetch playlist tracks and return sets for ids/uris and an array of track objects

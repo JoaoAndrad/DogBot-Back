@@ -2,7 +2,10 @@ const trackRepo = require("../repo/trackRepo");
 const playbackRepo = require("../repo/playbackRepo");
 const sessionRepo = require("../repo/sessionRepo");
 const summaryRepo = require("../repo/summaryRepo");
-const { spotifyFetch } = require("../../../services/spotifyService");
+const path = require("path");
+const { spotifyFetch } = require(
+  path.join(__dirname, "..", "..", "..", "services", "spotifyService"),
+);
 
 /**
  * PlaybackTracker Service
@@ -44,7 +47,7 @@ module.exports = {
       // Check if first play for user
       const isFirstPlay = await playbackRepo.isFirstPlayForUser(
         userId,
-        trackData.id
+        trackData.id,
       );
 
       // Get or create listening session
@@ -53,7 +56,7 @@ module.exports = {
         listeningSession = await sessionRepo.create(
           userId,
           this.inferDeviceType(trackData.device_type),
-          trackData.context?.type
+          trackData.context?.type,
         );
       }
 
@@ -137,7 +140,7 @@ module.exports = {
           const prev = await playbackRepo.findPreviousNonSkipped(
             userId,
             session.trackId,
-            session.playbackId
+            session.playbackId,
           );
 
           if (!prev) {
@@ -157,7 +160,7 @@ module.exports = {
         {},
         currentPlayback && currentPlayback.metadata
           ? currentPlayback.metadata
-          : {}
+          : {},
       );
       if (shouldIncrement) newMetadata.counted = true;
 
@@ -177,13 +180,13 @@ module.exports = {
         await summaryRepo.addListeningTime(
           userId,
           session.accumulatedMs,
-          session.trackId
+          session.trackId,
         );
 
         // Update session stats
         await sessionRepo.incrementStats(
           session.sessionId,
-          session.accumulatedMs
+          session.accumulatedMs,
         );
       }
 

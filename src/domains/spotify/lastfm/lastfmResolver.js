@@ -1,4 +1,7 @@
-const { spotifyFetch } = require("../../../services/spotifyService");
+const path = require("path");
+const { spotifyFetch } = require(
+  path.join(__dirname, "..", "..", "..", "services", "spotifyService"),
+);
 const { getSimilarTracks, getArtistTopTracks } = require("./lastfmService");
 
 function normalizeName(s) {
