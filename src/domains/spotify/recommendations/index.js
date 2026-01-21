@@ -1,4 +1,4 @@
-const { spotifyFetch } = require("../../services/spotifyService");
+const { spotifyFetch } = require("../../../services/spotifyService");
 
 /**
  * Get recommendations from Spotify using provided seeds.

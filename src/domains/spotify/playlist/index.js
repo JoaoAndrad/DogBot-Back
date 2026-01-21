@@ -1,4 +1,4 @@
-const { spotifyFetch } = require("../../services/spotifyService");
+const { spotifyFetch } = require("../../../services/spotifyService");
 
 /**
  * Fetch playlist tracks and return sets for ids/uris and an array of track objects

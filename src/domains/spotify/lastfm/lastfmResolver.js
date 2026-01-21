@@ -1,4 +1,4 @@
-const { spotifyFetch } = require("../../services/spotifyService");
+const { spotifyFetch } = require("../../../services/spotifyService");
 const { getSimilarTracks, getArtistTopTracks } = require("./lastfmService");
 
 function normalizeName(s) {
