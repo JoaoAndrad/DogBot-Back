@@ -1,10 +1,11 @@
 const fetch = require("node-fetch");
+const logger = require("../../../lib/logger");
 
 const API_ROOT = "http://ws.audioscrobbler.com/2.0/";
 const API_KEY = process.env.LASTFM_API_KEY;
 
 if (!API_KEY) {
-  console.warn(
+  logger.warn(
     "LASTFM_API_KEY not set - Last.fm features will fail until configured.",
   );
 }
@@ -20,7 +21,7 @@ async function getSimilarTracks(trackName, artistName, limit = 10) {
     autocorrect: "1",
     limit: String(limit),
   });
-  console.log(
+  logger.info(
     `[LastfmService] getSimilarTracks track="${trackName}" artist="${artistName}" limit=${limit}`,
   );
 
@@ -42,7 +43,7 @@ async function getSimilarTracks(trackName, artistName, limit = 10) {
     const names = tracks
       .slice(0, 5)
       .map((t) => `${t.name} - ${t.artist?.name || t.artist}`);
-    console.log(
+    logger.info(
       `[LastfmService] getSimilarTracks resultCount=${tracks.length} sample=${JSON.stringify(names)}`,
     );
   } catch (e) {

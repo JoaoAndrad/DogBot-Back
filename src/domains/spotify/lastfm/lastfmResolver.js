@@ -16,7 +16,8 @@ function normalizeName(s) {
 }
 
 async function findBestSpotifyMatch(accountId, trackName, artistName) {
-  console.log(
+  const logger = require("../../../lib/logger");
+  logger.info(
     `[LastfmResolver] findBestSpotifyMatch track="${trackName}" artist="${artistName}" account=${accountId}`,
   );
   // Search Spotify by track + artist exact first
@@ -38,7 +39,7 @@ async function findBestSpotifyMatch(accountId, trackName, artistName) {
   }
   const data = await res.json();
   const items = (data && data.tracks && data.tracks.items) || [];
-  console.log(
+  logger.info(
     `[LastfmResolver] spotify search results count=${items.length} for track="${trackName}" artist="${artistName}"`,
   );
   if (!items.length) return null;
@@ -51,7 +52,7 @@ async function findBestSpotifyMatch(accountId, trackName, artistName) {
     if (artistNames.includes(targetArtistNorm)) return it;
   }
 
-  console.log(
+  logger.info(
     `[LastfmResolver] no exact artist match; returning top item for track="${trackName}" artist="${artistName}"`,
   );
 
