@@ -504,14 +504,12 @@ router.post("/:chatId/playlist/shuffle", async (req, res) => {
       !group.playlist.spotifyId ||
       !group.playlist.accountId
     ) {
-      return res
-        .status(400)
-        .json({
-          error: "Group has no linked Spotify playlist or missing account",
-        });
+      return res.status(400).json({
+        error: "Group has no linked Spotify playlist or missing account",
+      });
     }
 
-    const spotifyShuffle = require("../../../../services/spotify_shuffle");
+    const spotifyShuffle = require("../../../services/spotify_shuffle");
 
     const result = await spotifyShuffle.playRandomUnique(
       group.playlist.accountId,
