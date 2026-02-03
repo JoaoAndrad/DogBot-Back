@@ -96,9 +96,9 @@ router.post("/", express.json(), async (req, res) => {
       success: true,
       id: broadcastId,
       recipientCount: users.length,
+      recipients: users.map((u) => u.sender_number), // Send WhatsApp IDs to frontend
       status: "pending",
-      message:
-        "Broadcast created (worker not yet implemented - messages will not be sent)",
+      message: "Broadcast created successfully",
     });
   } catch (err) {
     console.error("[POST /api/broadcasts] Error:", err);
