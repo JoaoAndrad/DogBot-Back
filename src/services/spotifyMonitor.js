@@ -30,6 +30,58 @@ class SpotifyMonitor {
       // Check if user is a jam host and handle synchronization
       if (res && res.status === "playing" && res.track) {
         await this._handleJamSync(userId, res.track);
+
+        // Additionally: if this user is a listener in a jam and is playing a different track
+        // than the jam host, force a sync to the host state.
+        try {
+          const userJamResult = await jamService.getUserActiveJam(userId);
+          if (userJamResult.success && userJamResult.role === "listener") {
+            const jam = userJamResult.jam;
+            if (jam && jam.isActive) {
+              const listenerTrackId =
+                (res.track && (res.track.url || res.track.id)) || null;
+              const jamTrackUri =
+                jam.currentTrackUri || jam.currentTrackUrl || null;
+              const jamTrackId = jamTrackUri
+                ? String(jamTrackUri).split("/").pop()
+                : jam.currentTrackId;
+
+              // Normalize possible ids
+              const normalize = (v) => (v ? String(v).trim() : null);
+              const lId = normalize(listenerTrackId);
+              const jId = normalize(jamTrackId);
+
+              if (jId && lId && lId !== jId) {
+                console.log(
+                  `[SpotifyMonitor] Listener ${userId} playing different track (${lId}) than jam ${jam.id} host (${jId}), forcing sync...`,
+                );
+                try {
+                  const syncRes = await jamService.syncListener(jam.id, userId);
+                  if (syncRes && syncRes.success) {
+                    console.log(
+                      `[SpotifyMonitor] Forced sync succeeded for listener ${userId} to jam ${jam.id}`,
+                    );
+                  } else {
+                    console.warn(
+                      `[SpotifyMonitor] Forced sync failed for listener ${userId}:`,
+                      syncRes && syncRes.error,
+                    );
+                  }
+                } catch (e) {
+                  console.error(
+                    `[SpotifyMonitor] Error forcing sync for listener ${userId}:`,
+                    e,
+                  );
+                }
+              }
+            }
+          }
+        } catch (e) {
+          console.error(
+            "[SpotifyMonitor] Error checking listener jam state:",
+            e,
+          );
+        }
       }
 
       return { userId, ok: true, res };
