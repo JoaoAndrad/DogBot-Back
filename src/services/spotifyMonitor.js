@@ -99,7 +99,8 @@ class SpotifyMonitor {
         });
 
         // Send SSE event to notify clients
-        sseHub.broadcast("jam:track-change", {
+        // sseHub exposes sendEvent(eventName, data)
+        sseHub.sendEvent("jam:track-change", {
           jamId: jam.id,
           trackId: currentState.trackId,
           trackUri: currentState.trackUri,
