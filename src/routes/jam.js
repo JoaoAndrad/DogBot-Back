@@ -271,4 +271,22 @@ router.get("/user/:userId/status", async (req, res) => {
   }
 });
 
+/**
+ * POST /api/jam/cleanup-inactive
+ * Close jams that have been inactive for more than 30 minutes
+ * Internal endpoint - should be called periodically
+ */
+router.post("/cleanup-inactive", async (req, res) => {
+  try {
+    const result = await jamService.closeInactiveJams();
+    return res.json(result);
+  } catch (err) {
+    logger.error("[JamRoutes] Error cleaning up inactive jams:", err);
+    return res.status(500).json({
+      success: false,
+      error: err.message,
+    });
+  }
+});
+
 module.exports = router;

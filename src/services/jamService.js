@@ -83,9 +83,10 @@ async function createJam(hostUserId, chatId = null) {
 /**
  * Get all active jam sessions
  * @param {string} chatId - Optional: filter by chat ID
+ * @param {boolean} fetchCurrentPlayback - Whether to fetch current playback from Spotify (default: true)
  * @returns {Array} Active jam sessions
  */
-async function getActiveJams(chatId = null) {
+async function getActiveJams(chatId = null, fetchCurrentPlayback = true) {
   try {
     const where = {
       isActive: true,
@@ -101,6 +102,7 @@ async function getActiveJams(chatId = null) {
         host: {
           select: {
             id: true,
+            sender_number: true,
             push_name: true,
             display_name: true,
           },
@@ -113,6 +115,7 @@ async function getActiveJams(chatId = null) {
             user: {
               select: {
                 id: true,
+                sender_number: true,
                 push_name: true,
                 display_name: true,
               },
@@ -124,6 +127,82 @@ async function getActiveJams(chatId = null) {
         createdAt: "desc",
       },
     });
+
+    // Fetch current playback for each jam if requested
+    if (fetchCurrentPlayback) {
+      for (const jam of jams) {
+        try {
+          const currentPlayback = await userSpotifyAdapter.getCurrentlyPlaying(jam.hostUserId);
+          
+          if (currentPlayback && currentPlayback.id) {
+            // Update jam with current playback
+            jam.currentTrackId = currentPlayback.id;
+            jam.currentTrackUri = currentPlayback.url;
+            jam.currentTrackName = currentPlayback.name;
+            jam.currentTrackAlbum = currentPlayback.album;
+            jam.currentArtists = currentPlayback.artists?.join(", ") || null;
+            jam.currentProgressMs = currentPlayback.progressMs;
+            jam.isPlaying = currentPlayback.isPlaying || false;
+            
+            // Update lastActiveAt in database if host is playing
+            if (currentPlayback.isPlaying) {
+              await prisma.jamSession.update({
+                where: { id: jam.id },
+                data: {
+                  currentTrackId: currentPlayback.id,
+                  currentTrackUri: currentPlayback.url,
+                  currentTrackName: currentPlayback.name,
+                  currentTrackAlbum: currentPlayback.album,
+                  currentArtists: currentPlayback.artists?.join(", ") || null,
+                  currentProgressMs: currentPlayback.progressMs,
+                  isPlaying: true,
+                  lastActiveAt: new Date(),
+                },
+              });
+            } else {
+              // Update playback state but not lastActiveAt
+              await prisma.jamSession.update({
+                where: { id: jam.id },
+                data: {
+                  currentTrackId: currentPlayback.id,
+                  currentTrackUri: currentPlayback.url,
+                  currentTrackName: currentPlayback.name,
+                  currentTrackAlbum: currentPlayback.album,
+                  currentArtists: currentPlayback.artists?.join(", ") || null,
+                  currentProgressMs: currentPlayback.progressMs,
+                  isPlaying: false,
+                },
+              });
+            }
+          } else {
+            // No playback - clear current track info and mark as not playing
+            jam.currentTrackId = null;
+            jam.currentTrackUri = null;
+            jam.currentTrackName = null;
+            jam.currentTrackAlbum = null;
+            jam.currentArtists = null;
+            jam.currentProgressMs = null;
+            jam.isPlaying = false;
+            
+            await prisma.jamSession.update({
+              where: { id: jam.id },
+              data: {
+                currentTrackId: null,
+                currentTrackUri: null,
+                currentTrackName: null,
+                currentTrackAlbum: null,
+                currentArtists: null,
+                currentProgressMs: null,
+                isPlaying: false,
+              },
+            });
+          }
+        } catch (err) {
+          logger.warn(`[JamService] Failed to fetch playback for jam ${jam.id}:`, err.message);
+          // Keep existing playback data on error
+        }
+      }
+    }
 
     return {
       success: true,
@@ -150,6 +229,7 @@ async function getJamById(jamId) {
         host: {
           select: {
             id: true,
+            sender_number: true,
             push_name: true,
             display_name: true,
           },
@@ -162,6 +242,7 @@ async function getJamById(jamId) {
             user: {
               select: {
                 id: true,
+                sender_number: true,
                 push_name: true,
                 display_name: true,
               },
@@ -633,6 +714,70 @@ async function getUserActiveJam(userId) {
   }
 }
 
+/**
+ * Close inactive jams (no playback for more than 30 minutes)
+ */
+async function closeInactiveJams() {
+  try {
+    const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
+    
+    // Find jams that haven't been active for 30 minutes
+    const inactiveJams = await prisma.jamSession.findMany({
+      where: {
+        isActive: true,
+        lastActiveAt: {
+          lt: thirtyMinutesAgo,
+        },
+      },
+      include: {
+        host: {
+          select: {
+            id: true,
+            push_name: true,
+            display_name: true,
+          },
+        },
+      },
+    });
+    
+    if (inactiveJams.length === 0) {
+      return { success: true, closed: 0 };
+    }
+    
+    // Close all inactive jams
+    const closedJamIds = [];
+    for (const jam of inactiveJams) {
+      await prisma.jamSession.update({
+        where: { id: jam.id },
+        data: { isActive: false },
+      });
+      
+      // Mark all listeners as inactive
+      await prisma.jamListener.updateMany({
+        where: { jamId: jam.id },
+        data: { isActive: false },
+      });
+      
+      closedJamIds.push(jam.id);
+      logger.info(
+        `[JamService] Closed inactive jam ${jam.id} (host: ${jam.host.push_name || jam.host.display_name || jam.hostUserId})`
+      );
+    }
+    
+    return {
+      success: true,
+      closed: closedJamIds.length,
+      jamIds: closedJamIds,
+    };
+  } catch (err) {
+    logger.error("[JamService] Error closing inactive jams:", err);
+    return {
+      success: false,
+      error: err.message,
+    };
+  }
+}
+
 module.exports = {
   createJam,
   getActiveJams,
@@ -644,6 +789,7 @@ module.exports = {
   updateJamPlayback,
   syncAllListeners,
   getUserActiveJam,
+  closeInactiveJams,
 };
 
 /**

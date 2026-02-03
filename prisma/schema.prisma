@@ -579,6 +579,7 @@ model JamSession {
   currentProgressMs Int?      // Current position in track (milliseconds)
   isPlaying         Boolean   @default(false)
   lastSyncAt        DateTime? @db.Timestamptz(6) // Last time sync was performed
+  lastActiveAt      DateTime  @default(now()) @db.Timestamptz(6) // Last time host was playing
   
   // Metadata
   chatId            String?   // Group chat where jam is active
