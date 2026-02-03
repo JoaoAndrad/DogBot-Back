@@ -14,14 +14,8 @@ router.get("/count", async (req, res) => {
     const { getPrisma } = require("../db");
     const prisma = getPrisma();
 
-    const count = await prisma.user.count({
-      where: {
-        // Count all users with a sender_number (registered users)
-        sender_number: {
-          not: null,
-        },
-      },
-    });
+    // Count all users (sender_number is required/unique, so all users are valid recipients)
+    const count = await prisma.user.count();
 
     res.json({ count });
   } catch (err) {
