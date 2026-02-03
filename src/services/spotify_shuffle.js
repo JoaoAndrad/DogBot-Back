@@ -296,7 +296,7 @@ async function playRandomUnique(accountId, playlistId, options = {}) {
     // Enable shuffle on the user's player (best-effort) before starting playback
     try {
       const { spotifyFetch } = require("../services/spotifyService");
-      const shuffleUrl = `https://api.spotify.com/v1/me/player/shuffle?state=true$${
+      const shuffleUrl = `https://api.spotify.com/v1/me/player/shuffle?state=true${
         deviceId ? `&device_id=${encodeURIComponent(deviceId)}` : ""
       }`;
       // note: spotifyFetch expects accountId as first arg

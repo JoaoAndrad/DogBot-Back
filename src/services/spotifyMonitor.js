@@ -1,4 +1,6 @@
 const { fetchAndPersistUser, isSpotifyBlocked } = require("./spotifyService");
+const jamService = require("./jamService");
+const sseHub = require("../lib/sseHub");
 
 class SpotifyMonitor {
   constructor({ userSpotifyAPI, intervalMs = 10000, concurrency = 5 } = {}) {
@@ -13,6 +15,8 @@ class SpotifyMonitor {
     this.consecutiveErrors = {};
     // Cache last printed log per user to avoid duplicate console lines
     this._lastPrinted = new Map();
+    // Cache last known state for jam hosts to detect changes
+    this._lastJamState = new Map();
   }
 
   async _checkOne(userId, accountId = null) {
@@ -22,11 +26,94 @@ class SpotifyMonitor {
         userId,
         userSpotifyAPI: this.userSpotifyAPI,
       });
+
+      // Check if user is a jam host and handle synchronization
+      if (res && res.status === "playing" && res.track) {
+        await this._handleJamSync(userId, res.track);
+      }
+
       return { userId, ok: true, res };
     } catch (err) {
       this.consecutiveErrors[userId] =
         (this.consecutiveErrors[userId] || 0) + 1;
       return { userId, ok: false, error: err.message };
+    }
+  }
+
+  /**
+   * Handle jam synchronization for a user
+   * Checks if user is hosting a jam and syncs listeners if track changed
+   */
+  async _handleJamSync(userId, currentTrack) {
+    try {
+      // Check if user is hosting an active jam
+      const userJamResult = await jamService.getUserActiveJam(userId);
+
+      if (!userJamResult.success || userJamResult.role !== "host") {
+        return; // Not a host, nothing to do
+      }
+
+      const jam = userJamResult.jam;
+      if (!jam || !jam.isActive) {
+        return;
+      }
+
+      // Get last known state for this jam
+      const lastState = this._lastJamState.get(jam.id);
+
+      // Build current state
+      const currentState = {
+        trackId: currentTrack.id || currentTrack.trackId,
+        trackUri: currentTrack.url,
+        isPlaying: currentTrack.playing !== false,
+        progressMs: currentTrack.progress_ms || 0,
+      };
+
+      // Check if state changed significantly
+      const hasChanged =
+        !lastState ||
+        lastState.trackId !== currentState.trackId ||
+        lastState.isPlaying !== currentState.isPlaying;
+
+      if (hasChanged) {
+        console.log(
+          `[SpotifyMonitor] Jam ${jam.id} host track changed, syncing listeners...`,
+        );
+
+        // Update jam state in database
+        await jamService.updateJamPlayback(jam.id, {
+          id: currentState.trackId,
+          url: currentState.trackUri,
+          name: currentTrack.name || currentTrack.trackName,
+          artists: currentTrack.artists || [],
+          progress_ms: currentState.progressMs,
+          playing: currentState.isPlaying,
+        });
+
+        // Sync all listeners (async, don't wait)
+        jamService.syncAllListeners(jam.id).catch((err) => {
+          console.error(
+            `[SpotifyMonitor] Error syncing listeners for jam ${jam.id}:`,
+            err,
+          );
+        });
+
+        // Send SSE event to notify clients
+        sseHub.broadcast("jam:track-change", {
+          jamId: jam.id,
+          trackId: currentState.trackId,
+          trackUri: currentState.trackUri,
+          trackName: currentTrack.name || currentTrack.trackName,
+          artists: currentTrack.artists || [],
+          isPlaying: currentState.isPlaying,
+          progressMs: currentState.progressMs,
+        });
+
+        // Update cache
+        this._lastJamState.set(jam.id, currentState);
+      }
+    } catch (err) {
+      console.error("[SpotifyMonitor] Error in jam sync:", err);
     }
   }
 
@@ -42,8 +129,8 @@ class SpotifyMonitor {
       ) {
         console.log(
           `[SpotifyMonitor] skipping cycle — Spotify bloqueado até ${new Date(
-            blockStatus.blockedUntil
-          ).toLocaleString("pt-BR")}`
+            blockStatus.blockedUntil,
+          ).toLocaleString("pt-BR")}`,
         );
         this._lastBlockedUntil = blockStatus.blockedUntil;
       }
@@ -52,7 +139,7 @@ class SpotifyMonitor {
     this._lastBlockedUntil = null; // reset when unblocked
 
     const connected = await Promise.resolve(
-      this.userSpotifyAPI.getConnectedUsers()
+      this.userSpotifyAPI.getConnectedUsers(),
     );
     // Suppress verbose connected-users log to avoid leaking user ids in logs
     // and reduce noise. Keep a lightweight status check instead.
@@ -71,7 +158,7 @@ class SpotifyMonitor {
 
       // Log playing tracks per chunk
       const playing = results.filter(
-        (r) => r.ok && r.res && r.res.status === "playing"
+        (r) => r.ok && r.res && r.res.status === "playing",
       );
       if (playing.length === 0) {
         // If none playing in this chunk, continue — we'll aggregate later
@@ -101,7 +188,7 @@ class SpotifyMonitor {
               console.log(`[SpotifyMonitor] ${line}`);
               this._lastPrinted.set(userId, line);
             }
-          })
+          }),
         );
       }
     }
@@ -129,7 +216,7 @@ class SpotifyMonitor {
     }
     if (!anyPlaying) {
       console.log(
-        "[SpotifyMonitor] nenhum usuário está ouvindo musica no momento"
+        "[SpotifyMonitor] nenhum usuário está ouvindo musica no momento",
       );
     }
 
@@ -141,7 +228,7 @@ class SpotifyMonitor {
     this.isRunning = true;
     // immediate run
     this._runOnce().catch((e) =>
-      console.log("spotifyMonitor initial run failed", e)
+      console.log("spotifyMonitor initial run failed", e),
     );
     this._timer = setInterval(() => {
       this._runOnce().catch((e) => console.log("spotifyMonitor run failed", e));
@@ -163,7 +250,7 @@ class SpotifyMonitor {
 
   async getStats() {
     const connected = await Promise.resolve(
-      this.userSpotifyAPI.getConnectedUsers()
+      this.userSpotifyAPI.getConnectedUsers(),
     );
     return {
       isRunning: this.isRunning,

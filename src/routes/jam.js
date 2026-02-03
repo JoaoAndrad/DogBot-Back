@@ -1,0 +1,251 @@
+const express = require("express");
+const router = express.Router();
+const jamService = require("../services/jamService");
+const logger = require("../lib/logger");
+
+/**
+ * POST /api/jam/create
+ * Create a new jam session
+ * Body: { userId, chatId? }
+ */
+router.post("/create", async (req, res) => {
+  try {
+    const { userId, chatId } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        error: "MISSING_USER_ID",
+        message: "userId é obrigatório",
+      });
+    }
+
+    const result = await jamService.createJam(userId, chatId);
+
+    if (!result.success) {
+      return res.status(400).json(result);
+    }
+
+    return res.json(result);
+  } catch (err) {
+    logger.error("[JamRoutes] Error creating jam:", err);
+    return res.status(500).json({
+      success: false,
+      error: err.message,
+    });
+  }
+});
+
+/**
+ * GET /api/jam/active
+ * Get all active jam sessions
+ * Query: chatId? (optional filter)
+ */
+router.get("/active", async (req, res) => {
+  try {
+    const { chatId } = req.query;
+
+    const result = await jamService.getActiveJams(chatId);
+
+    return res.json(result);
+  } catch (err) {
+    logger.error("[JamRoutes] Error getting active jams:", err);
+    return res.status(500).json({
+      success: false,
+      error: err.message,
+      jams: [],
+    });
+  }
+});
+
+/**
+ * GET /api/jam/:jamId
+ * Get jam session details
+ */
+router.get("/:jamId", async (req, res) => {
+  try {
+    const { jamId } = req.params;
+
+    const result = await jamService.getJamById(jamId);
+
+    if (!result.success) {
+      return res.status(404).json(result);
+    }
+
+    return res.json(result);
+  } catch (err) {
+    logger.error("[JamRoutes] Error getting jam:", err);
+    return res.status(500).json({
+      success: false,
+      error: err.message,
+    });
+  }
+});
+
+/**
+ * POST /api/jam/:jamId/join
+ * Join a jam session
+ * Body: { userId }
+ */
+router.post("/:jamId/join", async (req, res) => {
+  try {
+    const { jamId } = req.params;
+    const { userId } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        error: "MISSING_USER_ID",
+        message: "userId é obrigatório",
+      });
+    }
+
+    const result = await jamService.joinJam(jamId, userId);
+
+    if (!result.success) {
+      return res.status(400).json(result);
+    }
+
+    return res.json(result);
+  } catch (err) {
+    logger.error("[JamRoutes] Error joining jam:", err);
+    return res.status(500).json({
+      success: false,
+      error: err.message,
+    });
+  }
+});
+
+/**
+ * POST /api/jam/:jamId/leave
+ * Leave a jam session
+ * Body: { userId }
+ */
+router.post("/:jamId/leave", async (req, res) => {
+  try {
+    const { jamId } = req.params;
+    const { userId } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        error: "MISSING_USER_ID",
+        message: "userId é obrigatório",
+      });
+    }
+
+    const result = await jamService.leaveJam(jamId, userId);
+
+    if (!result.success) {
+      return res.status(400).json(result);
+    }
+
+    return res.json(result);
+  } catch (err) {
+    logger.error("[JamRoutes] Error leaving jam:", err);
+    return res.status(500).json({
+      success: false,
+      error: err.message,
+    });
+  }
+});
+
+/**
+ * DELETE /api/jam/:jamId
+ * End a jam session (host only)
+ * Body: { userId }
+ */
+router.delete("/:jamId", async (req, res) => {
+  try {
+    const { jamId } = req.params;
+    const { userId } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        error: "MISSING_USER_ID",
+        message: "userId é obrigatório",
+      });
+    }
+
+    const result = await jamService.endJam(jamId, userId);
+
+    if (!result.success) {
+      return res.status(400).json(result);
+    }
+
+    return res.json(result);
+  } catch (err) {
+    logger.error("[JamRoutes] Error ending jam:", err);
+    return res.status(500).json({
+      success: false,
+      error: err.message,
+    });
+  }
+});
+
+/**
+ * POST /api/jam/:jamId/sync
+ * Force sync all listeners to current jam state
+ * Body: { userId } (must be host)
+ */
+router.post("/:jamId/sync", async (req, res) => {
+  try {
+    const { jamId } = req.params;
+    const { userId } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        error: "MISSING_USER_ID",
+        message: "userId é obrigatório",
+      });
+    }
+
+    // Verify user is the host
+    const jamResult = await jamService.getJamById(jamId);
+    if (!jamResult.success) {
+      return res.status(404).json(jamResult);
+    }
+
+    if (jamResult.jam.hostUserId !== userId) {
+      return res.status(403).json({
+        success: false,
+        error: "NOT_HOST",
+        message: "Apenas o host pode forçar sincronização",
+      });
+    }
+
+    const result = await jamService.syncAllListeners(jamId);
+
+    return res.json(result);
+  } catch (err) {
+    logger.error("[JamRoutes] Error syncing listeners:", err);
+    return res.status(500).json({
+      success: false,
+      error: err.message,
+    });
+  }
+});
+
+/**
+ * GET /api/jam/user/:userId/status
+ * Get user's current jam status (hosting or listening)
+ */
+router.get("/user/:userId/status", async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const result = await jamService.getUserActiveJam(userId);
+
+    return res.json(result);
+  } catch (err) {
+    logger.error("[JamRoutes] Error getting user jam status:", err);
+    return res.status(500).json({
+      success: false,
+      error: err.message,
+    });
+  }
+});
+
+module.exports = router;

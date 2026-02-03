@@ -6,7 +6,7 @@ try {
 } catch (e) {
   console.warn(
     "logCapture failed to initialize:",
-    e && e.message ? e.message : e
+    e && e.message ? e.message : e,
   );
 }
 
@@ -24,7 +24,7 @@ try {
 } catch (e) {
   console.warn(
     "Request logger failed to load:",
-    e && e.message ? e.message : e
+    e && e.message ? e.message : e,
   );
 }
 
@@ -38,7 +38,7 @@ app.use(
     setHeaders: (res) => {
       res.setHeader("Cache-Control", "no-store, must-revalidate");
     },
-  })
+  }),
 );
 
 // Serve a top-level admin logo at /admin/logo.svg for AdminJS or direct requests
@@ -60,7 +60,7 @@ try {
 } catch (e) {
   console.warn(
     "Failed to mount admin users routes:",
-    e && e.message ? e.message : e
+    e && e.message ? e.message : e,
   );
 }
 
@@ -70,7 +70,7 @@ try {
 } catch (e) {
   console.warn(
     "Failed to mount admin maintenance routes:",
-    e && e.message ? e.message : e
+    e && e.message ? e.message : e,
   );
 }
 
@@ -80,8 +80,15 @@ try {
 } catch (e) {
   console.warn(
     "Failed to mount spotify routes:",
-    e && e.message ? e.message : e
+    e && e.message ? e.message : e,
   );
+}
+
+// Jam/Radio routes
+try {
+  app.use("/api/jam", require("./routes/jam"));
+} catch (e) {
+  console.warn("Failed to mount jam routes:", e && e.message ? e.message : e);
 }
 
 // Start Spotify monitor on app startup (uses internal adapter)
@@ -102,7 +109,7 @@ try {
 } catch (e) {
   console.warn(
     "Failed to initialize SpotifyMonitor:",
-    e && e.message ? e.message : e
+    e && e.message ? e.message : e,
   );
 }
 
@@ -127,7 +134,7 @@ try {
 } catch (err) {
   console.warn(
     "AdminJS failed to mount:",
-    err && err.message ? err.message : err
+    err && err.message ? err.message : err,
   );
 }
 

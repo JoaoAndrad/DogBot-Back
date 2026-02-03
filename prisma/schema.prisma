@@ -96,6 +96,9 @@ model User {
   listeningSummary   UserListeningSummary?
   yearSummaries      UserYearSummary[]
   listeningSessions  ListeningSession[]
+  // Jam/Radio relations
+  hostedJams         JamSession[]  @relation("JamHost")
+  jamListenings      JamListener[]
 
   @@map("User")
 }
@@ -553,4 +556,54 @@ model CollaborativeVote {
   @@index([pollId])
   @@index([expiresAt])
   @@index([status, processed])
+}
+
+// === Jam/Radio Session Models ===
+
+// Jam/Radio session where a host broadcasts their playback to listeners
+model JamSession {
+  id                String    @id @default(uuid())
+  hostUserId        String    // Creator/broadcaster of the jam
+  isActive          Boolean   @default(true)
+  createdAt         DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt         DateTime  @updatedAt @db.Timestamptz(6)
+  
+  // Current playback state
+  currentTrackId    String?
+  currentTrackUri   String?
+  currentTrackName  String?
+  currentArtists    String?
+  currentProgressMs Int?      // Current position in track (milliseconds)
+  isPlaying         Boolean   @default(false)
+  lastSyncAt        DateTime? @db.Timestamptz(6) // Last time sync was performed
+  
+  // Metadata
+  chatId            String?   // Group chat where jam is active
+  
+  // Relations
+  host              User      @relation("JamHost", fields: [hostUserId], references: [id], onDelete: Cascade)
+  listeners         JamListener[]
+  
+  @@index([hostUserId])
+  @@index([isActive])
+  @@index([chatId])
+}
+
+// Listeners in a jam session
+model JamListener {
+  id          String   @id @default(uuid())
+  jamId       String
+  userId      String
+  joinedAt    DateTime @default(now()) @db.Timestamptz(6)
+  lastSyncAt  DateTime @updatedAt @db.Timestamptz(6)
+  isActive    Boolean  @default(true)
+  
+  // Relations
+  jam         JamSession @relation(fields: [jamId], references: [id], onDelete: Cascade)
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([jamId, userId])
+  @@index([jamId])
+  @@index([userId])
+  @@index([isActive])
 }

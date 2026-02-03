@@ -16,7 +16,7 @@ const { randomUUID } = require("crypto");
 
 function base64ClientCreds() {
   return Buffer.from(`${SPOTIFY_CLIENT_ID}:${SPOTIFY_CLIENT_SECRET}`).toString(
-    "base64"
+    "base64",
   );
 }
 
@@ -90,7 +90,7 @@ router.post("/start", async (req, res) => {
 
     const scopeStr = (
       scopes ||
-      "user-read-private user-read-email user-read-playback-state user-read-currently-playing"
+      "user-read-private user-read-email user-read-playback-state user-read-currently-playing user-modify-playback-state"
     ).trim();
     const params = new URLSearchParams({
       client_id: SPOTIFY_CLIENT_ID,
@@ -145,7 +145,7 @@ router.get("/callback", async (req, res) => {
     try {
       // Log the received userId for debugging
       console.log(
-        `[SpotifyAuth] Received userId from callback: ${userId || "(null)"}`
+        `[SpotifyAuth] Received userId from callback: ${userId || "(null)"}`,
       );
 
       // Resolve userId: if it's a WhatsApp identifier, find the User.id UUID
@@ -154,13 +154,13 @@ router.get("/callback", async (req, res) => {
         // Check if it's already a UUID (36 chars with dashes)
         const isUUID =
           /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
-            userId
+            userId,
           );
 
         if (!isUUID) {
           // It's a WhatsApp identifier, resolve to User.id
           console.log(
-            `[SpotifyAuth] Attempting to resolve WhatsApp identifier: ${userId}`
+            `[SpotifyAuth] Attempting to resolve WhatsApp identifier: ${userId}`,
           );
           try {
             let user = await userRepo.findByIdentifierExact(userId);
@@ -172,26 +172,26 @@ router.get("/callback", async (req, res) => {
             if (user) {
               resolvedUserId = user.id;
               console.log(
-                `[SpotifyAuth] ✅ Resolved identifier ${userId} → User.id ${resolvedUserId}`
+                `[SpotifyAuth] ✅ Resolved identifier ${userId} → User.id ${resolvedUserId}`,
               );
               console.log(
                 `[SpotifyAuth] User info: ${
                   user.push_name || user.display_name || "(sem nome)"
-                } (${user.sender_number || "sem número"})`
+                } (${user.sender_number || "sem número"})`,
               );
             } else {
               console.warn(
-                `[SpotifyAuth] ⚠️ Could not resolve identifier ${userId} to User - account will be created without userId`
+                `[SpotifyAuth] ⚠️ Could not resolve identifier ${userId} to User - account will be created without userId`,
               );
               console.warn(
-                `[SpotifyAuth] Hint: If this is a @lid, ensure frontend uses getContact() to get the real @c.us number`
+                `[SpotifyAuth] Hint: If this is a @lid, ensure frontend uses getContact() to get the real @c.us number`,
               );
               resolvedUserId = null;
             }
           } catch (resolveErr) {
             console.error(
               `[SpotifyAuth] Error resolving identifier ${userId}:`,
-              resolveErr
+              resolveErr,
             );
             resolvedUserId = null;
           }
@@ -209,7 +209,7 @@ router.get("/callback", async (req, res) => {
       console.log(
         `[SpotifyAuth] ✅ Spotify account ${
           account.isNew ? "created" : "found"
-        }: ${account.id}`
+        }: ${account.id}`,
       );
 
       // Get user details for logging
@@ -228,21 +228,21 @@ router.get("/callback", async (req, res) => {
             console.log(
               `[SpotifyAuth] 🎵 Nova conta Spotify atribuída ao usuário: ${
                 user.push_name || user.display_name || "(sem nome)"
-              } (ID: ${user.id})`
+              } (ID: ${user.id})`,
             );
             console.log(
-              `[SpotifyAuth] 📞 Telefone: ${user.sender_number || "n/a"}`
+              `[SpotifyAuth] 📞 Telefone: ${user.sender_number || "n/a"}`,
             );
           }
         } catch (logErr) {
           console.log(
             "[SpotifyAuth] Could not fetch user details for logging:",
-            logErr.message
+            logErr.message,
           );
         }
       } else {
         console.log(
-          `[SpotifyAuth] ⚠️ Conta Spotify criada sem usuário associado (bot account)`
+          `[SpotifyAuth] ⚠️ Conta Spotify criada sem usuário associado (bot account)`,
         );
       }
 
@@ -255,10 +255,10 @@ router.get("/callback", async (req, res) => {
       });
 
       console.log(
-        `[SpotifyAuth] 🔑 Tokens salvos para conta ${account.id} (expires in ${data.expires_in}s)`
+        `[SpotifyAuth] 🔑 Tokens salvos para conta ${account.id} (expires in ${data.expires_in}s)`,
       );
       console.log(
-        `[SpotifyAuth] 🎯 Scopes concedidos: ${data.scope || "none"}`
+        `[SpotifyAuth] 🎯 Scopes concedidos: ${data.scope || "none"}`,
       );
 
       // mark session used and attach accountId if we have a session
@@ -303,7 +303,7 @@ router.get("/refresh", async (req, res) => {
     try {
       const result =
         await require("../services/spotifyService").refreshTokenForAccount(
-          accountId
+          accountId,
         );
       return res.json({
         message: "refreshed",
