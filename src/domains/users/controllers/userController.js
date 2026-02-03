@@ -169,6 +169,57 @@ router.post("/lookup", async (req, res) => {
 });
 
 /**
+ * GET /api/users/by-whatsapp/:identifier
+ * Lookup user by WhatsApp identifier (simplified response with isAdmin flag)
+ * Used by frontend commands to check admin status
+ *
+ * Returns: { found: boolean, userId?: string, isAdmin?: boolean, ... }
+ */
+router.get("/by-whatsapp/:identifier", async (req, res) => {
+  try {
+    const { identifier } = req.params;
+
+    if (!identifier) {
+      return res.status(400).json({
+        error: "missing_identifier",
+        message: "Identifier parameter is required",
+      });
+    }
+
+    // Try exact match first
+    let user = await userRepo.findByIdentifierExact(identifier);
+
+    // Fallback to base number
+    if (!user) {
+      const baseNumber = userRepo.extractBaseNumber(identifier);
+      if (baseNumber && baseNumber !== identifier) {
+        user = await userRepo.findByBaseNumber(baseNumber);
+      }
+    }
+
+    if (!user) {
+      return res.json({
+        found: false,
+      });
+    }
+
+    return res.json({
+      found: true,
+      userId: user.id,
+      isAdmin: !!user.isAdmin,
+      sender_number: user.sender_number,
+      display_name: user.display_name,
+    });
+  } catch (err) {
+    console.log("[GET /api/users/by-whatsapp/:identifier] Error:", err);
+    return res.status(500).json({
+      error: "lookup_failed",
+      message: err.message,
+    });
+  }
+});
+
+/**
  * GET /api/users/by-identifier/:identifier
  * Lookup user by any known identifier
  *

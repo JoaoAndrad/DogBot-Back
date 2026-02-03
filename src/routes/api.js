@@ -12,7 +12,7 @@ try {
 } catch (e) {
   console.log(
     "[routes/api] failed to mount /api/polls controller:",
-    e && e.message ? e.message : e
+    e && e.message ? e.message : e,
   );
   // Fallback: expose a helpful 500 on /polls so requests don't silently 404
   const fallback = express.Router();
@@ -20,7 +20,7 @@ try {
     res.status(500).json({
       error: "polls_controller_failed_to_load",
       details: String(e && e.message ? e.message : e),
-    })
+    }),
   );
   router.use("/polls", fallback);
 }
@@ -33,14 +33,14 @@ try {
 } catch (e) {
   console.log(
     "[routes/api] failed to mount /api/messages controller:",
-    e && e.message ? e.message : e
+    e && e.message ? e.message : e,
   );
   const fallback = express.Router();
   fallback.get("/", (req, res) =>
     res.status(500).json({
       error: "messages_controller_failed_to_load",
       details: String(e && e.message ? e.message : e),
-    })
+    }),
   );
   router.use("/messages", fallback);
 }
@@ -53,14 +53,14 @@ try {
 } catch (e) {
   console.log(
     "[routes/api] failed to mount /api/users controller:",
-    e && e.message ? e.message : e
+    e && e.message ? e.message : e,
   );
   const fallback = express.Router();
   fallback.get("/", (req, res) =>
     res.status(500).json({
       error: "users_controller_failed_to_load",
       details: String(e && e.message ? e.message : e),
-    })
+    }),
   );
   router.use("/users", fallback);
 }
@@ -73,14 +73,14 @@ try {
 } catch (e) {
   console.log(
     "[routes/api] failed to mount /api/confessions routes:",
-    e && e.message ? e.message : e
+    e && e.message ? e.message : e,
   );
   const fallback = express.Router();
   fallback.get("/", (req, res) =>
     res.status(500).json({
       error: "confessions_routes_failed_to_load",
       details: String(e && e.message ? e.message : e),
-    })
+    }),
   );
   router.use("/confessions", fallback);
 }
@@ -93,14 +93,14 @@ try {
 } catch (e) {
   console.log(
     "[routes/api] failed to mount /api/menu controller:",
-    e && e.message ? e.message : e
+    e && e.message ? e.message : e,
   );
   const fallback = express.Router();
   fallback.get("/", (req, res) =>
     res.status(500).json({
       error: "menu_controller_failed_to_load",
       details: String(e && e.message ? e.message : e),
-    })
+    }),
   );
   router.use("/menu", fallback);
 }
@@ -113,14 +113,14 @@ try {
 } catch (e) {
   console.log(
     "[routes/api] failed to mount /api/spotify routes:",
-    e && e.message ? e.message : e
+    e && e.message ? e.message : e,
   );
   const fallback = express.Router();
   fallback.get("/", (req, res) =>
     res.status(500).json({
       error: "spotify_routes_failed_to_load",
       details: String(e && e.message ? e.message : e),
-    })
+    }),
   );
   router.use("/spotify", fallback);
 }
@@ -133,14 +133,14 @@ try {
 } catch (e) {
   console.log(
     "[routes/api] failed to mount /api/admin/spotify routes:",
-    e && e.message ? e.message : e
+    e && e.message ? e.message : e,
   );
   const fallback = express.Router();
   fallback.get("/", (req, res) =>
     res.status(500).json({
       error: "admin_spotify_routes_failed_to_load",
       details: String(e && e.message ? e.message : e),
-    })
+    }),
   );
   router.use("/admin/spotify", fallback);
 }
@@ -153,16 +153,36 @@ try {
 } catch (e) {
   console.log(
     "[routes/api] failed to mount /api/groups routes:",
-    e && e.message ? e.message : e
+    e && e.message ? e.message : e,
   );
   const fallback = express.Router();
   fallback.get("/", (req, res) =>
     res.status(500).json({
       error: "groups_routes_failed_to_load",
       details: String(e && e.message ? e.message : e),
-    })
+    }),
   );
   router.use("/groups", fallback);
+}
+
+// broadcasts
+try {
+  const broadcasts = require("./broadcasts");
+  router.use("/broadcasts", broadcasts);
+  console.info("[routes/api] mounted /api/broadcasts");
+} catch (e) {
+  console.log(
+    "[routes/api] failed to mount /api/broadcasts routes:",
+    e && e.message ? e.message : e,
+  );
+  const fallback = express.Router();
+  fallback.get("/", (req, res) =>
+    res.status(500).json({
+      error: "broadcasts_routes_failed_to_load",
+      details: String(e && e.message ? e.message : e),
+    }),
+  );
+  router.use("/broadcasts", fallback);
 }
 
 module.exports = router;
