@@ -47,9 +47,29 @@ class SpotifyMonitor {
                 : jam.currentTrackId;
 
               // Normalize possible ids
-              const normalize = (v) => (v ? String(v).trim() : null);
-              const lId = normalize(listenerTrackId);
-              const jId = normalize(jamTrackId);
+              // Normalize possible ids (strip URIs/URLs to plain id)
+              const normalizeId = (v) => {
+                if (!v) return null;
+                let s = String(v).trim();
+                // spotify:track:ID
+                const uriMatch = s.match(/spotify:track:([A-Za-z0-9]+)/i);
+                if (uriMatch) return uriMatch[1];
+                // https://open.spotify.com/track/ID or with query params
+                try {
+                  const url = new URL(s);
+                  const parts = url.pathname.split("/").filter(Boolean);
+                  if (parts.length) return parts[parts.length - 1];
+                } catch (e) {
+                  // not a URL
+                }
+                // fallback: last path segment after slash
+                const seg = s.split("/").pop();
+                // strip query params if present
+                return seg ? seg.split(/[?#]/)[0] : s;
+              };
+
+              const lId = normalizeId(listenerTrackId);
+              const jId = normalizeId(jamTrackId);
 
               if (jId && lId && lId !== jId) {
                 console.log(
@@ -133,8 +153,27 @@ class SpotifyMonitor {
         );
 
         // Update jam state in database
+        // normalize track id before persisting
+        const normalizeId = (v) => {
+          if (!v) return null;
+          let s = String(v).trim();
+          const uriMatch = s.match(/spotify:track:([A-Za-z0-9]+)/i);
+          if (uriMatch) return uriMatch[1];
+          try {
+            const url = new URL(s);
+            const parts = url.pathname.split("/").filter(Boolean);
+            if (parts.length) return parts[parts.length - 1];
+          } catch (e) {}
+          const seg = s.split("/").pop();
+          return seg ? seg.split(/[?#]/)[0] : s;
+        };
+
+        const normalizedTrackId = normalizeId(
+          currentState.trackId || currentState.trackUri,
+        );
+
         await jamService.updateJamPlayback(jam.id, {
-          id: currentState.trackId,
+          id: normalizedTrackId,
           url: currentState.trackUri,
           name: currentTrack.name || currentTrack.trackName,
           artists: currentTrack.artists || [],
