@@ -10,7 +10,7 @@ router.use(basicAuth);
 function sanitizeBigInt(obj) {
   try {
     return JSON.parse(
-      JSON.stringify(obj, (k, v) => (typeof v === "bigint" ? v.toString() : v))
+      JSON.stringify(obj, (k, v) => (typeof v === "bigint" ? v.toString() : v)),
     );
   } catch (e) {
     return obj;
@@ -56,8 +56,8 @@ router.get("/:id", async (req, res) => {
       try {
         return JSON.parse(
           JSON.stringify(obj, (k, v) =>
-            typeof v === "bigint" ? v.toString() : v
-          )
+            typeof v === "bigint" ? v.toString() : v,
+          ),
         );
       } catch (e) {
         // fallback: return original object if serialization fails
@@ -69,7 +69,7 @@ router.get("/:id", async (req, res) => {
   } catch (e) {
     console.error(
       "user detail error",
-      e && (e.stack || e.message) ? e.stack || e.message : e
+      e && (e.stack || e.message) ? e.stack || e.message : e,
     );
     // Return error details in admin API to aid debugging (admin auth required)
     res.status(500).json({
@@ -104,7 +104,7 @@ router.get("/:id/raw", async (req, res) => {
   } catch (e) {
     console.error(
       "user raw detail error",
-      e && (e.stack || e.message) ? e.stack || e.message : e
+      e && (e.stack || e.message) ? e.stack || e.message : e,
     );
     res.status(500).json({
       error: "Failed to get raw user",
@@ -127,6 +127,7 @@ router.patch("/:id", express.json(), async (req, res) => {
       "sender_number",
       "dogfort",
       "confessions",
+      "isAdmin",
     ];
     const payload = {};
     for (const k of allowed) if (k in req.body) payload[k] = req.body[k];
@@ -137,7 +138,7 @@ router.patch("/:id", express.json(), async (req, res) => {
   } catch (e) {
     console.error(
       "user update error",
-      e && (e.stack || e.message) ? e.stack || e.message : e
+      e && (e.stack || e.message) ? e.stack || e.message : e,
     );
     // return error details for admin UI debugging
     res.status(500).json({
@@ -156,6 +157,30 @@ router.delete("/:id", async (req, res) => {
   } catch (e) {
     console.log("user delete error", e && e.message ? e.message : e);
     res.status(500).json({ error: "Failed to delete user" });
+  }
+});
+
+// POST /admin/api/users/:id/grant-admin
+router.post("/:id/grant-admin", express.json(), async (req, res) => {
+  try {
+    const id = req.params.id;
+    const updated = await userService.updateUser(id, { isAdmin: true });
+    res.json(sanitizeBigInt(updated));
+  } catch (e) {
+    console.error("grant admin error", e && e.message ? e.message : e);
+    res.status(500).json({ error: "Failed to grant admin status" });
+  }
+});
+
+// DELETE /admin/api/users/:id/revoke-admin
+router.delete("/:id/revoke-admin", async (req, res) => {
+  try {
+    const id = req.params.id;
+    const updated = await userService.updateUser(id, { isAdmin: false });
+    res.json(sanitizeBigInt(updated));
+  } catch (e) {
+    console.error("revoke admin error", e && e.message ? e.message : e);
+    res.status(500).json({ error: "Failed to revoke admin status" });
   }
 });
 

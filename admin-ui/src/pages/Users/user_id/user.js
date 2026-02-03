@@ -93,6 +93,37 @@ async function init() {
       dogfortEl.textContent = parts.length ? parts.join(" • ") : "-";
     }
 
+    // admin status
+    const adminStatusEl = document.getElementById("adminStatus");
+    if (adminStatusEl) {
+      adminStatusEl.textContent = u.isAdmin ? "✓ Admin" : "Regular User";
+      adminStatusEl.style.color = u.isAdmin ? "#2ecc71" : "#888";
+      adminStatusEl.style.fontWeight = u.isAdmin ? "600" : "500";
+    }
+
+    // toggle admin button
+    const toggleAdminBtn = document.getElementById("toggleAdminBtn");
+    if (toggleAdminBtn) {
+      toggleAdminBtn.textContent = u.isAdmin ? "Revoke Admin" : "Grant Admin";
+      toggleAdminBtn.addEventListener("click", async () => {
+        try {
+          toggleAdminBtn.disabled = true;
+          const action = u.isAdmin ? "revoke-admin" : "grant-admin";
+          const method = u.isAdmin ? "DELETE" : "POST";
+          const endpoint = `/admin/api/users/${encodeURIComponent(id)}/${action}`;
+          const response = await fetch(endpoint, { method, cache: "no-store" });
+          if (!response.ok)
+            throw new Error(`${response.status} ${response.statusText}`);
+          // reload page to reflect changes
+          window.location.reload();
+        } catch (e) {
+          console.error("toggle admin error", e);
+          alert("Erro ao alterar status de admin: " + (e && e.message));
+          toggleAdminBtn.disabled = false;
+        }
+      });
+    }
+
     // status badge
     const statusBadge = document.getElementById("statusBadge");
     const statusText = document.getElementById("statusBadgeText");
@@ -117,7 +148,7 @@ async function init() {
         (u.metadata && u.metadata.interactions_count) || "-";
     if (lastActive)
       lastActive.textContent = fmtDate(
-        u.last_seen || u.lastSeen || (u.metadata && u.metadata.last_seen)
+        u.last_seen || u.lastSeen || (u.metadata && u.metadata.last_seen),
       );
     if (dogfortPlan) {
       // prefer explicit 'plan' string, fallback to saldo summary
@@ -144,7 +175,7 @@ async function init() {
         for (const ev of user.metadata.activity.slice().reverse()) {
           pushTimelineItem(
             ev.title || ev.type || "event",
-            ev.ts || ev.time || ev.created_at
+            ev.ts || ev.time || ev.created_at,
           );
         }
       } else {

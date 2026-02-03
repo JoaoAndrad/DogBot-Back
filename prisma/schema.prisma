@@ -80,6 +80,8 @@ model User {
   confessions_last_update DateTime?
   confessions_vip     Boolean  @default(false)
   metadata           Json?    @db.Json
+  // Admin flag for broadcast and privileged operations
+  isAdmin            Boolean  @default(false)
 
   // relations
   pushNameHistory    PushNameHistory[]
