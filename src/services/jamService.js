@@ -514,6 +514,43 @@ async function syncListener(jamId, userId) {
       logger.warn(
         `[JamService] Failed to sync listener ${userId}: ${syncResult.error}`,
       );
+
+      // If user doesn't have Premium, remove them from the jam
+      if (syncResult.error === "FORBIDDEN") {
+        logger.info(
+          `[JamService] Removing listener ${userId} from jam ${jamId} due to Premium requirement`,
+        );
+
+        // Remove user from jam
+        await prisma.jamListener
+          .update({
+            where: {
+              jamId_userId: {
+                jamId,
+                userId,
+              },
+            },
+            data: {
+              isActive: false,
+            },
+          })
+          .catch((err) => {
+            logger.error(
+              `[JamService] Error removing listener ${userId}:`,
+              err,
+            );
+          });
+
+        // Return with special flag for notification
+        return {
+          success: false,
+          error: "PREMIUM_REQUIRED",
+          message:
+            "Feature disponível somente para usuários com Spotify Premium",
+          userRemoved: true,
+        };
+      }
+
       return syncResult;
     }
 
@@ -597,6 +634,7 @@ async function syncAllListeners(jamId) {
     const results = [];
 
     // Sync each active listener
+    const removedUsers = [];
     for (const listener of jam.listeners) {
       if (listener.isActive) {
         const syncResult = await syncListener(jamId, listener.userId);
@@ -605,6 +643,15 @@ async function syncAllListeners(jamId) {
           success: syncResult.success,
           error: syncResult.error,
         });
+
+        // Collect users removed due to Premium requirement
+        if (syncResult.userRemoved && syncResult.error === "PREMIUM_REQUIRED") {
+          removedUsers.push({
+            userId: listener.userId,
+            whatsappId: listener.user?.sender_number,
+            message: syncResult.message,
+          });
+        }
 
         // Small delay between syncs to avoid rate limits
         await new Promise((resolve) => setTimeout(resolve, 200));
@@ -615,9 +662,16 @@ async function syncAllListeners(jamId) {
       `[JamService] Synced ${results.length} listeners for jam ${jamId}`,
     );
 
+    if (removedUsers.length > 0) {
+      logger.info(
+        `[JamService] Removed ${removedUsers.length} users from jam ${jamId} due to Premium requirement`,
+      );
+    }
+
     return {
       success: true,
       results,
+      removedUsers,
     };
   } catch (err) {
     logger.error("[JamService] Error syncing all listeners:", err);

@@ -244,12 +244,36 @@ class SpotifyMonitor {
         });
 
         // Sync all listeners (async, don't wait)
-        jamService.syncAllListeners(jam.id).catch((err) => {
-          console.error(
-            `[SpotifyMonitor] Error syncing listeners for jam ${jam.id}:`,
-            err,
-          );
-        });
+        jamService
+          .syncAllListeners(jam.id)
+          .then((syncResult) => {
+            // Check if any users were removed due to Premium requirement
+            if (
+              syncResult &&
+              syncResult.removedUsers &&
+              syncResult.removedUsers.length > 0
+            ) {
+              console.log(
+                `[SpotifyMonitor] ${syncResult.removedUsers.length} users removed from jam ${jam.id} due to Premium requirement`,
+              );
+
+              // Send SSE notification for each removed user
+              for (const removedUser of syncResult.removedUsers) {
+                sseHub.sendEvent("jam:premium-required", {
+                  jamId: jam.id,
+                  userId: removedUser.userId,
+                  whatsappId: removedUser.whatsappId,
+                  message: removedUser.message,
+                });
+              }
+            }
+          })
+          .catch((err) => {
+            console.error(
+              `[SpotifyMonitor] Error syncing listeners for jam ${jam.id}:`,
+              err,
+            );
+          });
 
         // Send SSE event to notify clients
         // sseHub exposes sendEvent(eventName, data)
