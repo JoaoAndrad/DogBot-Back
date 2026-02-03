@@ -46,6 +46,7 @@ async function createJam(hostUserId, chatId = null) {
         currentTrackId: currentPlayback?.id || null,
         currentTrackUri: currentPlayback?.url || null,
         currentTrackName: currentPlayback?.name || null,
+        currentTrackAlbum: currentPlayback?.album || null,
         currentArtists: currentPlayback?.artists
           ? currentPlayback.artists.join(", ")
           : null,
@@ -470,6 +471,7 @@ async function updateJamPlayback(jamId, playbackData) {
         currentTrackId: playbackData.id || null,
         currentTrackUri: playbackData.url || null,
         currentTrackName: playbackData.name || null,
+        currentTrackAlbum: playbackData.album || null,
         currentArtists: playbackData.artists
           ? playbackData.artists.join(", ")
           : null,

@@ -137,6 +137,7 @@ class SpotifyMonitor {
       const currentState = {
         trackId: currentTrack.id || currentTrack.trackId,
         trackUri: currentTrack.url,
+        trackAlbum: currentTrack.album || currentTrack.trackAlbum || null,
         isPlaying: currentTrack.playing !== false,
         progressMs: currentTrack.progress_ms || 0,
       };
@@ -176,6 +177,7 @@ class SpotifyMonitor {
           id: normalizedTrackId,
           url: currentState.trackUri,
           name: currentTrack.name || currentTrack.trackName,
+          album: currentState.trackAlbum,
           artists: currentTrack.artists || [],
           progress_ms: currentState.progressMs,
           playing: currentState.isPlaying,
@@ -196,6 +198,7 @@ class SpotifyMonitor {
           trackId: currentState.trackId,
           trackUri: currentState.trackUri,
           trackName: currentTrack.name || currentTrack.trackName,
+          album: currentState.trackAlbum,
           artists: currentTrack.artists || [],
           isPlaying: currentState.isPlaying,
           progressMs: currentState.progressMs,
