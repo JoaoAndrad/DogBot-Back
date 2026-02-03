@@ -229,6 +229,29 @@ router.post("/:jamId/sync", async (req, res) => {
 });
 
 /**
+ * POST /api/jam/:jamId/skip
+ * Skip jam host to next track and sync listeners
+ * Body: { userId? }
+ */
+router.post("/:jamId/skip", async (req, res) => {
+  try {
+    const { jamId } = req.params;
+    // optional userId for auditing
+    const { userId } = req.body || {};
+
+    const result = await jamService.skipJam(jamId);
+    if (!result.success) {
+      return res.status(400).json(result);
+    }
+
+    return res.json({ success: true });
+  } catch (err) {
+    logger.error("[JamRoutes] Error skipping jam:", err);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
  * GET /api/jam/user/:userId/status
  * Get user's current jam status (hosting or listening)
  */

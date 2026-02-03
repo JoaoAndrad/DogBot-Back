@@ -1,4 +1,4 @@
-const { prisma } = require("./spotifyService");
+const { prisma, spotifyFetch } = require("./spotifyService");
 const playbackControl = require("./playbackControlService");
 const userSpotifyAdapter = require("./userSpotifyAdapter");
 const logger = require("../lib/logger");
@@ -645,3 +645,58 @@ module.exports = {
   syncAllListeners,
   getUserActiveJam,
 };
+
+/**
+ * Skip current track on jam host's player and sync listeners
+ * @param {string} jamId
+ */
+async function skipJam(jamId) {
+  try {
+    const jamResult = await getJamById(jamId);
+    if (!jamResult.success) return jamResult;
+    const jam = jamResult.jam;
+    if (!jam || !jam.isActive) {
+      return { success: false, error: "JAM_INACTIVE" };
+    }
+
+    const hostUserId = jam.hostUserId;
+
+    // Find host's spotify account
+    const account = await prisma.spotifyAccount.findFirst({
+      where: { userId: hostUserId },
+    });
+    if (!account || !account.id) {
+      return { success: false, error: "HOST_NO_SPOTIFY_ACCOUNT" };
+    }
+
+    // Call Spotify /me/player/next using host's account
+    const res = await spotifyFetch(
+      account.id,
+      "https://api.spotify.com/v1/me/player/next",
+      { method: "POST" },
+    );
+
+    if (res.status === 204 || res.status === 200) {
+      // Sync all listeners
+      await syncAllListeners(jamId);
+      return { success: true };
+    }
+
+    // Map common Spotify errors
+    if (res.status === 404) {
+      return { success: false, error: "NO_ACTIVE_DEVICE" };
+    }
+
+    const text = await res.text().catch(() => null);
+    return {
+      success: false,
+      error: `SPOTIFY_ERROR_${res.status}`,
+      details: text,
+    };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+}
+
+// export skipJam
+module.exports.skipJam = skipJam;
