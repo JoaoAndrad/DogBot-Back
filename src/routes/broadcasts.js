@@ -56,13 +56,8 @@ router.post("/", express.json(), async (req, res) => {
     const { getPrisma } = require("../db");
     const prisma = getPrisma();
 
-    // Get all registered users
+    // Get all registered users (sender_number is required/unique, so all users are valid)
     const users = await prisma.user.findMany({
-      where: {
-        sender_number: {
-          not: null,
-        },
-      },
       select: {
         id: true,
         sender_number: true,
