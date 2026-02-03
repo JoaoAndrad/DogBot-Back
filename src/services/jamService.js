@@ -132,8 +132,10 @@ async function getActiveJams(chatId = null, fetchCurrentPlayback = true) {
     if (fetchCurrentPlayback) {
       for (const jam of jams) {
         try {
-          const currentPlayback = await userSpotifyAdapter.getCurrentlyPlaying(jam.hostUserId);
-          
+          const currentPlayback = await userSpotifyAdapter.getCurrentlyPlaying(
+            jam.hostUserId,
+          );
+
           if (currentPlayback && currentPlayback.id) {
             // Update jam with current playback
             jam.currentTrackId = currentPlayback.id;
@@ -143,7 +145,7 @@ async function getActiveJams(chatId = null, fetchCurrentPlayback = true) {
             jam.currentArtists = currentPlayback.artists?.join(", ") || null;
             jam.currentProgressMs = currentPlayback.progressMs;
             jam.isPlaying = currentPlayback.isPlaying || false;
-            
+
             // Update lastActiveAt in database if host is playing
             if (currentPlayback.isPlaying) {
               await prisma.jamSession.update({
@@ -183,7 +185,7 @@ async function getActiveJams(chatId = null, fetchCurrentPlayback = true) {
             jam.currentArtists = null;
             jam.currentProgressMs = null;
             jam.isPlaying = false;
-            
+
             await prisma.jamSession.update({
               where: { id: jam.id },
               data: {
@@ -198,7 +200,10 @@ async function getActiveJams(chatId = null, fetchCurrentPlayback = true) {
             });
           }
         } catch (err) {
-          logger.warn(`[JamService] Failed to fetch playback for jam ${jam.id}:`, err.message);
+          logger.warn(
+            `[JamService] Failed to fetch playback for jam ${jam.id}:`,
+            err.message,
+          );
           // Keep existing playback data on error
         }
       }
@@ -636,12 +641,21 @@ async function getUserActiveJam(userId) {
         isActive: true,
       },
       include: {
+        host: {
+          select: {
+            id: true,
+            sender_number: true,
+            push_name: true,
+            display_name: true,
+          },
+        },
         listeners: {
           where: { isActive: true },
           include: {
             user: {
               select: {
                 id: true,
+                sender_number: true,
                 push_name: true,
                 display_name: true,
               },
@@ -671,6 +685,7 @@ async function getUserActiveJam(userId) {
             host: {
               select: {
                 id: true,
+                sender_number: true,
                 push_name: true,
                 display_name: true,
               },
@@ -681,6 +696,7 @@ async function getUserActiveJam(userId) {
                 user: {
                   select: {
                     id: true,
+                    sender_number: true,
                     push_name: true,
                     display_name: true,
                   },
@@ -720,7 +736,7 @@ async function getUserActiveJam(userId) {
 async function closeInactiveJams() {
   try {
     const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
-    
+
     // Find jams that haven't been active for 30 minutes
     const inactiveJams = await prisma.jamSession.findMany({
       where: {
@@ -739,11 +755,11 @@ async function closeInactiveJams() {
         },
       },
     });
-    
+
     if (inactiveJams.length === 0) {
       return { success: true, closed: 0 };
     }
-    
+
     // Close all inactive jams
     const closedJamIds = [];
     for (const jam of inactiveJams) {
@@ -751,19 +767,19 @@ async function closeInactiveJams() {
         where: { id: jam.id },
         data: { isActive: false },
       });
-      
+
       // Mark all listeners as inactive
       await prisma.jamListener.updateMany({
         where: { jamId: jam.id },
         data: { isActive: false },
       });
-      
+
       closedJamIds.push(jam.id);
       logger.info(
-        `[JamService] Closed inactive jam ${jam.id} (host: ${jam.host.push_name || jam.host.display_name || jam.hostUserId})`
+        `[JamService] Closed inactive jam ${jam.id} (host: ${jam.host.push_name || jam.host.display_name || jam.hostUserId})`,
       );
     }
-    
+
     return {
       success: true,
       closed: closedJamIds.length,

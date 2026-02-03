@@ -3,20 +3,80 @@ const jamService = require("./jamService");
 const sseHub = require("../lib/sseHub");
 
 class SpotifyMonitor {
-  constructor({ userSpotifyAPI, intervalMs = 10000, concurrency = 5 } = {}) {
+  constructor({ userSpotifyAPI, intervalMs = 30000, concurrency = 5 } = {}) {
     if (!userSpotifyAPI) throw new Error("userSpotifyAPI is required");
     this.userSpotifyAPI = userSpotifyAPI;
-    this.intervalMs = intervalMs;
+    this.normalIntervalMs = intervalMs; // 30s for normal users
+    this.fastIntervalMs = 5000; // 5s for users in active jams
     this.concurrency = concurrency;
 
-    this._timer = null;
+    this._normalTimer = null;
+    this._fastTimer = null;
     this.isRunning = false;
     this.lastRun = null;
     this.consecutiveErrors = {};
+
+    // Track which users should be monitored at fast interval
+    this.fastTrackUsers = new Set(); // userId in active jams with listeners
+
     // Cache last printed log per user to avoid duplicate console lines
     this._lastPrinted = new Map();
     // Cache last known state for jam hosts to detect changes
     this._lastJamState = new Map();
+  }
+
+  /**
+   * Categorize users into fast/normal track based on jam state
+   * Fast track: hosts and listeners of jams with 2+ people AND playing
+   * Normal track: everyone else
+   */
+  async _categorizeUsers() {
+    try {
+      const newFastTrack = new Set();
+
+      // Get all active jams
+      const jamsResult = await jamService.getActiveJams(null, false); // Don't fetch playback here
+      if (!jamsResult.success || !jamsResult.jams) {
+        return;
+      }
+
+      for (const jam of jamsResult.jams) {
+        const activeListeners = jam.listeners?.filter((l) => l.isActive) || [];
+        const totalPeople = activeListeners.length + 1; // +1 for host
+
+        // Only fast track if 2+ people AND jam is playing
+        if (totalPeople >= 2 && jam.isPlaying) {
+          // Add host
+          newFastTrack.add(jam.hostUserId);
+
+          // Add all active listeners
+          for (const listener of activeListeners) {
+            newFastTrack.add(listener.userId);
+          }
+        }
+      }
+
+      // Update fast track set
+      const added = [...newFastTrack].filter(
+        (u) => !this.fastTrackUsers.has(u),
+      );
+      const removed = [...this.fastTrackUsers].filter(
+        (u) => !newFastTrack.has(u),
+      );
+
+      if (added.length > 0) {
+        console.log(`[SpotifyMonitor] Fast track added: ${added.length} users`);
+      }
+      if (removed.length > 0) {
+        console.log(
+          `[SpotifyMonitor] Fast track removed: ${removed.length} users`,
+        );
+      }
+
+      this.fastTrackUsers = newFastTrack;
+    } catch (err) {
+      console.error("[SpotifyMonitor] Error categorizing users:", err);
+    }
   }
 
   async _checkOne(userId, accountId = null) {
@@ -213,7 +273,36 @@ class SpotifyMonitor {
   }
 
   // Simple concurrency limiter using chunks
-  async _runOnce() {
+  async _runFastTrack() {
+    // Check if Spotify is globally blocked
+    const blockStatus = await isSpotifyBlocked();
+    if (blockStatus.blocked) {
+      return { processed: 0, skipped: true, reason: "spotify_blocked" };
+    }
+
+    const fastUsers = Array.from(this.fastTrackUsers);
+    if (fastUsers.length === 0) {
+      return { processed: 0 };
+    }
+
+    const chunkSize = Math.max(1, this.concurrency);
+    let processed = 0;
+
+    for (let i = 0; i < fastUsers.length; i += chunkSize) {
+      const chunk = fastUsers.slice(i, i + chunkSize);
+      const promises = chunk.map((userId) => this._checkOne(userId));
+      await Promise.all(promises);
+      processed += chunk.length;
+    }
+
+    return { processed, type: "fast" };
+  }
+
+  // Simple concurrency limiter using chunks
+  async _runNormalTrack() {
+    // Recategorize users at each normal track cycle
+    await this._categorizeUsers();
+
     // Check if Spotify is globally blocked; if so, skip cycle
     const blockStatus = await isSpotifyBlocked();
     if (blockStatus.blocked) {
@@ -236,17 +325,24 @@ class SpotifyMonitor {
     const connected = await Promise.resolve(
       this.userSpotifyAPI.getConnectedUsers(),
     );
+
+    // Filter out fast track users - they're handled by fast interval
+    const normalUsers = (connected || []).filter(
+      (u) => !this.fastTrackUsers.has(u),
+    );
+
     // Suppress verbose connected-users log to avoid leaking user ids in logs
     // and reduce noise. Keep a lightweight status check instead.
-    if (!connected || connected.length === 0) return { processed: 0 };
+    if (!normalUsers || normalUsers.length === 0)
+      return { processed: 0, type: "normal" };
 
     this.lastRun = new Date();
 
     const chunkSize = Math.max(1, this.concurrency);
     let processed = 0;
 
-    for (let i = 0; i < (connected.length || 0); i += chunkSize) {
-      const chunk = connected.slice(i, i + chunkSize);
+    for (let i = 0; i < (normalUsers.length || 0); i += chunkSize) {
+      const chunk = normalUsers.slice(i, i + chunkSize);
       const promises = chunk.map((userId) => this._checkOne(userId));
       const results = await Promise.all(promises);
       processed += results.length;
@@ -296,7 +392,7 @@ class SpotifyMonitor {
     // checking if there were any successes with playing status in a fresh quick pass.
     // Perform a lightweight pass to detect any currently playing users (non-persisting).
     let anyPlaying = false;
-    for (const userId of connected || []) {
+    for (const userId of normalUsers || []) {
       try {
         const peek = (await this.userSpotifyAPI.getCurrentlyPlaying)
           ? await this.userSpotifyAPI.getCurrentlyPlaying(userId)
@@ -309,38 +405,59 @@ class SpotifyMonitor {
         // ignore
       }
     }
-    if (!anyPlaying) {
+    if (!anyPlaying && normalUsers.length > 0) {
       console.log(
-        "[SpotifyMonitor] nenhum usuário está ouvindo musica no momento",
+        "[SpotifyMonitor] nenhum usuário está ouvindo musica no momento (normal track)",
       );
     }
 
-    return { processed };
+    return { processed, type: "normal" };
   }
 
   start() {
     if (this.isRunning) return;
     this.isRunning = true;
-    // immediate run
-    this._runOnce().catch((e) =>
-      console.log("spotifyMonitor initial run failed", e),
+
+    // Initial categorization
+    this._categorizeUsers().catch((e) =>
+      console.log("[SpotifyMonitor] initial categorization failed", e),
     );
-    this._timer = setInterval(() => {
-      this._runOnce().catch((e) => console.log("spotifyMonitor run failed", e));
-    }, this.intervalMs);
-    console.log("[SpotifyMonitor] started — interval:", this.intervalMs);
+
+    // Start fast track timer (5s)
+    this._fastTimer = setInterval(() => {
+      this._runFastTrack().catch((e) =>
+        console.log("[SpotifyMonitor] fast track run failed", e),
+      );
+    }, this.fastIntervalMs);
+
+    // Start normal track timer (30s) with immediate run
+    this._runNormalTrack().catch((e) =>
+      console.log("[SpotifyMonitor] initial normal run failed", e),
+    );
+    this._normalTimer = setInterval(() => {
+      this._runNormalTrack().catch((e) =>
+        console.log("[SpotifyMonitor] normal track run failed", e),
+      );
+    }, this.normalIntervalMs);
+
+    console.log(
+      `[SpotifyMonitor] started — fast: ${this.fastIntervalMs}ms, normal: ${this.normalIntervalMs}ms`,
+    );
   }
 
   stop() {
     if (!this.isRunning) return;
-    clearInterval(this._timer);
-    this._timer = null;
+    clearInterval(this._fastTimer);
+    clearInterval(this._normalTimer);
+    this._fastTimer = null;
+    this._normalTimer = null;
     this.isRunning = false;
     console.log("[SpotifyMonitor] stopped");
   }
 
   async forceCheckAll() {
-    return this._runOnce();
+    await this._runFastTrack();
+    return this._runNormalTrack();
   }
 
   async getStats() {
@@ -349,9 +466,11 @@ class SpotifyMonitor {
     );
     return {
       isRunning: this.isRunning,
-      intervalMs: this.intervalMs,
+      fastIntervalMs: this.fastIntervalMs,
+      normalIntervalMs: this.normalIntervalMs,
       lastRun: this.lastRun,
       connectedCount: connected ? connected.length : 0,
+      fastTrackCount: this.fastTrackUsers.size,
       consecutiveErrors: this.consecutiveErrors,
     };
   }
