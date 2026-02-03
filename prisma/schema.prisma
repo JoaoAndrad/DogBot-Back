@@ -141,6 +141,7 @@ model SpotifyAccount {
   userId     String?  // optional FK to User.id for per-user tokens
   createdAt  DateTime @default(now()) @db.Timestamptz(6)
   updatedAt  DateTime @updatedAt @db.Timestamptz(6)
+  lastDeviceId String? // cache last used Spotify device ID
 
   tokens     SpotifyToken[]
   playbacks  TrackPlayback[]

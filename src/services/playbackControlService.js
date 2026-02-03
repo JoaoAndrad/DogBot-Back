@@ -8,6 +8,10 @@ const { prisma } = require("./spotifyService");
  * Requires user-modify-playback-state scope
  */
 
+// Device cache: { accountId: { devices: [...], cachedAt: timestamp } }
+const deviceCache = new Map();
+const DEVICE_CACHE_TTL = 30000; // 30 seconds
+
 /**
  * Get user's Spotify account ID
  */
@@ -245,6 +249,121 @@ async function skipToPrevious(userId, deviceId = null) {
 }
 
 /**
+ * Get available Spotify devices for a user
+ * @param {string} accountId - Spotify account ID
+ * @param {boolean} useCache - Whether to use cached devices (default: true)
+ * @returns {Promise<{success: boolean, devices?: Array, error?: string}>}
+ */
+async function getAvailableDevices(accountId, useCache = true) {
+  try {
+    // Check cache first
+    if (useCache && deviceCache.has(accountId)) {
+      const cached = deviceCache.get(accountId);
+      const age = Date.now() - cached.cachedAt;
+      if (age < DEVICE_CACHE_TTL) {
+        return { success: true, devices: cached.devices };
+      }
+      // Cache expired, remove it
+      deviceCache.delete(accountId);
+    }
+
+    const url = "https://api.spotify.com/v1/me/player/devices";
+    const res = await spotifyFetch(accountId, url, { method: "GET" });
+
+    if (!res || !res.ok) {
+      return { success: false, error: "Failed to fetch devices" };
+    }
+
+    const data = await res.json();
+    const devices = data.devices || [];
+
+    // Update cache
+    deviceCache.set(accountId, {
+      devices,
+      cachedAt: Date.now(),
+    });
+
+    return { success: true, devices };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+}
+
+/**
+ * Transfer playback to a specific device
+ * @param {string} accountId - Spotify account ID
+ * @param {string} deviceId - Target device ID
+ * @param {boolean} play - Whether to start playing after transfer
+ * @returns {Promise<{success: boolean, error?: string}>}
+ */
+async function transferPlayback(accountId, deviceId, play = true) {
+  try {
+    const url = "https://api.spotify.com/v1/me/player";
+    const body = {
+      device_ids: [deviceId],
+      play,
+    };
+
+    const res = await spotifyFetch(accountId, url, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+
+    if (!res || (res.status !== 204 && res.status !== 200)) {
+      return { success: false, error: `Transfer failed: HTTP ${res.status}` };
+    }
+
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+}
+
+/**
+ * Select best device based on priority:
+ * 1. Last used device (if provided and available)
+ * 2. Device type priority: Smartphone > Computer > Web Player > others
+ * 3. Within same type, prefer active devices
+ * @param {Array} devices - Available devices
+ * @param {string} lastDeviceId - Last used device ID (optional)
+ * @returns {Object|null} Selected device or null
+ */
+function selectBestDevice(devices, lastDeviceId = null) {
+  if (!devices || devices.length === 0) return null;
+
+  // Priority 1: Check if last device is available
+  if (lastDeviceId) {
+    const lastDevice = devices.find((d) => d.id === lastDeviceId);
+    if (lastDevice) return lastDevice;
+  }
+
+  // Priority 2: Sort by type and active state
+  const typePriority = {
+    Smartphone: 1,
+    Computer: 2,
+    "Web Player": 3,
+  };
+
+  const sortedDevices = [...devices].sort((a, b) => {
+    const priorityA = typePriority[a.type] || 999;
+    const priorityB = typePriority[b.type] || 999;
+
+    if (priorityA !== priorityB) {
+      return priorityA - priorityB;
+    }
+
+    // Same type, prefer active devices
+    if (a.is_active && !b.is_active) return -1;
+    if (!a.is_active && b.is_active) return 1;
+
+    return 0;
+  });
+
+  return sortedDevices[0];
+}
+
+/**
  * Synchronize user's playback to match a specific state
  * Combines play + seek operations
  */
@@ -253,13 +372,65 @@ async function syncPlayback(
   { trackUri, positionMs, isPlaying, deviceId = null },
 ) {
   try {
+    const account = await getUserSpotifyAccount(userId);
+
     // First, start playing the track
     if (trackUri) {
-      const playResult = await playTrack(userId, {
+      let playResult = await playTrack(userId, {
         uris: [trackUri],
         positionMs: positionMs || 0,
         deviceId,
       });
+
+      // Handle NO_ACTIVE_DEVICE with fallback (max 1 attempt)
+      if (!playResult.success && playResult.error === "NO_ACTIVE_DEVICE") {
+        // Try to get available devices and transfer
+        const devicesResult = await getAvailableDevices(account.id);
+
+        if (!devicesResult.success || devicesResult.devices.length === 0) {
+          // No devices available, return original error
+          return playResult;
+        }
+
+        // Select best device
+        const targetDevice = selectBestDevice(
+          devicesResult.devices,
+          account.lastDeviceId,
+        );
+        if (!targetDevice) {
+          return playResult;
+        }
+
+        // Transfer playback to selected device
+        const transferResult = await transferPlayback(
+          account.id,
+          targetDevice.id,
+          false,
+        );
+        if (!transferResult.success) {
+          return playResult; // Transfer failed, return original error
+        }
+
+        // Wait 1 second for transfer to complete
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
+        // Retry play with selected device
+        playResult = await playTrack(userId, {
+          uris: [trackUri],
+          positionMs: positionMs || 0,
+          deviceId: targetDevice.id,
+        });
+
+        // Update lastDeviceId if successful
+        if (playResult.success) {
+          await prisma.spotifyAccount
+            .update({
+              where: { id: account.id },
+              data: { lastDeviceId: targetDevice.id },
+            })
+            .catch(() => {}); // Silent fail on cache update
+        }
+      }
 
       if (!playResult.success) {
         return playResult;
@@ -292,4 +463,7 @@ module.exports = {
   skipToPrevious,
   syncPlayback,
   getUserSpotifyAccount,
+  getAvailableDevices,
+  transferPlayback,
+  selectBestDevice,
 };
