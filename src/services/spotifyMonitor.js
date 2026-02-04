@@ -71,6 +71,19 @@ class SpotifyMonitor {
         console.log(
           `[SpotifyMonitor] Fast track removed: ${removed.length} users`,
         );
+
+        // Immediately check users that were removed from fast track
+        // so they appear in normal track logs without waiting for next cycle
+        setImmediate(() => {
+          removed.forEach((userId) => {
+            this._checkOne(userId).catch((err) => {
+              console.error(
+                `[SpotifyMonitor] Error checking removed user ${userId}:`,
+                err,
+              );
+            });
+          });
+        });
       }
 
       this.fastTrackUsers = newFastTrack;
