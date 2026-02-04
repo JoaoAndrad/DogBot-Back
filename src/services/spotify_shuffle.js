@@ -303,7 +303,18 @@ async function playRandomUnique(accountId, playlistId, options = {}) {
         if (resolvedByKey.has(key)) continue;
 
         // Check if track ID is in blacklist (blacklist uses Spotify IDs from previous recommendations)
-        if (blacklistedIds.has(sp.id)) continue;
+        // Even blacklisted tracks have 10% chance of being approved
+        if (blacklistedIds.has(sp.id)) {
+          const randomChance = Math.random();
+          if (randomChance > 0.1) {
+            // 90% chance: skip blacklisted track
+            continue;
+          }
+          // 10% chance: allow blacklisted track through
+          logger.info(
+            `[SpotifyShuffle] Blacklisted track "${sp.name}" passed 10% random approval`,
+          );
+        }
 
         resolvedByKey.add(key);
         resolved.push(sp);
@@ -339,10 +350,24 @@ async function playRandomUnique(accountId, playlistId, options = {}) {
   // 4) Final filter for any edge cases (should be minimal now since we filter during resolution)
   let unique = filterExistingTracks(resolved, playlistSet);
 
-  // Filter out any remaining blacklisted tracks (already done during resolution but keeping for safety)
+  // Filter out remaining blacklisted tracks with 10% approval chance
   if (blacklistedIds.size > 0) {
     const beforeBlacklist = unique.length;
-    unique = unique.filter((track) => !blacklistedIds.has(track.id));
+    unique = unique.filter((track) => {
+      if (blacklistedIds.has(track.id)) {
+        const randomChance = Math.random();
+        if (randomChance <= 0.1) {
+          // 10% chance: keep blacklisted track
+          logger.info(
+            `[SpotifyShuffle] Final filter: Blacklisted track "${track.name}" passed 10% random approval`,
+          );
+          return true;
+        }
+        // 90% chance: filter out blacklisted track
+        return false;
+      }
+      return true;
+    });
     const removed = beforeBlacklist - unique.length;
     if (removed > 0) {
       logger.info(
