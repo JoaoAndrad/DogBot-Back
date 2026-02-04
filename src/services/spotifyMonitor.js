@@ -1,6 +1,23 @@
 const { fetchAndPersistUser, isSpotifyBlocked } = require("./spotifyService");
 const jamService = require("./jamService");
 const sseHub = require("../lib/sseHub");
+const { prisma } = require("./spotifyService");
+
+/**
+ * Helper to get user display name for logging
+ */
+async function getUserDisplayName(userId) {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { display_name: true, push_name: true },
+    });
+    if (!user) return userId;
+    return user.display_name || user.push_name || userId;
+  } catch (e) {
+    return userId;
+  }
+}
 
 class SpotifyMonitor {
   constructor({ userSpotifyAPI, intervalMs = 30000, concurrency = 5 } = {}) {
@@ -65,11 +82,13 @@ class SpotifyMonitor {
       );
 
       if (added.length > 0) {
-        console.log(`[SpotifyMonitor] Fast track added: ${added.length} users`);
+        console.log(
+          `[SpotifyMonitor] Fast track adicionado: ${added.length} usuários`,
+        );
       }
       if (removed.length > 0) {
         console.log(
-          `[SpotifyMonitor] Fast track removed: ${removed.length} users`,
+          `[SpotifyMonitor] Fast track removido: ${removed.length} usuários`,
         );
 
         // Immediately check users that were removed from fast track
@@ -78,7 +97,7 @@ class SpotifyMonitor {
           removed.forEach((userId) => {
             this._checkOne(userId).catch((err) => {
               console.error(
-                `[SpotifyMonitor] Error checking removed user ${userId}:`,
+                `[SpotifyMonitor] Erro ao verificar usuário removido ${userId}:`,
                 err,
               );
             });
@@ -145,24 +164,25 @@ class SpotifyMonitor {
               const jId = normalizeId(jamTrackId);
 
               if (jId && lId && lId !== jId) {
+                const userName = await getUserDisplayName(userId);
                 console.log(
-                  `[SpotifyMonitor] Listener ${userId} playing different track (${lId}) than jam ${jam.id} host (${jId}), forcing sync...`,
+                  `[SpotifyMonitor] Usuário ${userName} tocando uma faixa diferente (${lId}) da do host da jam ${jam.id} (${jId}), forçando sincronização...`,
                 );
                 try {
                   const syncRes = await jamService.syncListener(jam.id, userId);
                   if (syncRes && syncRes.success) {
                     console.log(
-                      `[SpotifyMonitor] Forced sync succeeded for listener ${userId} to jam ${jam.id}`,
+                      `[SpotifyMonitor] Sincronização forçada bem-sucedida para o ouvinte ${userName} na jam ${jam.id}`,
                     );
                   } else {
                     console.warn(
-                      `[SpotifyMonitor] Forced sync failed for listener ${userId}:`,
+                      `[SpotifyMonitor] Falha na sincronização forçada para o ouvinte ${userName}:`,
                       syncRes && syncRes.error,
                     );
                   }
                 } catch (e) {
                   console.error(
-                    `[SpotifyMonitor] Error forcing sync for listener ${userId}:`,
+                    `[SpotifyMonitor] Erro ao forçar sincronização para o ouvinte ${userName}:`,
                     e,
                   );
                 }
@@ -171,7 +191,7 @@ class SpotifyMonitor {
           }
         } catch (e) {
           console.error(
-            "[SpotifyMonitor] Error checking listener jam state:",
+            "[SpotifyMonitor] Erro ao verificar estado da jam do ouvinte:",
             e,
           );
         }
@@ -223,7 +243,7 @@ class SpotifyMonitor {
 
       if (hasChanged) {
         console.log(
-          `[SpotifyMonitor] Jam ${jam.id} host track changed, syncing listeners...`,
+          `[SpotifyMonitor] Jam ${jam.id} teve alteração na faixa do host, sincronizando ouvintes...`,
         );
 
         // Update jam state in database
@@ -257,7 +277,7 @@ class SpotifyMonitor {
 
             if (removeResult.success) {
               console.log(
-                `[SpotifyMonitor] Removed track from queue: ${removeResult.removedEntry?.trackName}`,
+                `[SpotifyMonitor] Faixa removida da fila: ${removeResult.removedEntry?.trackName}`,
               );
 
               // Send SSE event to notify clients that track was removed from queue
@@ -270,7 +290,7 @@ class SpotifyMonitor {
             }
           } catch (err) {
             console.error(
-              "[SpotifyMonitor] Error removing played track from queue:",
+              "[SpotifyMonitor] Erro ao remover faixa tocada da fila:",
               err,
             );
           }
@@ -297,7 +317,7 @@ class SpotifyMonitor {
               syncResult.removedUsers.length > 0
             ) {
               console.log(
-                `[SpotifyMonitor] ${syncResult.removedUsers.length} users removed from jam ${jam.id} due to Premium requirement`,
+                `[SpotifyMonitor] ${syncResult.removedUsers.length} usuários removidos da jam ${jam.id} devido ao requisito Premium`,
               );
 
               // Send SSE notification for each removed user
@@ -313,7 +333,7 @@ class SpotifyMonitor {
           })
           .catch((err) => {
             console.error(
-              `[SpotifyMonitor] Error syncing listeners for jam ${jam.id}:`,
+              `[SpotifyMonitor] Erro ao sincronizar ouvintes para a jam ${jam.id}:`,
               err,
             );
           });
@@ -335,7 +355,7 @@ class SpotifyMonitor {
         this._lastJamState.set(jam.id, currentState);
       }
     } catch (err) {
-      console.error("[SpotifyMonitor] Error in jam sync:", err);
+      console.error("[SpotifyMonitor] Erro na sincronização da jam:", err);
     }
   }
 
@@ -512,28 +532,31 @@ class SpotifyMonitor {
 
     // Initial categorization
     this._categorizeUsers().catch((e) =>
-      console.log("[SpotifyMonitor] initial categorization failed", e),
+      console.log("[SpotifyMonitor] Categorização falhou", e),
     );
 
     // Start fast track timer (5s)
     this._fastTimer = setInterval(() => {
       this._runFastTrack().catch((e) =>
-        console.log("[SpotifyMonitor] fast track run failed", e),
+        console.log("[SpotifyMonitor] falha na execução do fast track", e),
       );
     }, this.fastIntervalMs);
 
     // Start normal track timer (30s) with immediate run
     this._runNormalTrack().catch((e) =>
-      console.log("[SpotifyMonitor] initial normal run failed", e),
+      console.log(
+        "[SpotifyMonitor] falha na execução inicial do normal track",
+        e,
+      ),
     );
     this._normalTimer = setInterval(() => {
       this._runNormalTrack().catch((e) =>
-        console.log("[SpotifyMonitor] normal track run failed", e),
+        console.log("[SpotifyMonitor] falha na execução do normal track", e),
       );
     }, this.normalIntervalMs);
 
     console.log(
-      `[SpotifyMonitor] started — fast: ${this.fastIntervalMs}ms, normal: ${this.normalIntervalMs}ms`,
+      `[SpotifyMonitor] Começou - Fast: ${this.fastIntervalMs}ms, normal: ${this.normalIntervalMs}ms`,
     );
   }
 
@@ -544,7 +567,7 @@ class SpotifyMonitor {
     this._fastTimer = null;
     this._normalTimer = null;
     this.isRunning = false;
-    console.log("[SpotifyMonitor] stopped");
+    console.log("[SpotifyMonitor] parado");
   }
 
   async forceCheckAll() {

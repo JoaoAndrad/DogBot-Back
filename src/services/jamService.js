@@ -5,6 +5,22 @@ const jamQueueService = require("./jamQueueService");
 const logger = require("../lib/logger");
 
 /**
+ * Helper to get user display name for logging
+ */
+async function getUserDisplayName(userId) {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { display_name: true, push_name: true },
+    });
+    if (!user) return userId;
+    return user.display_name || user.push_name || userId;
+  } catch (e) {
+    return userId;
+  }
+}
+
+/**
  * Jam Service
  * Manages jam/radio sessions where hosts broadcast their playback to listeners
  */
@@ -522,14 +538,15 @@ async function syncListener(jamId, userId, isJoining = false) {
     });
 
     if (!syncResult.success) {
+      const userName = await getUserDisplayName(userId);
       logger.warn(
-        `[JamService] Failed to sync listener ${userId}: ${syncResult.error}`,
+        `[JamService] Failed to sync listener ${userName}: ${syncResult.error}`,
       );
 
       // If user doesn't have Premium, remove them from the jam
       if (syncResult.error === "FORBIDDEN") {
         logger.info(
-          `[JamService] Removing listener ${userId} from jam ${jamId} due to Premium requirement`,
+          `[JamService] Removing listener ${userName} from jam ${jamId} due to Premium requirement`,
         );
 
         // Remove user from jam
@@ -578,7 +595,8 @@ async function syncListener(jamId, userId, isJoining = false) {
       },
     });
 
-    logger.info(`[JamService] Synced listener ${userId} to jam ${jamId}`);
+    const userName = await getUserDisplayName(userId);
+    logger.info(`[JamService] Synced listener ${userName} to jam ${jamId}`);
 
     return {
       success: true,
