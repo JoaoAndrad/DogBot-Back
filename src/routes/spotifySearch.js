@@ -27,7 +27,6 @@ router.get("/search", async (req, res, next) => {
       where: {
         tokens: {
           some: {
-            accessToken: { not: null },
             expiresAt: { gt: new Date() },
           },
         },
