@@ -2,7 +2,7 @@
 try {
   const { execSync } = require("child_process");
   console.log(
-    "Running `npx prisma generate` to ensure Prisma client is available"
+    "Running `npx prisma generate` to ensure Prisma client is available",
   );
   // run quietly but stream output to logs for visibility
   execSync("npx prisma generate", { stdio: "inherit" });
@@ -10,7 +10,7 @@ try {
 } catch (e) {
   console.warn(
     "`prisma generate` failed or is unavailable in this environment:",
-    e && e.message
+    e && e.message,
   );
   // continue startup; downstream code will error with a clear message if Prisma models are missing
 }
@@ -26,9 +26,9 @@ app.listen(PORT, HOST, () => {
   console.log(
     `Server listening on ${HOST}:${PORT} (NODE_ENV=${
       process.env.NODE_ENV || "development"
-    })`
+    })`,
   );
-  
+
   // Schedule periodic cleanup of inactive jams (every 5 minutes)
   const CLEANUP_INTERVAL = 5 * 60 * 1000; // 5 minutes in milliseconds
   setInterval(async () => {
@@ -41,6 +41,6 @@ app.listen(PORT, HOST, () => {
       logger.error("[JamCleanup] Error during cleanup:", err);
     }
   }, CLEANUP_INTERVAL);
-  
+
   logger.info("[JamCleanup] Periodic jam cleanup scheduled (every 5 minutes)");
 });

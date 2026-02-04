@@ -807,6 +807,15 @@ async function closeInactiveJams() {
             display_name: true,
           },
         },
+        listeners: {
+          where: {
+            isActive: true,
+          },
+          select: {
+            id: true,
+            userId: true,
+          },
+        },
       },
     });
 
@@ -814,9 +823,19 @@ async function closeInactiveJams() {
       return { success: true, closed: 0 };
     }
 
-    // Close all inactive jams
+    // Close all inactive jams, but only if they have no active listeners
     const closedJamIds = [];
     for (const jam of inactiveJams) {
+      const activeListenerCount = jam.listeners?.length || 0;
+
+      // Skip closing if there are active listeners - they're still using the jam
+      if (activeListenerCount > 0) {
+        logger.info(
+          `[JamService] Skipping jam ${jam.id} - has ${activeListenerCount} active listener(s) despite inactivity`,
+        );
+        continue;
+      }
+
       await prisma.jamSession.update({
         where: { id: jam.id },
         data: { isActive: false },
