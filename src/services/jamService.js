@@ -827,17 +827,17 @@ async function closeInactiveJams() {
     // ONLY close jams that have ZERO active listeners (host abandoned and nobody listening)
     const closedJamIds = [];
     const skippedJamIds = [];
-    
+
     for (const jam of inactiveJams) {
       const activeListenerCount = jam.listeners?.length || 0;
-      
+
       // Skip closing if there are ANY active listeners
       if (activeListenerCount > 0) {
         skippedJamIds.push(jam.id);
         logger.info(
           `[JamService] Skipping jam ${jam.id} - has ${activeListenerCount} active listener(s), keeping alive`,
         );
-        
+
         // Update lastActiveAt so it doesn't get checked again for another 30 minutes
         await prisma.jamSession.update({
           where: { id: jam.id },
@@ -861,6 +861,8 @@ async function closeInactiveJams() {
       closedJamIds.push(jam.id);
       logger.info(
         `[JamService] Closed abandoned jam ${jam.id} (host: ${jam.host.push_name || jam.host.display_name || jam.hostUserId}) - no listeners`,
+      );
+    }
 
     return {
       success: true,
