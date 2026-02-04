@@ -644,3 +644,19 @@ model JamListener {
   @@index([userId])
   @@index([isActive])
 }
+
+// Blacklist for aleatorio recommendations to avoid repeating same tracks
+model RecommendationBlacklist {
+  id             String   @id @default(uuid())
+  chatId         String   // Group chat ID
+  trackId        String   // Spotify track ID
+  trackName      String?
+  trackArtists   String?
+  recommendedAt  DateTime @default(now()) @db.Timestamptz(6)
+  expiresAt      DateTime @db.Timestamptz(6) // Auto-cleanup old entries (e.g., 30 days)
+  
+  @@unique([chatId, trackId])
+  @@index([chatId])
+  @@index([expiresAt])
+  @@index([chatId, expiresAt])
+}

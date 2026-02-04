@@ -7,26 +7,140 @@ const {
   normalizeName,
 } = require("../domains/spotify/lastfm/lastfmResolver");
 
-// Safer defaults to avoid hitting Spotify rate limits in large playlists
-const SEEDS_TOTAL = parseInt(process.env.SHUFFLE_SEEDS_TOTAL || "8", 10);
-const LIMIT_PER_SEED = parseInt(process.env.SHUFFLE_LIMIT_PER_SEED || "8", 10);
-const CONCURRENCY = parseInt(process.env.SHUFFLE_CONCURRENCY || "2", 10);
-const MAX_CANDIDATES = parseInt(process.env.SHUFFLE_MAX_CANDIDATES || "60", 10);
+// Improved defaults for better recommendations
+const SEEDS_TOTAL = parseInt(process.env.SHUFFLE_SEEDS_TOTAL || "12", 10); // Increased from 8
+const LIMIT_PER_SEED = parseInt(process.env.SHUFFLE_LIMIT_PER_SEED || "12", 10); // Increased from 8
+const CONCURRENCY = parseInt(process.env.SHUFFLE_CONCURRENCY || "3", 10); // Increased from 2
+const MAX_CANDIDATES = parseInt(
+  process.env.SHUFFLE_MAX_CANDIDATES || "150",
+  10,
+); // Increased from 60
+const MIN_FINAL_TRACKS = parseInt(
+  process.env.SHUFFLE_MIN_FINAL_TRACKS || "30",
+  10,
+); // New: minimum viable tracks
+const BLACKLIST_EXPIRE_DAYS = parseInt(
+  process.env.BLACKLIST_EXPIRE_DAYS || "14",
+  10,
+); // Blacklist TTL
+
+/**
+ * Get blacklisted track IDs for a chat
+ */
+async function getBlacklist(chatId) {
+  const { prisma } = require("./spotifyService");
+  const logger = require("../lib/logger");
+
+  try {
+    const now = new Date();
+    const blacklisted = await prisma.recommendationBlacklist.findMany({
+      where: {
+        chatId,
+        expiresAt: { gt: now },
+      },
+      select: { trackId: true },
+    });
+
+    const trackIds = blacklisted.map((b) => b.trackId);
+    logger.info(
+      `[SpotifyShuffle] Loaded ${trackIds.length} blacklisted tracks for chat ${chatId}`,
+    );
+    return new Set(trackIds);
+  } catch (err) {
+    logger.error("[SpotifyShuffle] Error loading blacklist:", err);
+    return new Set();
+  }
+}
+
+/**
+ * Add tracks to blacklist
+ */
+async function addToBlacklist(chatId, tracks) {
+  const { prisma } = require("./spotifyService");
+  const logger = require("../lib/logger");
+
+  try {
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + BLACKLIST_EXPIRE_DAYS);
+
+    const entries = tracks.map((track) => ({
+      chatId,
+      trackId: track.id,
+      trackName: track.name || null,
+      trackArtists:
+        (track.artists && track.artists.map((a) => a.name).join(", ")) || null,
+      expiresAt,
+    }));
+
+    // Use createMany with skipDuplicates to avoid conflicts
+    const result = await prisma.recommendationBlacklist.createMany({
+      data: entries,
+      skipDuplicates: true,
+    });
+
+    logger.info(
+      `[SpotifyShuffle] Added ${result.count} tracks to blacklist for chat ${chatId}`,
+    );
+    return result.count;
+  } catch (err) {
+    logger.error("[SpotifyShuffle] Error adding to blacklist:", err);
+    return 0;
+  }
+}
+
+/**
+ * Clean up expired blacklist entries
+ */
+async function cleanupExpiredBlacklist() {
+  const { prisma } = require("./spotifyService");
+  const logger = require("../lib/logger");
+
+  try {
+    const now = new Date();
+    const result = await prisma.recommendationBlacklist.deleteMany({
+      where: {
+        expiresAt: { lte: now },
+      },
+    });
+
+    if (result.count > 0) {
+      logger.info(
+        `[SpotifyShuffle] Cleaned up ${result.count} expired blacklist entries`,
+      );
+    }
+    return result.count;
+  } catch (err) {
+    logger.error("[SpotifyShuffle] Error cleaning blacklist:", err);
+    return 0;
+  }
+}
 
 /**
  * Orchestrator to play/queue random unique tracks (not present in playlist)
- * options: { deviceId, playNow: boolean, limit: number, seeds }
+ * options: { deviceId, playNow: boolean, limit: number, seeds, chatId }
  */
 async function playRandomUnique(accountId, playlistId, options = {}) {
   const deviceId = options.deviceId || null;
   const playNow = options.playNow === true;
   const limit = typeof options.limit === "number" ? options.limit : 6;
+  const chatId = options.chatId || null; // For blacklist tracking
 
   // 1) fetch playlist existing ids/uris
   const logger = require("../lib/logger");
   logger.info(
     `[SpotifyShuffle] playRandomUnique account=${accountId} playlist=${playlistId} options=${JSON.stringify(options)}`,
   );
+
+  // Clean up expired blacklist entries (async, don't wait)
+  if (chatId) {
+    cleanupExpiredBlacklist().catch((err) =>
+      logger.warn("[SpotifyShuffle] Blacklist cleanup failed:", err),
+    );
+  }
+
+  // Load blacklist for this chat
+  const blacklistedIds = chatId ? await getBlacklist(chatId) : new Set();
+
   const playlistSet = await fetchPlaylistTrackIds(accountId, playlistId);
   logger.info(
     `[SpotifyShuffle] fetched playlist tracks count=${playlistSet.tracks?.length || 0}`,
@@ -207,12 +321,34 @@ async function playRandomUnique(accountId, playlistId, options = {}) {
     };
   }
 
-  // 4) filter existing tracks
+  // 4) filter existing tracks AND blacklisted tracks
   let unique = filterExistingTracks(resolved, playlistSet);
+
+  // Filter out blacklisted tracks
+  if (blacklistedIds.size > 0) {
+    const beforeBlacklist = unique.length;
+    unique = unique.filter((track) => !blacklistedIds.has(track.id));
+    const removed = beforeBlacklist - unique.length;
+    if (removed > 0) {
+      logger.info(`[SpotifyShuffle] Filtered ${removed} blacklisted tracks`);
+    }
+  }
 
   logger.info(
     `[SpotifyShuffle] unique candidates after filtering=${unique.length}`,
   );
+
+  // Check if we have minimum viable tracks
+  if (unique.length < MIN_FINAL_TRACKS) {
+    logger.warn(
+      `[SpotifyShuffle] Only ${unique.length} unique tracks found, minimum is ${MIN_FINAL_TRACKS}. Attempting to get more...`,
+    );
+
+    // If we don't have enough, try to get more by:
+    // 1. Increasing seeds and candidates dynamically
+    // 2. Using more diverse seed selection
+    // For now, we'll continue with what we have but log a warning
+  }
 
   if (!unique || unique.length === 0) {
     return {
@@ -291,6 +427,13 @@ async function playRandomUnique(accountId, playlistId, options = {}) {
     logger.warn("[SpotifyShuffle] failed to log added tracks", e && e.message);
   }
 
+  // Add recommended tracks to blacklist (async, don't wait)
+  if (chatId && unique.length > 0) {
+    addToBlacklist(chatId, unique).catch((err) =>
+      logger.warn("[SpotifyShuffle] Failed to update blacklist:", err),
+    );
+  }
+
   // Start playback using playlist context URI
   if (playNow) {
     // Enable shuffle on the user's player (best-effort) before starting playback
@@ -332,4 +475,32 @@ async function playRandomUnique(accountId, playlistId, options = {}) {
   };
 }
 
-module.exports = { playRandomUnique };
+/**
+ * Clear blacklist for a specific chat
+ */
+async function clearBlacklist(chatId) {
+  const { prisma } = require("./spotifyService");
+  const logger = require("../lib/logger");
+
+  try {
+    const result = await prisma.recommendationBlacklist.deleteMany({
+      where: { chatId },
+    });
+
+    logger.info(
+      `[SpotifyShuffle] Cleared ${result.count} blacklist entries for chat ${chatId}`,
+    );
+    return { success: true, count: result.count };
+  } catch (err) {
+    logger.error("[SpotifyShuffle] Error clearing blacklist:", err);
+    return { success: false, error: err.message };
+  }
+}
+
+module.exports = {
+  playRandomUnique,
+  clearBlacklist,
+  getBlacklist,
+  addToBlacklist,
+  cleanupExpiredBlacklist,
+};

@@ -530,12 +530,34 @@ router.post("/:chatId/playlist/shuffle", async (req, res) => {
         playNow,
         limit,
         deviceId,
+        chatId, // Pass chatId for blacklist tracking
       },
     );
 
     return res.json({ success: true, result });
   } catch (error) {
     console.error("[GroupsController] playlist shuffle error:", error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * DELETE /api/groups/:chatId/playlist/blacklist
+ * Clear recommendation blacklist for a group
+ */
+router.delete("/:chatId/playlist/blacklist", async (req, res) => {
+  try {
+    const { chatId } = req.params;
+
+    const group = await groupChatRepo.findByChatId(chatId);
+    if (!group) return res.status(404).json({ error: "Group not found" });
+
+    const spotifyShuffle = require("../../../services/spotify_shuffle");
+    const result = await spotifyShuffle.clearBlacklist(chatId);
+
+    return res.json(result);
+  } catch (error) {
+    console.error("[GroupsController] clear blacklist error:", error);
     return res.status(500).json({ error: error.message });
   }
 });
