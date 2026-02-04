@@ -25,14 +25,27 @@ router.get("/search", async (req, res, next) => {
     // (Search doesn't require user-specific auth)
     const account = await prisma.spotifyAccount.findFirst({
       where: {
-        access_token: { not: null },
+        tokens: {
+          some: {
+            accessToken: { not: null },
+            expiresAt: { gt: new Date() },
+          },
+        },
       },
-      orderBy: {
-        expiresAt: "desc",
+      include: {
+        tokens: {
+          where: {
+            expiresAt: { gt: new Date() },
+          },
+          orderBy: {
+            expiresAt: "desc",
+          },
+          take: 1,
+        },
       },
     });
 
-    if (!account) {
+    if (!account || !account.tokens || account.tokens.length === 0) {
       return res.status(503).json({
         success: false,
         error: "NO_SPOTIFY_ACCOUNT",
