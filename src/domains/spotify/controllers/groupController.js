@@ -250,6 +250,18 @@ router.post("/votes/:voteId/cast", async (req, res) => {
       return res.status(404).json({ error: "Vote not found" });
     }
 
+    // Validate that user is eligible to vote (must be in targetUserIds)
+    const targetUserIds = vote.targetUserIds || [];
+    if (!targetUserIds.includes(userId)) {
+      console.warn(
+        `[GroupsController] User ${userId} not eligible to vote on ${voteId}`,
+      );
+      return res.status(403).json({
+        error: "User not eligible to vote",
+        message: "Você não está participando desta jam",
+      });
+    }
+
     // Validate pollId matches if provided
     if (pollId && vote.pollId && vote.pollId !== pollId) {
       console.warn(
