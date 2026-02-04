@@ -154,6 +154,20 @@ async function playRandomUnique(accountId, playlistId, options = {}) {
       error: "Não foi possível gerar recomendações no momento",
     };
 
+  // Build a normalized set of playlist name|artist for quick filtering by metadata
+  const playlistNormalized = new Set();
+  for (const t of tracks) {
+    const nm = sanitizeSeedInput(t.name || "");
+    const art = sanitizeSeedInput(
+      (Array.isArray(t.artists) && t.artists[0]) || "",
+    );
+    const key = `${normalizeName(nm)}||${normalizeName(art)}`;
+    playlistNormalized.add(key);
+  }
+  logger.info(
+    `[SpotifyShuffle] built normalized playlist set size=${playlistNormalized.size}`,
+  );
+
   // Build seed set using full playlist coverage:
   // - pick one representative track from top artists
   // - supplement with weighted random tracks until SEEDS_TOTAL
@@ -216,24 +230,14 @@ async function playRandomUnique(accountId, playlistId, options = {}) {
 
   logger.info(`[SpotifyShuffle] selected seeds count=${seeds.length}`);
 
-  // 3) Collect all Last.fm candidates first, dedupe by normalized metadata,
-  // then resolve unique pairs to Spotify with a cached resolver to minimize searches.
+  // 3) Collect Last.fm candidates and resolve to Spotify with on-the-fly filtering
+  // This avoids wasting API calls on tracks already in the playlist
   let resolved = [];
   try {
     const {
       collectCandidatesFromSeeds,
       resolveToSpotifyCached,
     } = require("../domains/spotify/lastfm/lastfmResolver");
-    // build a normalized set of playlist name|artist to filter by metadata
-    const playlistNormalized = new Set();
-    for (const t of tracks) {
-      const nm = sanitizeSeedInput(t.name || "");
-      const art = sanitizeSeedInput(
-        (Array.isArray(t.artists) && t.artists[0]) || "",
-      );
-      const key = `${normalizeName(nm)}||${normalizeName(art)}`;
-      playlistNormalized.add(key);
-    }
 
     // 3a) collect Last.fm candidates for all seeds
     const rawCandidates = await collectCandidatesFromSeeds(seeds, {
@@ -244,23 +248,27 @@ async function playRandomUnique(accountId, playlistId, options = {}) {
       `[SpotifyShuffle] lastfm raw candidates=${rawCandidates.length}`,
     );
 
-    // 3b) dedupe candidates by normalized name||artist and filter against playlist
+    // 3b) dedupe candidates by normalized name||artist and filter against playlist BEFORE resolving
     const candidateMap = new Map();
     for (const c of rawCandidates) {
       const name = sanitizeSeedInput(c.name || "");
       const artist = sanitizeSeedInput(c.artist || "");
       const key = `${normalizeName(name)}||${normalizeName(artist)}`;
+
+      // Filter out tracks already in playlist by metadata (saves Spotify API calls)
       if (playlistNormalized.has(key)) continue;
+
       if (!candidateMap.has(key))
         candidateMap.set(key, { name, artist, match: c.match });
     }
 
     const uniqueCandidates = Array.from(candidateMap.values());
     logger.info(
-      `[SpotifyShuffle] unique lastfm candidates=${uniqueCandidates.length}`,
+      `[SpotifyShuffle] unique lastfm candidates after playlist filtering=${uniqueCandidates.length}`,
     );
 
     // 3c) resolve unique candidates to Spotify with controlled concurrency
+    // Filter by name+artist only (Last.fm and Spotify have different IDs for same track)
     const chunkArray = (arr, size) => {
       const out = [];
       for (let i = 0; i < arr.length; i += size)
@@ -282,14 +290,21 @@ async function playRandomUnique(accountId, playlistId, options = {}) {
       const results = await Promise.all(promises);
       for (let i = 0; i < results.length; i++) {
         const sp = results[i];
-        const cand = batch[i];
-        if (!sp) continue;
+        if (!sp || !sp.id) continue;
+
+        // Check metadata key (name+artist) against playlist and blacklist
         const trackName = sp.name || "";
         const artistName =
           (sp.artists && sp.artists[0] && sp.artists[0].name) || "";
         const key = `${normalizeName(trackName)}||${normalizeName(artistName)}`;
+
+        // Filter by name+artist comparison (not Spotify ID, as Last.fm and Spotify have different IDs)
         if (playlistNormalized.has(key)) continue;
         if (resolvedByKey.has(key)) continue;
+
+        // Check if track ID is in blacklist (blacklist uses Spotify IDs from previous recommendations)
+        if (blacklistedIds.has(sp.id)) continue;
+
         resolvedByKey.add(key);
         resolved.push(sp);
         if (resolved.length >= MAX_CANDIDATES) break;
@@ -321,16 +336,18 @@ async function playRandomUnique(accountId, playlistId, options = {}) {
     };
   }
 
-  // 4) filter existing tracks AND blacklisted tracks
+  // 4) Final filter for any edge cases (should be minimal now since we filter during resolution)
   let unique = filterExistingTracks(resolved, playlistSet);
 
-  // Filter out blacklisted tracks
+  // Filter out any remaining blacklisted tracks (already done during resolution but keeping for safety)
   if (blacklistedIds.size > 0) {
     const beforeBlacklist = unique.length;
     unique = unique.filter((track) => !blacklistedIds.has(track.id));
     const removed = beforeBlacklist - unique.length;
     if (removed > 0) {
-      logger.info(`[SpotifyShuffle] Filtered ${removed} blacklisted tracks`);
+      logger.info(
+        `[SpotifyShuffle] Filtered ${removed} remaining blacklisted tracks`,
+      );
     }
   }
 

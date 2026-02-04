@@ -59,7 +59,7 @@ async function findBestSpotifyMatch(accountId, trackName, artistName) {
   );
   // Search Spotify by track + artist exact first
   const q = `track:"${trackName}" artist:"${artistName}"`;
-  const params = new URLSearchParams({ q, type: "track", limit: "5" });
+  const params = new URLSearchParams({ q, type: "track", limit: "10" });
   let res = await spotifyFetch(
     accountId,
     `https://api.spotify.com/v1/search?${params.toString()}`,
@@ -67,7 +67,7 @@ async function findBestSpotifyMatch(accountId, trackName, artistName) {
   if (!res || !res.ok) {
     // try looser query (track only)
     const q2 = `track:"${trackName}"`;
-    const params2 = new URLSearchParams({ q: q2, type: "track", limit: "5" });
+    const params2 = new URLSearchParams({ q: q2, type: "track", limit: "10" });
     res = await spotifyFetch(
       accountId,
       `https://api.spotify.com/v1/search?${params2.toString()}`,
@@ -83,17 +83,27 @@ async function findBestSpotifyMatch(accountId, trackName, artistName) {
 
   const targetArtistNorm = normalizeName(artistName);
 
-  // Prefer item whose any artist matches normalized artist name
-  for (const it of items) {
+  // Filter items where any artist matches normalized artist name
+  const exactMatches = items.filter((it) => {
     const artistNames = (it.artists || []).map((a) => normalizeName(a.name));
-    if (artistNames.includes(targetArtistNorm)) return it;
+    return artistNames.includes(targetArtistNorm);
+  });
+
+  // If we have exact artist matches, sort by popularity and return the most popular
+  if (exactMatches.length > 0) {
+    exactMatches.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
+    logger.info(
+      `[LastfmResolver] found ${exactMatches.length} exact matches, selected most popular (popularity=${exactMatches[0].popularity}) for track="${trackName}" artist="${artistName}"`,
+    );
+    return exactMatches[0];
   }
 
   logger.info(
-    `[LastfmResolver] no exact artist match; returning top item for track="${trackName}" artist="${artistName}"`,
+    `[LastfmResolver] no exact artist match; sorting by popularity for track="${trackName}" artist="${artistName}"`,
   );
 
-  // No exact artist match; accept top item only if Last.fm confidence high is handled by caller
+  // No exact artist match; sort all results by popularity and return top
+  items.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
   return items[0] || null;
 }
 
