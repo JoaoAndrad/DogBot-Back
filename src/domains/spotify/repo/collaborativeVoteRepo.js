@@ -117,16 +117,16 @@ module.exports = {
 
     let newStatus = "active";
 
-    // Passed if > threshold voted yes (strict majority)
-    if (percentFor > vote.threshold) {
+    // Passed if >= threshold voted yes (majority or equal)
+    if (percentFor >= vote.threshold) {
       newStatus = "passed";
     }
     // Failed if impossible to reach threshold
-    else if (percentAgainst >= 1 - vote.threshold) {
+    else if (percentAgainst > 1 - vote.threshold) {
       newStatus = "failed";
     }
     // Or if everyone voted and didn't pass
-    else if (totalVotes === totalEligible && percentFor <= vote.threshold) {
+    else if (totalVotes === totalEligible && percentFor < vote.threshold) {
       newStatus = "failed";
     }
 
