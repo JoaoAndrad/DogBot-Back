@@ -501,30 +501,64 @@ router.post("/:chatId/playlist/link", async (req, res) => {
 
 /**
  * POST /api/groups/:chatId/playlist/shuffle
- * Body: { playNow?: boolean, limit?: number, deviceId?: string }
- * Triggers playRandomUnique using the playlist's stored Spotify playlist and account
+ * Body: { playNow?: boolean, limit?: number, deviceId?: string, userId?: string }
+ * Triggers playRandomUnique using the playlist's stored Spotify playlist
+ * If userId is provided, creates playlist in user's account, otherwise uses group's account
  */
 router.post("/:chatId/playlist/shuffle", async (req, res) => {
   try {
     const { chatId } = req.params;
-    const { playNow = true, limit = 6, deviceId = null } = req.body || {};
+    const {
+      playNow = true,
+      limit = 6,
+      deviceId = null,
+      userId = null,
+    } = req.body || {};
 
     const group = await groupChatRepo.findByChatId(chatId);
     if (!group) return res.status(404).json({ error: "Group not found" });
-    if (
-      !group.playlist ||
-      !group.playlist.spotifyId ||
-      !group.playlist.accountId
-    ) {
+    if (!group.playlist || !group.playlist.spotifyId) {
       return res.status(400).json({
-        error: "Group has no linked Spotify playlist or missing account",
+        error: "Group has no linked Spotify playlist",
       });
+    }
+
+    // Determine which account to use: user's account if userId provided, otherwise group's account
+    let targetAccountId;
+    if (userId) {
+      // Get user's Spotify account
+      const { prisma } = require("../../../services/spotifyService");
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        include: {
+          spotifyAccounts: {
+            where: { isPrimary: true },
+            take: 1,
+          },
+        },
+      });
+
+      if (!user || !user.spotifyAccounts || user.spotifyAccounts.length === 0) {
+        return res.status(400).json({
+          error: "User has no connected Spotify account",
+        });
+      }
+
+      targetAccountId = user.spotifyAccounts[0].id;
+    } else {
+      // Use group's account (fallback to old behavior)
+      if (!group.playlist.accountId) {
+        return res.status(400).json({
+          error: "Group playlist has no linked account",
+        });
+      }
+      targetAccountId = group.playlist.accountId;
     }
 
     const spotifyShuffle = require("../../../services/spotify_shuffle");
 
     const result = await spotifyShuffle.playRandomUnique(
-      group.playlist.accountId,
+      targetAccountId,
       group.playlist.spotifyId,
       {
         playNow,

@@ -228,4 +228,96 @@ router.get("/playlist/:playlistId/tracks", async (req, res, next) => {
   }
 });
 
+/**
+ * GET /api/spotify/track/:trackId
+ * Get track details from Spotify
+ */
+router.get("/track/:trackId", async (req, res, next) => {
+  try {
+    const { trackId } = req.params;
+
+    if (!trackId) {
+      return res.status(400).json({
+        success: false,
+        error: "MISSING_TRACK_ID",
+        message: "Track ID is required",
+      });
+    }
+
+    // Get any active Spotify account to perform search
+    const account = await prisma.spotifyAccount.findFirst({
+      where: {
+        tokens: {
+          some: {
+            expiresAt: { gt: new Date() },
+          },
+        },
+      },
+      include: {
+        tokens: {
+          where: {
+            expiresAt: { gt: new Date() },
+          },
+          orderBy: {
+            expiresAt: "desc",
+          },
+          take: 1,
+        },
+      },
+    });
+
+    if (!account || !account.tokens || account.tokens.length === 0) {
+      return res.status(503).json({
+        success: false,
+        error: "NO_SPOTIFY_ACCOUNT",
+        message: "No Spotify accounts available",
+      });
+    }
+
+    // Get track details
+    const trackUrl = `https://api.spotify.com/v1/tracks/${trackId}`;
+    const trackResponse = await spotifyFetch(account.id, trackUrl);
+
+    if (!trackResponse.ok) {
+      const errorText = await trackResponse.text();
+      logger.error(
+        `[SpotifySearch] Error fetching track: ${trackResponse.status} - ${errorText}`,
+      );
+      return res.status(trackResponse.status).json({
+        success: false,
+        error: "SPOTIFY_ERROR",
+        message: "Error fetching track from Spotify",
+        details: errorText,
+      });
+    }
+
+    const trackData = await trackResponse.json();
+
+    // Format track
+    const track = {
+      id: trackData.id,
+      uri: trackData.uri,
+      name: trackData.name,
+      artists: trackData.artists.map((a) => ({ name: a.name, id: a.id })),
+      album: {
+        name: trackData.album.name,
+        id: trackData.album.id,
+        images: trackData.album.images,
+      },
+      duration_ms: trackData.duration_ms,
+      preview_url: trackData.preview_url,
+      external_urls: trackData.external_urls,
+      popularity: trackData.popularity,
+    };
+
+    res.json({
+      success: true,
+      track,
+    });
+  } catch (err) {
+    logger.error("[SpotifySearch] Error fetching track:", err);
+    next(err);
+  }
+});
+
 module.exports = router;
