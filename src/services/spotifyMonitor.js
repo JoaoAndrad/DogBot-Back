@@ -415,7 +415,10 @@ class SpotifyMonitor {
     // print the message. Note: we can't know globally here without extra state, so approximate by
     // checking if there were any successes with playing status in a fresh quick pass.
     // Perform a lightweight pass to detect any currently playing users (non-persisting).
+    // Check both normal track users AND fast track users
     let anyPlaying = false;
+
+    // Check normal track users
     for (const userId of normalUsers || []) {
       try {
         const peek = (await this.userSpotifyAPI.getCurrentlyPlaying)
@@ -429,7 +432,29 @@ class SpotifyMonitor {
         // ignore
       }
     }
-    if (!anyPlaying && normalUsers.length > 0) {
+
+    // Also check fast track users (jam participants)
+    if (!anyPlaying) {
+      const fastUsers = Array.from(this.fastTrackUsers);
+      for (const userId of fastUsers) {
+        try {
+          const peek = (await this.userSpotifyAPI.getCurrentlyPlaying)
+            ? await this.userSpotifyAPI.getCurrentlyPlaying(userId)
+            : null;
+          if (peek && peek.playing) {
+            anyPlaying = true;
+            break;
+          }
+        } catch (e) {
+          // ignore
+        }
+      }
+    }
+
+    if (
+      !anyPlaying &&
+      (normalUsers.length > 0 || this.fastTrackUsers.size > 0)
+    ) {
       console.log(
         "[SpotifyMonitor] nenhum usuário está ouvindo musica no momento (normal track)",
       );
