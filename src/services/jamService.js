@@ -1,6 +1,7 @@
 const { prisma, spotifyFetch } = require("./spotifyService");
 const playbackControl = require("./playbackControlService");
 const userSpotifyAdapter = require("./userSpotifyAdapter");
+const jamQueueService = require("./jamQueueService");
 const logger = require("../lib/logger");
 
 /**
@@ -1018,6 +1019,20 @@ async function transferHost(jamId, currentHostUserId, newHostUserId) {
     logger.info(
       `[JamService] Transferred jam ${jamId} from ${currentHostUserId} to ${newHostUserId}`,
     );
+
+    // Transfer collaborative queue to new host's Spotify
+    if (updatedJam.jamType === "collaborative") {
+      try {
+        const queueTransferResult =
+          await jamQueueService.transferQueueToNewHost(jamId, newHostUserId);
+        logger.info(
+          `[JamService] Queue transfer result: ${queueTransferResult.transferredCount || 0} tracks`,
+        );
+      } catch (err) {
+        logger.error("[JamService] Error transferring queue to new host:", err);
+        // Don't fail host transfer if queue transfer fails
+      }
+    }
 
     return {
       success: true,

@@ -1,5 +1,6 @@
 const { prisma } = require("./spotifyService");
 const logger = require("../lib/logger");
+const { queueTrack } = require("./player");
 
 /**
  * Jam Queue Service
@@ -193,6 +194,30 @@ async function voteOnQueueEntry(queueEntryId, userId, isFor) {
         where: { id: queueEntryId },
         data: { approved: true },
       });
+
+      // Add to Spotify queue of host
+      try {
+        const hostAccount = await prisma.spotifyAccount.findFirst({
+          where: { userId: queueEntry.jam.hostUserId },
+        });
+
+        if (hostAccount && hostAccount.id) {
+          await queueTrack(hostAccount.id, updatedEntry.trackUri);
+          logger.info(
+            `[JamQueueService] Added track to host Spotify queue: ${updatedEntry.trackName}`,
+          );
+        } else {
+          logger.warn(
+            `[JamQueueService] No Spotify account found for host ${queueEntry.jam.hostUserId}`,
+          );
+        }
+      } catch (err) {
+        logger.error(
+          `[JamQueueService] Error adding track to Spotify queue:`,
+          err,
+        );
+        // Don't fail the approval if queue add fails
+      }
     } else if (updatedEntry.votesAgainst > totalEligible - needed) {
       status = "rejected";
       // Delete rejected entry
@@ -388,6 +413,80 @@ async function clearQueue(jamId, userId) {
   }
 }
 
+/**
+ * Transfer queue to new host's Spotify
+ * @param {string} jamId - Jam session ID
+ * @param {string} newHostUserId - New host user ID
+ * @returns {Object} Result
+ */
+async function transferQueueToNewHost(jamId, newHostUserId) {
+  try {
+    // Get all approved tracks in queue
+    const queueTracks = await prisma.jamQueue.findMany({
+      where: {
+        jamId,
+        playedAt: null,
+        approved: true,
+      },
+      orderBy: { position: "asc" },
+    });
+
+    if (queueTracks.length === 0) {
+      logger.info(`[JamQueueService] No tracks to transfer for jam ${jamId}`);
+      return { success: true, transferredCount: 0 };
+    }
+
+    // Get new host's Spotify account
+    const hostAccount = await prisma.spotifyAccount.findFirst({
+      where: { userId: newHostUserId },
+    });
+
+    if (!hostAccount || !hostAccount.id) {
+      logger.warn(
+        `[JamQueueService] No Spotify account found for new host ${newHostUserId}`,
+      );
+      return {
+        success: false,
+        error: "NO_SPOTIFY_ACCOUNT",
+        message: "Novo host não tem conta Spotify conectada",
+      };
+    }
+
+    // Add all tracks to new host's Spotify queue
+    let transferredCount = 0;
+    for (const track of queueTracks) {
+      try {
+        await queueTrack(hostAccount.id, track.trackUri);
+        transferredCount++;
+        logger.info(
+          `[JamQueueService] Transferred track to new host: ${track.trackName}`,
+        );
+      } catch (err) {
+        logger.error(
+          `[JamQueueService] Error transferring track ${track.trackName}:`,
+          err,
+        );
+      }
+    }
+
+    logger.info(
+      `[JamQueueService] Transferred ${transferredCount}/${queueTracks.length} tracks to new host`,
+    );
+
+    return {
+      success: true,
+      transferredCount,
+      totalTracks: queueTracks.length,
+    };
+  } catch (err) {
+    logger.error("[JamQueueService] Error transferring queue:", err);
+    return {
+      success: false,
+      error: err.message,
+    };
+  }
+}
+
 module.exports = {
   addToQueue,
   voteOnQueueEntry,
@@ -395,4 +494,5 @@ module.exports = {
   getNextTrack,
   markAsPlayed,
   clearQueue,
+  transferQueueToNewHost,
 };
