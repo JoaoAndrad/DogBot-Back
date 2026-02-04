@@ -366,10 +366,17 @@ function selectBestDevice(devices, lastDeviceId = null) {
 /**
  * Synchronize user's playback to match a specific state
  * Combines play + seek operations
+ * @param {string} userId - User ID
+ * @param {Object} options - Sync options
+ * @param {string} options.trackUri - Track URI to play
+ * @param {number} options.positionMs - Position in milliseconds
+ * @param {boolean} options.isPlaying - Whether track should be playing
+ * @param {string} options.deviceId - Optional device ID
+ * @param {boolean} options.forcePlay - If true, ignores isPlaying and always leaves playing (useful for jam joins)
  */
 async function syncPlayback(
   userId,
-  { trackUri, positionMs, isPlaying, deviceId = null },
+  { trackUri, positionMs, isPlaying, deviceId = null, forcePlay = false },
 ) {
   try {
     const account = await getUserSpotifyAccount(userId);
@@ -441,7 +448,8 @@ async function syncPlayback(
     }
 
     // Then handle play/pause state
-    if (isPlaying === false) {
+    // If forcePlay is true, skip pause logic (useful for jam joins)
+    if (!forcePlay && isPlaying === false) {
       const pauseResult = await pausePlayback(userId, deviceId);
       if (!pauseResult.success) {
         return pauseResult;

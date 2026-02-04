@@ -359,7 +359,8 @@ async function joinJam(jamId, userId) {
     });
 
     // Sync listener's playback with jam
-    const syncResult = await syncListener(jamId, userId);
+    // Pass isJoining=true to force play on initial sync
+    const syncResult = await syncListener(jamId, userId, true);
 
     logger.info(`[JamService] User ${userId} joined jam ${jamId}`);
 
@@ -485,8 +486,9 @@ async function endJam(jamId, userId) {
  * Synchronize a listener's playback with the jam's current state
  * @param {string} jamId - Jam session ID
  * @param {string} userId - Listener user ID
+ * @param {boolean} isJoining - If true, forces playback to always play (ignores pause state)
  */
-async function syncListener(jamId, userId) {
+async function syncListener(jamId, userId, isJoining = false) {
   try {
     const jamResult = await getJamById(jamId);
     if (!jamResult.success) {
@@ -504,10 +506,12 @@ async function syncListener(jamId, userId) {
     }
 
     // Sync listener's playback
+    // If joining, force play to avoid pausing on initial sync
     const syncResult = await playbackControl.syncPlayback(userId, {
       trackUri: jam.currentTrackUri,
       positionMs: jam.currentProgressMs || 0,
       isPlaying: jam.isPlaying,
+      forcePlay: isJoining,
     });
 
     if (!syncResult.success) {
