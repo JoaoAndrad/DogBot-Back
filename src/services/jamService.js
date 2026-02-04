@@ -786,12 +786,13 @@ async function getUserActiveJam(userId) {
 
 /**
  * Close inactive jams (no playback for more than 30 minutes)
+ * Note: Only closes jams with NO active listeners
  */
 async function closeInactiveJams() {
   try {
     const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
 
-    // Find jams that haven't been active for 30 minutes
+    // Find jams that haven't been active for 30 minutes AND have no listeners
     const inactiveJams = await prisma.jamSession.findMany({
       where: {
         isActive: true,
@@ -823,25 +824,35 @@ async function closeInactiveJams() {
       return { success: true, closed: 0 };
     }
 
-    // Close all inactive jams, but only if they have no active listeners
+    // ONLY close jams that have ZERO active listeners (host abandoned and nobody listening)
     const closedJamIds = [];
+    const skippedJamIds = [];
+    
     for (const jam of inactiveJams) {
       const activeListenerCount = jam.listeners?.length || 0;
-
-      // Skip closing if there are active listeners - they're still using the jam
+      
+      // Skip closing if there are ANY active listeners
       if (activeListenerCount > 0) {
+        skippedJamIds.push(jam.id);
         logger.info(
-          `[JamService] Skipping jam ${jam.id} - has ${activeListenerCount} active listener(s) despite inactivity`,
+          `[JamService] Skipping jam ${jam.id} - has ${activeListenerCount} active listener(s), keeping alive`,
         );
+        
+        // Update lastActiveAt so it doesn't get checked again for another 30 minutes
+        await prisma.jamSession.update({
+          where: { id: jam.id },
+          data: { lastActiveAt: new Date() },
+        });
         continue;
       }
 
+      // No listeners - safe to close
       await prisma.jamSession.update({
         where: { id: jam.id },
         data: { isActive: false },
       });
 
-      // Mark all listeners as inactive
+      // Mark all listeners as inactive (shouldn't be any, but just in case)
       await prisma.jamListener.updateMany({
         where: { jamId: jam.id },
         data: { isActive: false },
@@ -849,13 +860,12 @@ async function closeInactiveJams() {
 
       closedJamIds.push(jam.id);
       logger.info(
-        `[JamService] Closed inactive jam ${jam.id} (host: ${jam.host.push_name || jam.host.display_name || jam.hostUserId})`,
-      );
-    }
+        `[JamService] Closed abandoned jam ${jam.id} (host: ${jam.host.push_name || jam.host.display_name || jam.hostUserId}) - no listeners`,
 
     return {
       success: true,
       closed: closedJamIds.length,
+      skipped: skippedJamIds.length,
       jamIds: closedJamIds,
     };
   } catch (err) {
