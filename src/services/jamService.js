@@ -48,6 +48,7 @@ async function createJam(hostUserId, chatId = null) {
         currentTrackUri: currentPlayback?.url || null,
         currentTrackName: currentPlayback?.name || null,
         currentTrackAlbum: currentPlayback?.album || null,
+        currentTrackImage: currentPlayback?.image || null,
         currentArtists: currentPlayback?.artists
           ? currentPlayback.artists.join(", ")
           : null,
@@ -143,6 +144,7 @@ async function getActiveJams(chatId = null, fetchCurrentPlayback = true) {
             jam.currentTrackUri = currentPlayback.url;
             jam.currentTrackName = currentPlayback.name;
             jam.currentTrackAlbum = currentPlayback.album;
+            jam.currentTrackImage = currentPlayback.image || null;
             jam.currentArtists = currentPlayback.artists?.join(", ") || null;
             jam.currentProgressMs = currentPlayback.progressMs;
             jam.isPlaying = currentPlayback.isPlaying || false;
@@ -156,6 +158,7 @@ async function getActiveJams(chatId = null, fetchCurrentPlayback = true) {
                   currentTrackUri: currentPlayback.url,
                   currentTrackName: currentPlayback.name,
                   currentTrackAlbum: currentPlayback.album,
+                  currentTrackImage: currentPlayback.image || null,
                   currentArtists: currentPlayback.artists?.join(", ") || null,
                   currentProgressMs: currentPlayback.progressMs,
                   isPlaying: true,
@@ -171,6 +174,7 @@ async function getActiveJams(chatId = null, fetchCurrentPlayback = true) {
                   currentTrackUri: currentPlayback.url,
                   currentTrackName: currentPlayback.name,
                   currentTrackAlbum: currentPlayback.album,
+                  currentTrackImage: currentPlayback.image || null,
                   currentArtists: currentPlayback.artists?.join(", ") || null,
                   currentProgressMs: currentPlayback.progressMs,
                   isPlaying: false,
@@ -183,6 +187,7 @@ async function getActiveJams(chatId = null, fetchCurrentPlayback = true) {
             jam.currentTrackUri = null;
             jam.currentTrackName = null;
             jam.currentTrackAlbum = null;
+            jam.currentTrackImage = null;
             jam.currentArtists = null;
             jam.currentProgressMs = null;
             jam.isPlaying = false;
@@ -194,6 +199,7 @@ async function getActiveJams(chatId = null, fetchCurrentPlayback = true) {
                 currentTrackUri: null,
                 currentTrackName: null,
                 currentTrackAlbum: null,
+                currentTrackImage: null,
                 currentArtists: null,
                 currentProgressMs: null,
                 isPlaying: false,
@@ -600,6 +606,7 @@ async function updateJamPlayback(jamId, playbackData) {
         currentTrackUri: playbackData.url || null,
         currentTrackName: playbackData.name || null,
         currentTrackAlbum: playbackData.album || null,
+        currentTrackImage: playbackData.image || null,
         currentArtists: playbackData.artists
           ? playbackData.artists.join(", ")
           : null,

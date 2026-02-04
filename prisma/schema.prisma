@@ -578,6 +578,7 @@ model JamSession {
   currentTrackUri   String?
   currentTrackName  String?
   currentTrackAlbum String?
+  currentTrackImage String?
   currentArtists    String?
   currentProgressMs Int?      // Current position in track (milliseconds)
   isPlaying         Boolean   @default(false)
