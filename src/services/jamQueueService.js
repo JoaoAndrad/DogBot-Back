@@ -362,6 +362,76 @@ async function markAsPlayed(queueEntryId) {
 }
 
 /**
+ * Remove track from queue by trackId (when it starts playing)
+ * @param {string} jamId - Jam session ID
+ * @param {string} trackId - Spotify track ID
+ * @returns {Object} Result with deleted entry info
+ */
+async function removePlayedTrackFromQueue(jamId, trackId) {
+  try {
+    if (!trackId || !jamId) {
+      return { success: false, error: "MISSING_PARAMETERS" };
+    }
+
+    // Find the track in the queue
+    const queueEntry = await prisma.jamQueue.findFirst({
+      where: {
+        jamId,
+        trackId,
+        approved: true,
+        playedAt: null,
+      },
+      orderBy: { position: "asc" },
+      include: {
+        addedByUser: {
+          select: {
+            id: true,
+            push_name: true,
+            display_name: true,
+          },
+        },
+      },
+    });
+
+    if (!queueEntry) {
+      return {
+        success: false,
+        error: "NOT_FOUND",
+        message: "Track not found in queue",
+      };
+    }
+
+    // Delete the track from queue
+    await prisma.jamQueue.delete({
+      where: { id: queueEntry.id },
+    });
+
+    logger.info(
+      `[JamQueueService] Removed played track from queue: ${queueEntry.trackName} (ID: ${queueEntry.id})`,
+    );
+
+    return {
+      success: true,
+      removedEntry: {
+        id: queueEntry.id,
+        trackName: queueEntry.trackName,
+        trackArtists: queueEntry.trackArtists,
+        addedBy: queueEntry.addedByUser,
+      },
+    };
+  } catch (err) {
+    logger.error(
+      "[JamQueueService] Error removing played track from queue:",
+      err,
+    );
+    return {
+      success: false,
+      error: err.message,
+    };
+  }
+}
+
+/**
  * Clear queue (host only)
  * @param {string} jamId - Jam session ID
  * @param {string} userId - User clearing (must be host)
@@ -493,6 +563,7 @@ module.exports = {
   getQueue,
   getNextTrack,
   markAsPlayed,
+  removePlayedTrackFromQueue,
   clearQueue,
   transferQueueToNewHost,
 };

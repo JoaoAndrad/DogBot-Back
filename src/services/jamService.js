@@ -905,6 +905,7 @@ module.exports = {
   closeInactiveJams,
   transferHost,
   updateJamType,
+  jamQueueService, // Expose for use in spotifyMonitor
 };
 
 /**

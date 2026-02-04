@@ -246,6 +246,36 @@ class SpotifyMonitor {
           currentState.trackId || currentState.trackUri,
         );
 
+        // Check if this track is in the queue and remove it
+        if (normalizedTrackId && jam.jamType === "collaborative") {
+          try {
+            const removeResult =
+              await jamService.jamQueueService.removePlayedTrackFromQueue(
+                jam.id,
+                normalizedTrackId,
+              );
+
+            if (removeResult.success) {
+              console.log(
+                `[SpotifyMonitor] Removed track from queue: ${removeResult.removedEntry?.trackName}`,
+              );
+
+              // Send SSE event to notify clients that track was removed from queue
+              sseHub.sendEvent("jam:queue-track-played", {
+                jamId: jam.id,
+                trackId: normalizedTrackId,
+                trackName: removeResult.removedEntry?.trackName,
+                addedBy: removeResult.removedEntry?.addedBy,
+              });
+            }
+          } catch (err) {
+            console.error(
+              "[SpotifyMonitor] Error removing played track from queue:",
+              err,
+            );
+          }
+        }
+
         await jamService.updateJamPlayback(jam.id, {
           id: normalizedTrackId,
           url: currentState.trackUri,
