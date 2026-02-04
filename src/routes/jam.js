@@ -1,7 +1,11 @@
 const express = require("express");
 const router = express.Router();
 const jamService = require("../services/jamService");
+const jamQueueRoutes = require("./jamQueue");
 const logger = require("../lib/logger");
+
+// Mount queue routes
+router.use("/", jamQueueRoutes);
 
 /**
  * POST /api/jam/create
@@ -264,6 +268,86 @@ router.get("/user/:userId/status", async (req, res) => {
     return res.json(result);
   } catch (err) {
     logger.error("[JamRoutes] Error getting user jam status:", err);
+    return res.status(500).json({
+      success: false,
+      error: err.message,
+    });
+  }
+});
+
+/**
+ * POST /api/jam/:jamId/transfer-host
+ * Transfer jam host control to another listener
+ * Body: { currentHostUserId, newHostUserId }
+ */
+router.post("/:jamId/transfer-host", async (req, res) => {
+  try {
+    const { jamId } = req.params;
+    const { currentHostUserId, newHostUserId } = req.body;
+
+    if (!currentHostUserId || !newHostUserId) {
+      return res.status(400).json({
+        success: false,
+        error: "MISSING_PARAMETERS",
+        message: "currentHostUserId e newHostUserId são obrigatórios",
+      });
+    }
+
+    const result = await jamService.transferHost(
+      jamId,
+      currentHostUserId,
+      newHostUserId,
+    );
+
+    if (!result.success) {
+      return res.status(400).json(result);
+    }
+
+    return res.json(result);
+  } catch (err) {
+    logger.error("[JamRoutes] Error transferring host:", err);
+    return res.status(500).json({
+      success: false,
+      error: err.message,
+    });
+  }
+});
+
+/**
+ * PATCH /api/jam/:jamId
+ * Update jam session properties (e.g., jamType)
+ * Body: { jamType? }
+ */
+router.patch("/:jamId", async (req, res) => {
+  try {
+    const { jamId } = req.params;
+    const { jamType } = req.body;
+
+    if (!jamType) {
+      return res.status(400).json({
+        success: false,
+        error: "MISSING_FIELDS",
+        message: "jamType é obrigatório",
+      });
+    }
+
+    if (!["classic", "collaborative"].includes(jamType)) {
+      return res.status(400).json({
+        success: false,
+        error: "INVALID_JAM_TYPE",
+        message: "jamType deve ser 'classic' ou 'collaborative'",
+      });
+    }
+
+    const updatedJam = await jamService.updateJamType(jamId, jamType);
+
+    if (!updatedJam.success) {
+      return res.status(400).json(updatedJam);
+    }
+
+    return res.json(updatedJam);
+  } catch (err) {
+    logger.error("[JamRoutes] Error updating jam:", err);
     return res.status(500).json({
       success: false,
       error: err.message,

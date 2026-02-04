@@ -101,6 +101,7 @@ model User {
   // Jam/Radio relations
   hostedJams         JamSession[]  @relation("JamHost")
   jamListenings      JamListener[]
+  jamQueueEntries    JamQueue[]    @relation("JamQueueAdder")
 
   @@map("User")
 }
@@ -568,6 +569,7 @@ model JamSession {
   id                String    @id @default(uuid())
   hostUserId        String    // Creator/broadcaster of the jam
   isActive          Boolean   @default(true)
+  jamType           String    @default("classic") // "classic" or "collaborative"
   createdAt         DateTime  @default(now()) @db.Timestamptz(6)
   updatedAt         DateTime  @updatedAt @db.Timestamptz(6)
   
@@ -588,10 +590,39 @@ model JamSession {
   // Relations
   host              User      @relation("JamHost", fields: [hostUserId], references: [id], onDelete: Cascade)
   listeners         JamListener[]
+  queue             JamQueue[]
   
   @@index([hostUserId])
   @@index([isActive])
   @@index([chatId])
+}
+
+// Queue for collaborative jams
+model JamQueue {
+  id           String   @id @default(uuid())
+  jamId        String
+  trackUri     String
+  trackId      String?
+  trackName    String
+  trackArtists String?
+  trackAlbum   String?
+  trackImage   String?
+  addedBy      String   // User ID who added
+  position     Int      // Order in queue
+  votesFor     Int      @default(0)
+  votesAgainst Int      @default(0)
+  approved     Boolean  @default(false)
+  createdAt    DateTime @default(now()) @db.Timestamptz(6)
+  playedAt     DateTime? @db.Timestamptz(6)
+  
+  // Relations
+  jam          JamSession @relation(fields: [jamId], references: [id], onDelete: Cascade)
+  addedByUser  User       @relation("JamQueueAdder", fields: [addedBy], references: [id], onDelete: Cascade)
+  
+  @@index([jamId])
+  @@index([addedBy])
+  @@index([approved])
+  @@index([position])
 }
 
 // Listeners in a jam session

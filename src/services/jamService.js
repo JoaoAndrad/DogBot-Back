@@ -895,7 +895,142 @@ module.exports = {
   syncAllListeners,
   getUserActiveJam,
   closeInactiveJams,
+  transferHost,
+  updateJamType,
 };
+
+/**
+ * Transfer jam host control to another user
+ * @param {string} jamId - Jam session ID
+ * @param {string} currentHostUserId - Current host user ID
+ * @param {string} newHostUserId - New host user ID
+ * @returns {Object} Result with updated jam
+ */
+async function transferHost(jamId, currentHostUserId, newHostUserId) {
+  try {
+    const jamResult = await getJamById(jamId);
+    if (!jamResult.success) {
+      return jamResult;
+    }
+
+    const jam = jamResult.jam;
+
+    if (!jam.isActive) {
+      return {
+        success: false,
+        error: "JAM_INACTIVE",
+        message: "Esta jam não está mais ativa",
+      };
+    }
+
+    // Verify current user is the host
+    if (jam.hostUserId !== currentHostUserId) {
+      return {
+        success: false,
+        error: "NOT_HOST",
+        message: "Apenas o host atual pode transferir o controle",
+      };
+    }
+
+    // Verify new host is currently a listener
+    const newHostListener = await prisma.jamListener.findUnique({
+      where: {
+        jamId_userId: {
+          jamId,
+          userId: newHostUserId,
+        },
+      },
+    });
+
+    if (!newHostListener || !newHostListener.isActive) {
+      return {
+        success: false,
+        error: "NOT_LISTENING",
+        message: "O novo host precisa estar ouvindo a jam",
+      };
+    }
+
+    // Remove new host from listeners
+    await prisma.jamListener.update({
+      where: {
+        jamId_userId: {
+          jamId,
+          userId: newHostUserId,
+        },
+      },
+      data: {
+        isActive: false,
+      },
+    });
+
+    // Add old host as listener
+    await prisma.jamListener.upsert({
+      where: {
+        jamId_userId: {
+          jamId,
+          userId: currentHostUserId,
+        },
+      },
+      update: {
+        isActive: true,
+        joinedAt: new Date(),
+      },
+      create: {
+        jamId,
+        userId: currentHostUserId,
+        isActive: true,
+      },
+    });
+
+    // Update jam host
+    const updatedJam = await prisma.jamSession.update({
+      where: { id: jamId },
+      data: {
+        hostUserId: newHostUserId,
+      },
+      include: {
+        host: {
+          select: {
+            id: true,
+            sender_number: true,
+            push_name: true,
+            display_name: true,
+          },
+        },
+        listeners: {
+          where: {
+            isActive: true,
+          },
+          include: {
+            user: {
+              select: {
+                id: true,
+                sender_number: true,
+                push_name: true,
+                display_name: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    logger.info(
+      `[JamService] Transferred jam ${jamId} from ${currentHostUserId} to ${newHostUserId}`,
+    );
+
+    return {
+      success: true,
+      jam: updatedJam,
+    };
+  } catch (err) {
+    logger.error("[JamService] Error transferring host:", err);
+    return {
+      success: false,
+      error: err.message,
+    };
+  }
+}
 
 /**
  * Skip current track on jam host's player and sync listeners
@@ -946,6 +1081,61 @@ async function skipJam(jamId) {
     };
   } catch (err) {
     return { success: false, error: err.message };
+  }
+}
+
+/**
+ * Update jam type (classic/collaborative)
+ * @param {string} jamId - Jam session ID
+ * @param {string} jamType - New jam type ('classic' or 'collaborative')
+ * @returns {Object} Updated jam session
+ */
+async function updateJamType(jamId, jamType) {
+  try {
+    const jam = await prisma.jamSession.findUnique({
+      where: { id: jamId },
+    });
+
+    if (!jam) {
+      return {
+        success: false,
+        error: "JAM_NOT_FOUND",
+        message: "Jam não encontrada",
+      };
+    }
+
+    if (!jam.isActive) {
+      return {
+        success: false,
+        error: "JAM_INACTIVE",
+        message: "Jam não está ativa",
+      };
+    }
+
+    const updatedJam = await prisma.jamSession.update({
+      where: { id: jamId },
+      data: { jamType },
+      include: {
+        host: true,
+        listeners: {
+          where: { isActive: true },
+          include: { user: true },
+        },
+      },
+    });
+
+    logger.info(`[JamService] Jam type updated: ${jamId} -> ${jamType}`);
+
+    return {
+      success: true,
+      jam: updatedJam,
+    };
+  } catch (err) {
+    logger.error("[JamService] Error updating jam type:", err);
+    return {
+      success: false,
+      error: err.message,
+    };
   }
 }
 

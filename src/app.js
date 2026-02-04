@@ -91,6 +91,23 @@ try {
   console.warn("Failed to mount jam routes:", e && e.message ? e.message : e);
 }
 
+// Spotify search routes
+try {
+  app.use("/api/spotify", require("./routes/spotifySearch"));
+} catch (e) {
+  console.warn(
+    "Failed to mount spotify search routes:",
+    e && e.message ? e.message : e,
+  );
+}
+
+// User routes
+try {
+  app.use("/api/users", require("./routes/users"));
+} catch (e) {
+  console.warn("Failed to mount user routes:", e && e.message ? e.message : e);
+}
+
 // Start Spotify monitor on app startup (uses internal adapter)
 try {
   const UserSpotifyAdapter = require("./services/userSpotifyAdapter");
