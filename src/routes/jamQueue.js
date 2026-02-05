@@ -10,7 +10,7 @@ const logger = require("../lib/logger");
 router.post("/:jamId/queue", async (req, res, next) => {
   try {
     const { jamId } = req.params;
-    const { userId, trackData } = req.body;
+    const { userId, trackData, skipVoting } = req.body;
 
     if (!userId || !trackData) {
       return res.status(400).json({
@@ -19,7 +19,7 @@ router.post("/:jamId/queue", async (req, res, next) => {
       });
     }
 
-    const result = await jamQueueService.addToQueue(jamId, userId, trackData);
+    const result = await jamQueueService.addToQueue(jamId, userId, trackData, skipVoting);
 
     if (!result.success) {
       return res.status(400).json(result);

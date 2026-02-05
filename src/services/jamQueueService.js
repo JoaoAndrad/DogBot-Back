@@ -12,9 +12,10 @@ const { queueTrack } = require("./player");
  * @param {string} jamId - Jam session ID
  * @param {string} userId - User adding the track
  * @param {Object} trackData - Track information
+ * @param {boolean} skipVoting - Skip voting and add directly (for pre-approved collections)
  * @returns {Object} Created queue entry
  */
-async function addToQueue(jamId, userId, trackData) {
+async function addToQueue(jamId, userId, trackData, skipVoting = false) {
   try {
     // Check if jam exists and is collaborative
     const jam = await prisma.jamSession.findUnique({
@@ -99,7 +100,7 @@ async function addToQueue(jamId, userId, trackData) {
         trackImage: trackData.trackImage,
         addedBy: userId,
         position,
-        approved: false, // Needs voting
+        approved: skipVoting ? true : false, // Skip voting if pre-approved
       },
       include: {
         addedByUser: {
@@ -114,13 +115,13 @@ async function addToQueue(jamId, userId, trackData) {
     });
 
     logger.info(
-      `[JamQueueService] Track added to queue: ${queueEntry.id} for jam ${jamId}`,
+      `[JamQueueService] Track added to queue: ${queueEntry.id} for jam ${jamId} (skipVoting: ${skipVoting})`,
     );
 
     return {
       success: true,
       queueEntry,
-      needsVoting: true,
+      needsVoting: !skipVoting,
     };
   } catch (err) {
     logger.error("[JamQueueService] Error adding to queue:", err);
