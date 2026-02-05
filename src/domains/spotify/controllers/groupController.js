@@ -532,7 +532,6 @@ router.post("/:chatId/playlist/shuffle", async (req, res) => {
         where: { id: userId },
         include: {
           spotifyAccounts: {
-            where: { isPrimary: true },
             take: 1,
           },
         },
