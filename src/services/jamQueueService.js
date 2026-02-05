@@ -43,40 +43,43 @@ async function addToQueue(jamId, userId, trackData, skipVoting = false) {
       };
     }
 
-    // Check user's pending additions
-    const userPendingCount = await prisma.jamQueue.count({
-      where: {
-        jamId,
-        addedBy: userId,
-        approved: false,
-      },
-    });
+    // Skip limits for pre-approved collections (albums/playlists)
+    if (!skipVoting) {
+      // Check user's pending additions
+      const userPendingCount = await prisma.jamQueue.count({
+        where: {
+          jamId,
+          addedBy: userId,
+          approved: false,
+        },
+      });
 
-    if (userPendingCount >= 3) {
-      return {
-        success: false,
-        error: "TOO_MANY_PENDING",
-        message:
-          "Você já tem 3 músicas aguardando votação. Aguarde a aprovação.",
-      };
-    }
+      if (userPendingCount >= 3) {
+        return {
+          success: false,
+          error: "TOO_MANY_PENDING",
+          message:
+            "Você já tem 3 músicas aguardando votação. Aguarde a aprovação.",
+        };
+      }
 
-    // Check user's total in queue
-    const userInQueueCount = await prisma.jamQueue.count({
-      where: {
-        jamId,
-        addedBy: userId,
-        approved: true,
-        playedAt: null,
-      },
-    });
+      // Check user's total in queue
+      const userInQueueCount = await prisma.jamQueue.count({
+        where: {
+          jamId,
+          addedBy: userId,
+          approved: true,
+          playedAt: null,
+        },
+      });
 
-    if (userInQueueCount >= 5) {
-      return {
-        success: false,
-        error: "QUEUE_LIMIT",
-        message: "Você já tem 5 músicas na fila. Aguarde alguma tocar.",
-      };
+      if (userInQueueCount >= 5) {
+        return {
+          success: false,
+          error: "QUEUE_LIMIT",
+          message: "Você já tem 5 músicas na fila. Aguarde alguma tocar.",
+        };
+      }
     }
 
     // Get next position
