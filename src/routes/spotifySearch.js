@@ -229,6 +229,113 @@ router.get("/playlist/:playlistId/tracks", async (req, res, next) => {
 });
 
 /**
+ * GET /api/spotify/album/:albumId
+ * Get album details and tracks from Spotify
+ */
+router.get("/album/:albumId", async (req, res, next) => {
+  try {
+    const { albumId } = req.params;
+    const { limit = 50 } = req.query;
+
+    if (!albumId) {
+      return res.status(400).json({
+        success: false,
+        error: "MISSING_ALBUM_ID",
+        message: "Album ID is required",
+      });
+    }
+
+    // Get any active Spotify account to perform search
+    const account = await prisma.spotifyAccount.findFirst({
+      where: {
+        tokens: {
+          some: {
+            expiresAt: { gt: new Date() },
+          },
+        },
+      },
+      include: {
+        tokens: {
+          where: {
+            expiresAt: { gt: new Date() },
+          },
+          orderBy: {
+            expiresAt: "desc",
+          },
+          take: 1,
+        },
+      },
+    });
+
+    if (!account || !account.tokens || account.tokens.length === 0) {
+      return res.status(503).json({
+        success: false,
+        error: "NO_SPOTIFY_ACCOUNT",
+        message: "No Spotify accounts available",
+      });
+    }
+
+    // Get album details
+    const albumUrl = `https://api.spotify.com/v1/albums/${albumId}`;
+    const albumResponse = await spotifyFetch(account.id, albumUrl);
+
+    if (!albumResponse.ok) {
+      const errorText = await albumResponse.text();
+      logger.error(
+        `[SpotifySearch] Error fetching album: ${albumResponse.status} - ${errorText}`,
+      );
+      return res.status(albumResponse.status).json({
+        success: false,
+        error: "SPOTIFY_ERROR",
+        message: "Error fetching album from Spotify",
+        details: errorText,
+      });
+    }
+
+    const albumData = await albumResponse.json();
+
+    // Format tracks
+    const tracks = albumData.tracks.items
+      .filter((track) => track && !track.is_local)
+      .map((track) => {
+        return {
+          id: track.id,
+          uri: track.uri,
+          name: track.name,
+          artists: track.artists.map((a) => ({ name: a.name, id: a.id })),
+          album: {
+            name: albumData.name,
+            id: albumData.id,
+            images: albumData.images,
+          },
+          duration_ms: track.duration_ms,
+          preview_url: track.preview_url,
+          external_urls: track.external_urls,
+        };
+      });
+
+    res.json({
+      success: true,
+      album: {
+        id: albumData.id,
+        name: albumData.name,
+        artists: albumData.artists.map((a) => ({ name: a.name, id: a.id })),
+        images: albumData.images,
+        release_date: albumData.release_date,
+        total_tracks: albumData.total_tracks,
+        tracks: {
+          items: tracks,
+          total: albumData.tracks.total,
+        },
+      },
+    });
+  } catch (err) {
+    logger.error("[SpotifySearch] Error fetching album:", err);
+    next(err);
+  }
+});
+
+/**
  * GET /api/spotify/track/:trackId
  * Get track details from Spotify
  */
