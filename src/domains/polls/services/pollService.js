@@ -119,6 +119,10 @@ async function processVote(pollId, voterId, selectedIndex) {
       chatId: poll.chat_id,
       title: poll.title,
     },
+    data: {
+      // Include all metadata for frontend to use
+      ...metadata,
+    },
   };
 
   // Process based on action type
@@ -130,7 +134,8 @@ async function processVote(pollId, voterId, selectedIndex) {
         const option = metadata.options.find((opt) => opt.index === selectedIndex);
         if (option) {
           response.action = option.action;
-          response.data = option.data || {};
+          // Merge option data with metadata
+          response.data = { ...metadata, ...option.data };
           response.handler = option.handler;
           response.target = option.target;
         } else {
@@ -168,6 +173,10 @@ async function processVote(pollId, voterId, selectedIndex) {
     "[pollService] processVote result:",
     response.action,
     response.handler || response.target || "",
+  );
+  console.info(
+    "[pollService] processVote response.data:",
+    JSON.stringify(response.data),
   );
 
   return response;
