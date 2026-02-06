@@ -79,6 +79,100 @@ async function getPollState(pollId) {
   };
 }
 
+async function processVote(pollId, voterId, selectedIndex) {
+  if (!pollId) throw new Error("pollId is required");
+  if (!voterId) throw new Error("voterId is required");
+  if (selectedIndex === undefined || selectedIndex === null) {
+    throw new Error("selectedIndex is required");
+  }
+
+  console.info(
+    "[pollService] processVote",
+    pollId,
+    "voter:",
+    voterId,
+    "index:",
+    selectedIndex,
+  );
+
+  // Get poll with metadata
+  const poll = await repo.findPollById(pollId);
+  if (!poll) {
+    throw new Error(`Poll ${pollId} not found`);
+  }
+
+  // Parse metadata
+  const metadata = poll.metadata || {};
+  console.info("[pollService] Poll metadata:", JSON.stringify(metadata));
+
+  // Determine action type
+  const actionType = metadata.actionType || poll.vote_type || "generic";
+
+  // Build response based on action type and selected index
+  const response = {
+    pollId,
+    voterId,
+    selectedIndex,
+    actionType,
+    poll: {
+      id: poll.id,
+      chatId: poll.chat_id,
+      title: poll.title,
+    },
+  };
+
+  // Process based on action type
+  switch (actionType) {
+    case "menu_spotify":
+    case "menu":
+      // Menu polls: extract action from metadata.options
+      if (metadata.options && Array.isArray(metadata.options)) {
+        const option = metadata.options.find((opt) => opt.index === selectedIndex);
+        if (option) {
+          response.action = option.action;
+          response.data = option.data || {};
+          response.handler = option.handler;
+          response.target = option.target;
+        } else {
+          response.action = "unknown";
+          response.error = `No action defined for index ${selectedIndex}`;
+        }
+      } else {
+        response.action = "unknown";
+        response.error = "No options in metadata";
+      }
+      break;
+
+    case "spotify_track":
+    case "spotify_collection":
+      // Spotify polls: return metadata for frontend to process
+      response.action = actionType;
+      response.data = metadata;
+      break;
+
+    case "confession":
+      // Confession polls: approval/rejection
+      response.action = "confession";
+      response.data = metadata;
+      response.approved = selectedIndex === 0; // Index 0 = approve
+      break;
+
+    default:
+      // Generic poll: just return the selection
+      response.action = "generic";
+      response.data = metadata;
+      break;
+  }
+
+  console.info(
+    "[pollService] processVote result:",
+    response.action,
+    response.handler || response.target || "",
+  );
+
+  return response;
+}
+
 module.exports = {
   createPoll,
   getPoll,
@@ -86,4 +180,5 @@ module.exports = {
   removePoll,
   recordVote,
   getPollState,
+  processVote,
 };

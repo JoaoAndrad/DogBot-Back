@@ -134,4 +134,41 @@ router.get("/:id/state", async (req, res) => {
   }
 });
 
+// Process vote: POST /:id/process-vote - Returns action to execute
+router.post("/:id/process-vote", async (req, res) => {
+  try {
+    const id = req.params.id;
+    const { voterId, selectedIndex } = req.body || {};
+    
+    console.info(
+      "[pollController] POST /api/polls/:id/process-vote",
+      id,
+      "voter:",
+      voterId,
+      "index:",
+      selectedIndex,
+    );
+
+    if (!voterId) {
+      return res.status(400).json({ error: "voterId is required" });
+    }
+    if (selectedIndex === undefined || selectedIndex === null) {
+      return res.status(400).json({ error: "selectedIndex is required" });
+    }
+
+    const result = await service.processVote(id, voterId, selectedIndex);
+    console.info("[pollController] process result:", result.action);
+    res.json(result);
+  } catch (err) {
+    console.log(
+      "[pollController] process vote error",
+      err && err.message ? err.message : err,
+    );
+    res.status(500).json({
+      error: "Failed to process vote",
+      details: err && err.message ? err.message : String(err),
+    });
+  }
+});
+
 module.exports = router;
