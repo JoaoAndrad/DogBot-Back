@@ -51,10 +51,19 @@ async function insertVote(pollId, vote) {
   return prisma.vote.create({ data });
 }
 
+async function findVotesByPollId(pollId) {
+  const prisma = db.getPrisma();
+  return prisma.vote.findMany({
+    where: { poll_id: String(pollId) },
+    orderBy: { created_at: "asc" },
+  });
+}
+
 module.exports = {
   insertPoll,
   findPollById,
   listPolls,
   deletePoll,
   insertVote,
+  findVotesByPollId,
 };

@@ -16,7 +16,7 @@ router.post("/", async (req, res) => {
   } catch (err) {
     console.log(
       "[pollController] create error",
-      err && err.message ? err.message : err
+      err && err.message ? err.message : err,
     );
     res.status(500).json({
       error: "Failed to create poll",
@@ -34,7 +34,7 @@ router.get("/", async (req, res) => {
   } catch (err) {
     console.log(
       "[pollController] list error",
-      err && err.message ? err.message : err
+      err && err.message ? err.message : err,
     );
     res.status(500).json({
       error: "Failed to list polls",
@@ -57,7 +57,7 @@ router.get("/:id/", async (req, res) => {
   } catch (err) {
     console.log(
       "[pollController] get error",
-      err && err.message ? err.message : err
+      err && err.message ? err.message : err,
     );
     res.status(500).json({
       error: "Failed to get poll",
@@ -77,7 +77,7 @@ router.delete("/:id/", async (req, res) => {
   } catch (err) {
     console.log(
       "[pollController] delete error",
-      err && err.message ? err.message : err
+      err && err.message ? err.message : err,
     );
     res.status(500).json({
       error: "Failed to delete poll",
@@ -94,7 +94,7 @@ router.post("/:id/votes/", async (req, res) => {
     console.info(
       "[pollController] POST /api/polls/:id/votes",
       id,
-      payload && payload.voter_id
+      payload && payload.voter_id,
     );
     const created = await service.recordVote(id, payload);
     console.info("[pollController] vote created", created && created.id);
@@ -102,10 +102,33 @@ router.post("/:id/votes/", async (req, res) => {
   } catch (err) {
     console.log(
       "[pollController] record vote error",
-      err && err.message ? err.message : err
+      err && err.message ? err.message : err,
     );
     res.status(500).json({
       error: "Failed to record vote",
+      details: err && err.message ? err.message : String(err),
+    });
+  }
+});
+
+// Get poll state (poll + votes + statistics)
+router.get("/:id/state", async (req, res) => {
+  try {
+    const id = req.params.id;
+    console.info("[pollController] GET /api/polls/:id/state", id);
+    const state = await service.getPollState(id);
+    if (!state) {
+      console.info("[pollController] poll state not found", id);
+      return res.status(404).json({ error: "Not found" });
+    }
+    res.json(state);
+  } catch (err) {
+    console.log(
+      "[pollController] get poll state error",
+      err && err.message ? err.message : err,
+    );
+    res.status(500).json({
+      error: "Failed to get poll state",
       details: err && err.message ? err.message : String(err),
     });
   }
