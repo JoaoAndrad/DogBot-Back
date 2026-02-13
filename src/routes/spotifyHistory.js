@@ -34,6 +34,9 @@ router.get("/summary", historyController.getSummary);
 // GET /api/spotify/stats - Get user stats (top tracks, recent plays)
 router.get("/stats", historyController.getStats);
 
+// GET /api/spotify/available-periods - Get available periods (months/years) for a user
+router.get("/available-periods", historyController.getAvailablePeriods);
+
 // GET /api/spotify/current - Get currently playing track
 router.get("/current", historyController.getCurrent);
 

@@ -375,6 +375,96 @@ module.exports = {
   },
 
   /**
+   * GET /api/spotify/available-periods
+   * Returns available months/years that have data for a user
+   */
+  async getAvailablePeriods(req, res) {
+    try {
+      const { userId: rawUserId } = req.query;
+
+      if (!rawUserId) {
+        return res.status(400).json({ error: "userId is required" });
+      }
+
+      // Resolve external identifier to internal UUID
+      let userId = rawUserId;
+      const isUUID =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+          rawUserId
+        );
+      if (!isUUID) {
+        try {
+          const userRepo = require("../../users/repo/userRepo");
+          const u = await userRepo.findByIdentifierExact(rawUserId);
+          if (u && u.id) userId = u.id;
+          else {
+            const base = userRepo.extractBaseNumber(rawUserId);
+            const u2 = await userRepo.findByBaseNumber(base);
+            if (u2 && u2.id) userId = u2.id;
+          }
+        } catch (e) {
+          // ignore resolution errors
+        }
+      }
+
+      // Get all playbacks for this user
+      const allPlaybacks = await playbackRepo.getByPeriod(
+        userId,
+        new Date(0),
+        new Date()
+      );
+
+      if (!allPlaybacks || allPlaybacks.length === 0) {
+        return res.json({ periods: [], hasMultipleYears: false });
+      }
+
+      // Extract unique year-month combinations
+      const monthsSet = new Set();
+      const yearsSet = new Set();
+
+      allPlaybacks.forEach((p) => {
+        const date = new Date(p.startedAt);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const yearMonth = `${year}-${month}`;
+        
+        monthsSet.add(yearMonth);
+        yearsSet.add(year);
+      });
+
+      const hasMultipleYears = yearsSet.size > 1;
+      
+      // Convert to sorted array
+      const periods = Array.from(monthsSet).sort().reverse(); // Most recent first
+
+      // Format periods for display
+      const formattedPeriods = periods.map((period) => {
+        const [year, month] = period.split("-");
+        const date = new Date(year, month - 1, 1);
+        const monthName = date.toLocaleString("pt-BR", { month: "long" });
+        
+        return {
+          value: period,
+          label: hasMultipleYears 
+            ? `${monthName} ${year}` 
+            : monthName,
+          year: parseInt(year),
+          month: parseInt(month),
+        };
+      });
+
+      res.json({
+        periods: formattedPeriods,
+        hasMultipleYears,
+        years: Array.from(yearsSet).sort().reverse(),
+      });
+    } catch (error) {
+      console.log("[HistoryController] getAvailablePeriods error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  },
+
+  /**
    * GET /api/spotify/current
    * Query parameters: userId
    */
