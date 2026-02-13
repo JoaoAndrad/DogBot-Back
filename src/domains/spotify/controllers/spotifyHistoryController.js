@@ -264,6 +264,22 @@ module.exports = {
         .sort((a, b) => b.count - a.count)
         .slice(0, 10);
 
+      // Top albums by play count
+      const albumCounts = {};
+      playbacks.forEach((p) => {
+        const album = p.track?.album;
+        const imageUrl = p.track?.imageUrl;
+        if (album) {
+          if (!albumCounts[album]) {
+            albumCounts[album] = { name: album, count: 0, imageUrl };
+          }
+          albumCounts[album].count++;
+        }
+      });
+      const topAlbums = Object.values(albumCounts)
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 8);
+
       // Recent discoveries (isFirstPlay true) - most recent
       const discoveries = playbacks
         .filter((p) => p.isFirstPlay)
@@ -334,6 +350,7 @@ module.exports = {
         },
         activity: activity, // array Mon..Sun with counts
         topArtists,
+        topAlbums,
         discoveries,
         repeats,
         timeOfDay,
