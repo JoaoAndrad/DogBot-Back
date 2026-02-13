@@ -295,16 +295,27 @@ module.exports = {
         .sort((a, b) => b.count - a.count)
         .slice(0, 20);
 
-      // Top 8 album images from most played tracks
-      const topAlbumImages = Object.entries(trackCounts)
-        .map(([tid, cnt]) => {
-          const t = playbacks.find((p) => p.trackId === tid)?.track;
-          return { trackId: tid, count: cnt, imageUrl: t?.imageUrl };
-        })
-        .sort((a, b) => b.count - a.count)
-        .filter((item) => item.imageUrl) // only tracks with images
-        .slice(0, 8)
-        .map((item) => item.imageUrl);
+      // Top 8 unique album images from most played tracks
+      // Group by album name and sum play counts, then get unique images
+      const albumData = {};
+      playbacks.forEach((p) => {
+        const album = p.track?.album || 'Unknown';
+        const imageUrl = p.track?.imageUrl;
+        
+        if (!albumData[album]) {
+          albumData[album] = {
+            playCount: 0,
+            imageUrl: imageUrl,
+          };
+        }
+        albumData[album].playCount++;
+      });
+      
+      const topAlbumImages = Object.entries(albumData)
+        .filter(([album, data]) => data.imageUrl) // only albums with images
+        .sort((a, b) => b[1].playCount - a[1].playCount) // sort by play count
+        .slice(0, 8) // get top 8
+        .map(([album, data]) => data.imageUrl); // extract image URLs
 
       // Time-of-day distribution (by listenedMs)
       const bins = { morning: 0, afternoon: 0, evening: 0, night: 0 };
