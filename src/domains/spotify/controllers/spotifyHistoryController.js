@@ -264,22 +264,6 @@ module.exports = {
         .sort((a, b) => b.count - a.count)
         .slice(0, 10);
 
-      // Top albums by play count
-      const albumCounts = {};
-      playbacks.forEach((p) => {
-        const album = p.track?.album;
-        const imageUrl = p.track?.imageUrl;
-        if (album) {
-          if (!albumCounts[album]) {
-            albumCounts[album] = { name: album, count: 0, imageUrl };
-          }
-          albumCounts[album].count++;
-        }
-      });
-      const topAlbums = Object.values(albumCounts)
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 8);
-
       // Recent discoveries (isFirstPlay true) - most recent
       const discoveries = playbacks
         .filter((p) => p.isFirstPlay)
@@ -303,13 +287,24 @@ module.exports = {
           const t = playbacks.find((p) => p.trackId === tid).track;
           return {
             track: t
-              ? { id: t.id, name: t.name, artists: t.artists }
+              ? { id: t.id, name: t.name, artists: t.artists, imageUrl: t.imageUrl }
               : { id: tid },
             count: cnt,
           };
         })
         .sort((a, b) => b.count - a.count)
         .slice(0, 20);
+
+      // Top 8 album images from most played tracks
+      const topAlbumImages = Object.entries(trackCounts)
+        .map(([tid, cnt]) => {
+          const t = playbacks.find((p) => p.trackId === tid)?.track;
+          return { trackId: tid, count: cnt, imageUrl: t?.imageUrl };
+        })
+        .sort((a, b) => b.count - a.count)
+        .filter((item) => item.imageUrl) // only tracks with images
+        .slice(0, 8)
+        .map((item) => item.imageUrl);
 
       // Time-of-day distribution (by listenedMs)
       const bins = { morning: 0, afternoon: 0, evening: 0, night: 0 };
@@ -350,7 +345,7 @@ module.exports = {
         },
         activity: activity, // array Mon..Sun with counts
         topArtists,
-        topAlbums,
+        topAlbumImages,
         discoveries,
         repeats,
         timeOfDay,
