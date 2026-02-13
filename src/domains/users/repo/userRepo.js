@@ -112,7 +112,7 @@ async function findByPushNameUnique(pushName) {
         users.length
       }) found with push_name="${pushName}". Cannot auto-link. User IDs: ${users
         .map((u) => u.id)
-        .join(", ")}`
+        .join(", ")}`,
     );
     return null;
   }
@@ -170,7 +170,7 @@ async function updatePushNameWithHistory(
   userId,
   newPushName,
   observedFrom,
-  observedLid = null
+  observedLid = null,
 ) {
   const prisma = getPrisma();
   if (!prisma || !prisma.user) {
@@ -180,7 +180,7 @@ async function updatePushNameWithHistory(
       userId,
       newPushName,
       observedFrom,
-      observedLid
+      observedLid,
     );
   }
 
@@ -285,7 +285,7 @@ async function findOrCreateUser({
   let user = await findByIdentifierExact(identifier);
   if (user) {
     console.log(
-      `[findOrCreateUser] Found by identifier exact: ${identifier} → user ${user.id}`
+      `[findOrCreateUser] Found by identifier exact: ${identifier} → user ${user.id}`,
     );
 
     // Update metadata
@@ -294,7 +294,7 @@ async function findOrCreateUser({
       user.id,
       push_name,
       observed_from,
-      observed_lid
+      observed_lid,
     );
 
     // Update last_seen, display_name
@@ -316,7 +316,7 @@ async function findOrCreateUser({
     user = await findByBaseNumber(baseNumber);
     if (user) {
       console.log(
-        `[findOrCreateUser] Found by base number: ${baseNumber} → user ${user.id}`
+        `[findOrCreateUser] Found by base number: ${baseNumber} → user ${user.id}`,
       );
 
       // Add new identifier variant
@@ -325,7 +325,7 @@ async function findOrCreateUser({
         user.id,
         push_name,
         observed_from,
-        observed_lid
+        observed_lid,
       );
 
       user = await prisma.user.update({
@@ -346,7 +346,7 @@ async function findOrCreateUser({
     user = await findByPushNameUnique(push_name);
     if (user) {
       console.log(
-        `[findOrCreateUser] Found by unique push_name: "${push_name}" → user ${user.id}`
+        `[findOrCreateUser] Found by unique push_name: "${push_name}" → user ${user.id}`,
       );
 
       // Link new identifier to existing user
@@ -367,7 +367,7 @@ async function findOrCreateUser({
 
   // Step 4: Create new user
   console.log(
-    `[findOrCreateUser] Creating new user for identifier: ${identifier}`
+    `[findOrCreateUser] Creating new user for identifier: ${identifier}`,
   );
 
   user = await prisma.user.create({
@@ -391,7 +391,7 @@ async function findUsers({ page = 1, per_page = 20, q, platform, is_active }) {
   let prisma = getPrisma();
   if (!prisma || !prisma.user) {
     console.warn(
-      "Prisma client missing 'user' model - attempting to recreate client"
+      "Prisma client missing 'user' model - attempting to recreate client",
     );
     try {
       await recreatePrismaClient();
@@ -399,7 +399,7 @@ async function findUsers({ page = 1, per_page = 20, q, platform, is_active }) {
     } catch (e) {
       console.log(
         "recreatePrismaClient failed",
-        e && e.message ? e.message : e
+        e && e.message ? e.message : e,
       );
       throw e;
     }
@@ -431,7 +431,7 @@ async function findUserById(id) {
   let prisma = getPrisma();
   if (!prisma || !prisma.user) {
     console.warn(
-      "Prisma client missing 'user' model on findUserById - attempting recreate"
+      "Prisma client missing 'user' model on findUserById - attempting recreate",
     );
     await recreatePrismaClient();
     prisma = getPrisma();
@@ -449,7 +449,7 @@ async function upsertBySenderNumber(data) {
   let prisma = getPrisma();
   if (!prisma || !prisma.user) {
     console.warn(
-      "Prisma client missing 'user' model on upsertBySenderNumber - attempting recreate"
+      "Prisma client missing 'user' model on upsertBySenderNumber - attempting recreate",
     );
     await recreatePrismaClient();
     prisma = getPrisma();
@@ -466,7 +466,7 @@ async function createUser(data) {
   let prisma = getPrisma();
   if (!prisma || !prisma.user) {
     console.warn(
-      "Prisma client missing 'user' model on createUser - attempting recreate"
+      "Prisma client missing 'user' model on createUser - attempting recreate",
     );
     await recreatePrismaClient();
     prisma = getPrisma();
@@ -478,7 +478,7 @@ async function updateUserById(id, data) {
   let prisma = getPrisma();
   if (!prisma || !prisma.user) {
     console.warn(
-      "Prisma client missing 'user' model on updateUserById - attempting recreate"
+      "Prisma client missing 'user' model on updateUserById - attempting recreate",
     );
     await recreatePrismaClient();
     prisma = getPrisma();
@@ -490,7 +490,7 @@ async function upsertDogfortForUser(userId, dogData) {
   let prisma = getPrisma();
   if (!prisma || !prisma.dogFortStats) {
     console.warn(
-      "Prisma client missing 'dogFortStats' model on upsertDogfortForUser - attempting recreate"
+      "Prisma client missing 'dogFortStats' model on upsertDogfortForUser - attempting recreate",
     );
     await recreatePrismaClient();
     prisma = getPrisma();
@@ -541,7 +541,7 @@ async function upsertDogfortForUser(userId, dogData) {
       console.log(
         "Failed to persist plan into metadata.raw for user",
         userId,
-        e && e.message ? e.message : e
+        e && e.message ? e.message : e,
       );
       // don't fail the overall operation if metadata update fails
     }
@@ -550,7 +550,7 @@ async function upsertDogfortForUser(userId, dogData) {
   } catch (e) {
     console.log(
       "Failed to upsert DogFortStats",
-      e && e.message ? e.message : e
+      e && e.message ? e.message : e,
     );
     throw e;
   }
@@ -560,7 +560,7 @@ async function deleteUserById(id) {
   let prisma = getPrisma();
   if (!prisma || !prisma.user) {
     console.warn(
-      "Prisma client missing 'user' model on deleteUserById - attempting recreate"
+      "Prisma client missing 'user' model on deleteUserById - attempting recreate",
     );
     await recreatePrismaClient();
     prisma = getPrisma();
@@ -572,7 +572,7 @@ async function bulkAction({ ids = [], action } = {}) {
   let prisma = getPrisma();
   if (!prisma || !prisma.user) {
     console.warn(
-      "Prisma client missing 'user' model on bulkAction - attempting recreate"
+      "Prisma client missing 'user' model on bulkAction - attempting recreate",
     );
     await recreatePrismaClient();
     prisma = getPrisma();
