@@ -178,7 +178,8 @@ module.exports = {
    */
   async getStats(req, res) {
     try {
-      const { userId: rawUserId, days = 7, from, to } = req.query;
+      const { userId: rawUserId, from, to } = req.query;
+      const days = req.query.days !== undefined ? Number(req.query.days) : null;
 
       if (!rawUserId) {
         return res.status(400).json({ error: "userId is required" });
@@ -209,13 +210,13 @@ module.exports = {
       if (from || to) {
         periodStart = from ? new Date(from) : new Date(0);
         periodEnd = to ? new Date(to) : new Date();
-      } else if (days && Number(days) > 0) {
+      } else if (days !== null && days > 0) {
         // Se days > 0, calcula o período relativo
         const daysNum = Math.max(1, Math.min(365, Number(days)));
         periodEnd = new Date();
         periodStart = new Date(Date.now() - daysNum * 24 * 60 * 60 * 1000);
       } else {
-        // Se days === 0 ou não fornecido, retorna TODOS os dados
+        // Se days === 0, null, ou não fornecido, retorna TODOS os dados
         periodStart = new Date(0); // Início da época Unix (1970)
         periodEnd = new Date();
       }
