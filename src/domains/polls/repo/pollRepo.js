@@ -36,6 +36,8 @@ async function listPolls({ chat_id, limit = 50 } = {}) {
 
 async function deletePoll(id) {
   const prisma = db.getPrisma();
+  // Delete child votes first to avoid FK constraint violation
+  await prisma.vote.deleteMany({ where: { poll_id: String(id) } });
   return prisma.poll.delete({ where: { id: String(id) } });
 }
 

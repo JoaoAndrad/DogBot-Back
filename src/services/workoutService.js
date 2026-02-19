@@ -27,8 +27,10 @@ const prisma = getPrisma();
  */
 async function logWorkout({ senderNumber, chatId, messageId, note, loggedAt }) {
   try {
-    // Resolve user
-    const user = await userRepo.findByIdentifierExact(senderNumber);
+    // Resolve user — try base number first (handles identifiers stored with or without @c.us)
+    const user =
+      (await userRepo.findByBaseNumber(senderNumber)) ||
+      (await userRepo.findByIdentifierExact(senderNumber));
     if (!user) {
       return { success: false, error: "user_not_found" };
     }

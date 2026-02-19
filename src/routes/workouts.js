@@ -31,7 +31,11 @@ router.post("/log", async (req, res) => {
 
     if (!result.success) {
       const statusCode =
-        result.error === "workout_already_logged_today" ? 400 : 500;
+        result.error === "workout_already_logged_today"
+          ? 400
+          : result.error === "user_not_found"
+            ? 404
+            : 500;
       return res.status(statusCode).json(result);
     }
 
