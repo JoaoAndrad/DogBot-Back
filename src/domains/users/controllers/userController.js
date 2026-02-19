@@ -297,6 +297,26 @@ router.get("/by-identifier/:identifier", async (req, res) => {
 });
 
 /**
+ * GET /api/users/admins
+ * Returns all users with isAdmin=true (sender_number list)
+ */
+router.get("/admins", async (req, res) => {
+  try {
+    const admins = await prisma.user.findMany({
+      where: { isAdmin: true },
+      select: { sender_number: true, push_name: true, display_name: true },
+    });
+    return res.json({ success: true, admins });
+  } catch (err) {
+    console.log("[GET /api/users/admins] Error:", err);
+    return res.status(500).json({
+      error: "fetch_admins_failed",
+      message: err.message,
+    });
+  }
+});
+
+/**
  * GET /api/users/:id
  * Get user by UUID
  */
