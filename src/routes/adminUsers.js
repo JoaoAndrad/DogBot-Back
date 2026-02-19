@@ -118,7 +118,7 @@ router.patch("/:id", express.json(), async (req, res) => {
   try {
     const id = req.params.id;
     console.log("[admin] PATCH /admin/api/users/:id body:", req.body);
-    // allow updating basic user fields plus sender_number and nested dogfort
+    // allow updating basic user fields plus sender_number and nested dogfort/fitness
     const allowed = [
       "display_name",
       "push_name",
@@ -127,6 +127,7 @@ router.patch("/:id", express.json(), async (req, res) => {
       "sender_number",
       "dogfort",
       "confessions",
+      "fitness",
       "isAdmin",
     ];
     const payload = {};

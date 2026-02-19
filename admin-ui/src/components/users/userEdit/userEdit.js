@@ -149,6 +149,31 @@ export default async function initUserEdit() {
     const ultimoTreinoRaw =
       raw.ultimoTreino ?? raw.ultimo_treino ?? metaDf.ultimo_treino;
     setValue("dfUltimoTreino", brDateToIso(ultimoTreinoRaw));
+
+    // === Fitness / Treinos ===
+    const fitness = u.fitness || {};
+    setValue(
+      "fitnessCurrentStreak",
+      fitness.current_streak != null ? String(fitness.current_streak) : "",
+    );
+    setValue(
+      "fitnessLongestStreak",
+      fitness.longest_streak != null ? String(fitness.longest_streak) : "",
+    );
+    setValue(
+      "fitnessTotalWorkouts",
+      fitness.total_workouts != null ? String(fitness.total_workouts) : "",
+    );
+    setValue(
+      "fitnessAnnualGoal",
+      fitness.annual_goal != null ? String(fitness.annual_goal) : "",
+    );
+    const goalPublicEl = document.getElementById("fitnessGoalPublic");
+    if (goalPublicEl) goalPublicEl.checked = !!fitness.goal_is_public;
+    setValue(
+      "fitnessLastWorkout",
+      fitness.last_workout_at ? fitness.last_workout_at : "",
+    );
   } catch (e) {
     console.log("Failed to load user for edit", e);
   }
@@ -242,6 +267,18 @@ export default async function initUserEdit() {
     });
   }
 
+  // attach picker to fitness last workout input
+  const fitnessLastWorkoutEl = document.getElementById("fitnessLastWorkout");
+  if (fitnessLastWorkoutEl) {
+    fitnessLastWorkoutEl.addEventListener("click", (e) => {
+      e.preventDefault();
+      openDateTimePicker(fitnessLastWorkoutEl);
+    });
+    fitnessLastWorkoutEl.addEventListener("focus", (e) => {
+      openDateTimePicker(fitnessLastWorkoutEl);
+    });
+  }
+
   const saveBtn = document.getElementById("saveUserBtn");
   const cancelBtn = document.getElementById("cancelEditBtn");
 
@@ -284,6 +321,25 @@ export default async function initUserEdit() {
             (document.getElementById("confVip") &&
               document.getElementById("confVip").checked) ||
             undefined,
+        },
+        fitness: {
+          current_streak: getValue("fitnessCurrentStreak")
+            ? Number(getValue("fitnessCurrentStreak"))
+            : undefined,
+          longest_streak: getValue("fitnessLongestStreak")
+            ? Number(getValue("fitnessLongestStreak"))
+            : undefined,
+          total_workouts: getValue("fitnessTotalWorkouts")
+            ? Number(getValue("fitnessTotalWorkouts"))
+            : undefined,
+          annual_goal: getValue("fitnessAnnualGoal")
+            ? Number(getValue("fitnessAnnualGoal"))
+            : undefined,
+          goal_is_public:
+            (document.getElementById("fitnessGoalPublic") &&
+              document.getElementById("fitnessGoalPublic").checked) ||
+            undefined,
+          last_workout_at: getValue("fitnessLastWorkout") || undefined,
         },
       };
 

@@ -17,7 +17,7 @@
 
       <!-- Right column: DogFort -->
       <div style="grid-column: 2 / span 1; padding-left: 12px">
-        <h3>DogFort</h3>
+        <h3>DogFort (Legacy)</h3>
         <div class="user-edit-field">
           <label for="dfSaldo">Saldo de confissões</label>
           <input id="dfSaldo" name="saldo" type="number" />
@@ -31,11 +31,11 @@
           <input id="confVip" name="conf_vip" type="checkbox" />
         </div>
         <div class="user-edit-field">
-          <label for="dfMensal">Pontos mensais</label>
+          <label for="dfMensal">Pontos mensais (legacy)</label>
           <input id="dfMensal" name="mensal" type="number" />
         </div>
         <div class="user-edit-field">
-          <label for="dfAnual">Pontos anuais</label>
+          <label for="dfAnual">Pontos anuais (legacy)</label>
           <input id="dfAnual" name="anual" type="number" />
         </div>
         <div class="user-edit-field">
@@ -43,19 +43,61 @@
           <input id="dfPlan" name="plan" />
         </div>
         <div class="user-edit-field">
-          <label for="dfTrofeus">Trófeus</label>
+          <label for="dfTrofeus">Trófeus (legacy)</label>
           <input id="dfTrofeus" name="trofeus" type="number" />
         </div>
         <div class="user-edit-field">
-          <label for="dfMetaAnual">Meta Anual</label>
+          <label for="dfMetaAnual">Meta Anual (legacy)</label>
           <input id="dfMetaAnual" name="meta_anual" type="number" />
         </div>
         <div class="user-edit-field">
-          <label for="dfUltimoTreino">Último treino</label>
+          <label for="dfUltimoTreino">Último treino (legacy)</label>
           <input
             id="dfUltimoTreino"
             name="ultimo_treino"
             placeholder="ISO date"
+          />
+        </div>
+
+        <h3 style="margin-top: 24px">Fitness / Treinos</h3>
+        <div class="user-edit-field">
+          <label for="fitnessCurrentStreak">Sequência atual</label>
+          <input
+            id="fitnessCurrentStreak"
+            name="current_streak"
+            type="number"
+          />
+        </div>
+        <div class="user-edit-field">
+          <label for="fitnessLongestStreak">Maior sequência</label>
+          <input
+            id="fitnessLongestStreak"
+            name="longest_streak"
+            type="number"
+          />
+        </div>
+        <div class="user-edit-field">
+          <label for="fitnessTotalWorkouts">Total de treinos</label>
+          <input
+            id="fitnessTotalWorkouts"
+            name="total_workouts"
+            type="number"
+          />
+        </div>
+        <div class="user-edit-field">
+          <label for="fitnessAnnualGoal">Meta anual (dias)</label>
+          <input id="fitnessAnnualGoal" name="annual_goal" type="number" />
+        </div>
+        <div class="user-edit-field">
+          <label for="fitnessGoalPublic">Meta pública</label>
+          <input id="fitnessGoalPublic" name="goal_is_public" type="checkbox" />
+        </div>
+        <div class="user-edit-field">
+          <label for="fitnessLastWorkout">Último treino</label>
+          <input
+            id="fitnessLastWorkout"
+            name="last_workout_at"
+            placeholder="ISO datetime"
           />
         </div>
       </div>

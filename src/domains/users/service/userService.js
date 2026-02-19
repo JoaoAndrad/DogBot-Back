@@ -17,14 +17,16 @@ async function createUser(data) {
 }
 
 async function updateUser(id, data) {
-  // handle nested dogfort updates separately (upsert DogFortStats)
+  // handle nested dogfort/fitness/confessions updates separately
   if (!data) return null;
   const dogfort = data.dogfort;
   const confessions = data.confessions;
-  // remove dogfort from user payload before updating user record
+  const fitness = data.fitness;
+  // remove nested objects from user payload before updating user record
   const userPayload = Object.assign({}, data);
   delete userPayload.dogfort;
   delete userPayload.confessions;
+  delete userPayload.fitness;
 
   let updatedUser = null;
   if (Object.keys(userPayload).length) {
@@ -34,6 +36,11 @@ async function updateUser(id, data) {
   if (dogfort) {
     // upsert dogfort stats for this user
     await userRepo.upsertDogfortForUser(id, dogfort);
+  }
+
+  if (fitness) {
+    // upsert fitness stats for this user
+    await userRepo.upsertFitnessForUser(id, fitness);
   }
 
   if (confessions) {

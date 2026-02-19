@@ -440,6 +440,7 @@ async function findUserById(id) {
     where: { id },
     include: {
       dogfort: true,
+      fitness: true,
       pushNameHistory: true,
     },
   });
@@ -556,6 +557,64 @@ async function upsertDogfortForUser(userId, dogData) {
   }
 }
 
+async function upsertFitnessForUser(userId, fitnessData) {
+  let prisma = getPrisma();
+  if (!prisma || !prisma.userFitness) {
+    console.warn(
+      "Prisma client missing 'userFitness' model on upsertFitnessForUser - attempting recreate",
+    );
+    await recreatePrismaClient();
+    prisma = getPrisma();
+  }
+
+  // Normalize keys: accept either camelCase or snake_case
+  const normalized = {};
+  if (typeof fitnessData.current_streak !== "undefined")
+    normalized.current_streak = Number(fitnessData.current_streak);
+  if (typeof fitnessData.currentStreak !== "undefined")
+    normalized.current_streak = Number(fitnessData.currentStreak);
+  if (typeof fitnessData.longest_streak !== "undefined")
+    normalized.longest_streak = Number(fitnessData.longest_streak);
+  if (typeof fitnessData.longestStreak !== "undefined")
+    normalized.longest_streak = Number(fitnessData.longestStreak);
+  if (typeof fitnessData.total_workouts !== "undefined")
+    normalized.total_workouts = Number(fitnessData.total_workouts);
+  if (typeof fitnessData.totalWorkouts !== "undefined")
+    normalized.total_workouts = Number(fitnessData.totalWorkouts);
+  if (typeof fitnessData.annual_goal !== "undefined")
+    normalized.annual_goal =
+      fitnessData.annual_goal === null ? null : Number(fitnessData.annual_goal);
+  if (typeof fitnessData.annualGoal !== "undefined")
+    normalized.annual_goal =
+      fitnessData.annualGoal === null ? null : Number(fitnessData.annualGoal);
+  if (typeof fitnessData.goal_is_public !== "undefined")
+    normalized.goal_is_public = !!fitnessData.goal_is_public;
+  if (typeof fitnessData.goalIsPublic !== "undefined")
+    normalized.goal_is_public = !!fitnessData.goalIsPublic;
+  if (typeof fitnessData.last_workout_at !== "undefined")
+    normalized.last_workout_at =
+      fitnessData.last_workout_at === null
+        ? null
+        : new Date(fitnessData.last_workout_at);
+  if (typeof fitnessData.lastWorkoutAt !== "undefined")
+    normalized.last_workout_at =
+      fitnessData.lastWorkoutAt === null
+        ? null
+        : new Date(fitnessData.lastWorkoutAt);
+
+  // attempt upsert by user_id
+  try {
+    return await prisma.userFitness.upsert({
+      where: { user_id: userId },
+      update: normalized,
+      create: Object.assign({ user_id: userId }, normalized),
+    });
+  } catch (e) {
+    console.log("Failed to upsert UserFitness", e && e.message ? e.message : e);
+    throw e;
+  }
+}
+
 async function deleteUserById(id) {
   let prisma = getPrisma();
   if (!prisma || !prisma.user) {
@@ -593,6 +652,7 @@ module.exports = {
   createUser,
   updateUserById,
   upsertDogfortForUser,
+  upsertFitnessForUser,
   deleteUserById,
   bulkAction,
   // New multi-identifier functions
