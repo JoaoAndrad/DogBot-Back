@@ -1,4 +1,4 @@
-const prisma = require("../db");
+const { getPrisma } = require("../db");
 const userRepo = require("../domains/users/repo/userRepo");
 const {
   getTodayBR,
@@ -11,6 +11,9 @@ const {
 } = require("../utils/dateHelper");
 const { DateTime } = require("luxon");
 const logger = require("../lib/logger");
+
+// Get Prisma client instance
+const prisma = getPrisma();
 
 /**
  * Log a workout for a user
