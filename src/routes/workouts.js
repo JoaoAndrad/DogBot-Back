@@ -1,8 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const workoutService = require("../services/workoutService");
-const prisma = require("../db");
+const { getPrisma } = require("../db");
 const logger = require("../lib/logger");
+
+const prisma = getPrisma();
 
 /**
  * POST /api/workouts/log
