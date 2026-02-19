@@ -374,4 +374,42 @@ router.delete("/logs/:logId", async (req, res) => {
   }
 });
 
+/**
+ * GET /api/workouts/last-workout/:senderNumber
+ * Get last workout for a user, optionally filtered by chatId
+ */
+router.get("/last-workout/:senderNumber", async (req, res) => {
+  try {
+    const { senderNumber } = req.params;
+    const { chatId } = req.query;
+
+    if (!senderNumber) {
+      return res.status(400).json({
+        success: false,
+        error: "missing_sender_number",
+      });
+    }
+
+    const lastWorkout = await workoutService.getLastWorkoutForUser(
+      senderNumber,
+      chatId || null,
+    );
+
+    if (!lastWorkout) {
+      return res.status(404).json({
+        success: false,
+        error: "no_workout_found",
+      });
+    }
+
+    return res.json(lastWorkout);
+  } catch (err) {
+    logger.error("[workouts] last-workout error:", err);
+    return res.status(500).json({
+      success: false,
+      error: "internal_error",
+    });
+  }
+});
+
 module.exports = router;

@@ -653,6 +653,39 @@ async function deleteWorkoutLog(logId) {
   }
 }
 
+/**
+ * Get last workout for a user in a specific group
+ * @param {string} senderNumber - User's WhatsApp number
+ * @param {string} chatId - Optional group chat ID to filter by
+ * @returns {Object|null} Last workout log or null
+ */
+async function getLastWorkoutForUser(senderNumber, chatId = null) {
+  try {
+    // Resolve user
+    const user = await userRepo.findByIdentifierExact(senderNumber);
+    if (!user) {
+      return null;
+    }
+
+    // Build query
+    const where = { user_id: user.id };
+    if (chatId) {
+      where.chat_id = chatId;
+    }
+
+    // Get last workout
+    const lastWorkout = await prisma.workoutLog.findFirst({
+      where,
+      orderBy: { logged_at: "desc" },
+    });
+
+    return lastWorkout;
+  } catch (err) {
+    logger.error("[workoutService] Error getting last workout:", err);
+    throw err;
+  }
+}
+
 module.exports = {
   logWorkout,
   calculateStreak,
@@ -666,4 +699,5 @@ module.exports = {
   getYearWorkouts,
   getUserWorkoutLogs,
   deleteWorkoutLog,
+  getLastWorkoutForUser,
 };
