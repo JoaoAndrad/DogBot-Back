@@ -32,7 +32,7 @@ async function loadWorkoutLogs(userId) {
 
   try {
     const r = await fetch(
-      `/api/workouts/user/${encodeURIComponent(userId)}/logs?limit=20`,
+      `/admin/api/workouts/user/${encodeURIComponent(userId)}/logs?limit=20`,
     );
     if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
     const data = await r.json();
@@ -83,7 +83,7 @@ async function loadWorkoutLogs(userId) {
 
         try {
           const r = await fetch(
-            `/api/workouts/logs/${encodeURIComponent(logId)}`,
+            `/admin/api/workouts/logs/${encodeURIComponent(logId)}`,
             {
               method: "DELETE",
             },

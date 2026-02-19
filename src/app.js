@@ -64,6 +64,16 @@ try {
   );
 }
 
+// Admin workouts API (protected by basic auth middleware inside router)
+try {
+  app.use("/admin/api/workouts", require("./routes/adminWorkouts"));
+} catch (e) {
+  console.warn(
+    "Failed to mount admin workouts routes:",
+    e && e.message ? e.message : e,
+  );
+}
+
 // Admin maintenance endpoints (recreate Prisma client, etc.)
 try {
   app.use("/admin/api/maintenance", require("./routes/adminMaintenance"));
