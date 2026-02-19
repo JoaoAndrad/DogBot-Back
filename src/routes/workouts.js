@@ -254,6 +254,7 @@ router.get("/groups/:chatId/settings", async (req, res) => {
       workoutNotifications: groupChat.workoutNotifications,
       currentSeason: groupChat.currentSeason,
       lastMonthProcessed: groupChat.lastMonthProcessed,
+      lastRankingUpdate: groupChat.lastRankingUpdate,
     });
   } catch (err) {
     logger.error("[workouts] get group settings error:", err);
