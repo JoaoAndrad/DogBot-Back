@@ -54,7 +54,8 @@ async function playTrack(
     body.uris = uris;
   }
 
-  if (positionMs > 0) {
+  // Always include position if it's a valid number (including 0)
+  if (typeof positionMs === 'number' && positionMs >= 0) {
     body.position_ms = positionMs;
   }
 

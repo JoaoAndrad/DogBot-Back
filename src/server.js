@@ -15,8 +15,14 @@ try {
   // continue startup; downstream code will error with a clear message if Prisma models are missing
 }
 
+// Set timezone for Node.js process (São Paulo / UTC-3)
+process.env.TZ = "America/Sao_Paulo";
+
 const app = require("./app");
 const jamService = require("./services/jamService");
+const {
+  startMonthlyAwardProcessor,
+} = require("./services/monthlyAwardProcessor");
 const logger = require("./lib/logger");
 
 const PORT = process.env.PORT ? Number(process.env.PORT) : 80;
@@ -43,4 +49,7 @@ app.listen(PORT, HOST, () => {
   }, CLEANUP_INTERVAL);
 
   logger.info("[JamCleanup] Periodic jam cleanup scheduled (every 5 minutes)");
+
+  // Start monthly award processor for workout tracking
+  startMonthlyAwardProcessor();
 });

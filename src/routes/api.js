@@ -185,4 +185,24 @@ try {
   router.use("/broadcasts", fallback);
 }
 
+// workouts
+try {
+  const workouts = require("./workouts");
+  router.use("/workouts", authHeader, workouts);
+  console.info("[routes/api] mounted /api/workouts");
+} catch (e) {
+  console.log(
+    "[routes/api] failed to mount /api/workouts routes:",
+    e && e.message ? e.message : e,
+  );
+  const fallback = express.Router();
+  fallback.get("/", (req, res) =>
+    res.status(500).json({
+      error: "workouts_routes_failed_to_load",
+      details: String(e && e.message ? e.message : e),
+    }),
+  );
+  router.use("/workouts", fallback);
+}
+
 module.exports = router;

@@ -102,6 +102,10 @@ model User {
   hostedJams         JamSession[]  @relation("JamHost")
   jamListenings      JamListener[]
   jamQueueEntries    JamQueue[]    @relation("JamQueueAdder")
+  // Workout relations
+  fitness            UserFitness?
+  workoutLogs        WorkoutLog[]
+  groupTrophies      GroupTrophy[]
 
   @@map("User")
 }
@@ -133,6 +137,85 @@ model DogFortStats {
 
   user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
   @@map("DogFortStats")
+}
+
+// === Workout Tracking Models ===
+
+// UserFitness: overall workout statistics per user
+model UserFitness {
+  id              String   @id @default(uuid())
+  user_id         String   @unique
+  
+  current_streak  Int      @default(0)
+  longest_streak  Int      @default(0)
+  total_workouts  Int      @default(0)
+  last_workout_at DateTime? @db.Timestamptz(6)
+  
+  // Annual goal settings
+  annual_goal     Int?     // Goal between 1-365 days
+  goal_is_public  Boolean  @default(false)
+  
+  created_at      DateTime @default(now()) @db.Timestamptz(6)
+  updated_at      DateTime @updatedAt @db.Timestamptz(6)
+  
+  user            User          @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  workouts        WorkoutLog[]
+  groupTrophies   GroupTrophy[]
+  
+  @@map("user_fitness")
+}
+
+// WorkoutLog: immutable record of each individual workout
+model WorkoutLog {
+  id              String      @id @default(uuid())
+  fitness_id      String
+  user_id         String
+  
+  logged_at       DateTime    @default(now()) @db.Timestamptz(6)
+  workout_date    String      // DD/MM/YYYY format
+  month_key       String      // MM/YYYY format
+  year            Int
+  
+  chat_id         String?
+  message_id      String?
+  note            String?     @db.Text
+  
+  points_earned   Int         @default(1)
+  streak_at_time  Int?
+  
+  fitness         UserFitness @relation(fields: [fitness_id], references: [id], onDelete: Cascade)
+  user            User        @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  
+  @@index([user_id, logged_at])
+  @@index([workout_date])
+  @@index([month_key])
+  @@index([chat_id, month_key])
+  @@index([year])
+  @@map("workout_logs")
+}
+
+// GroupTrophy: monthly winners per group
+model GroupTrophy {
+  id              String      @id @default(uuid())
+  group_chat_id   String
+  user_id         String
+  fitness_id      String
+  
+  month_key       String      // MM/YYYY format
+  year            Int
+  month_name      String
+  workouts_count  Int
+  was_tie         Boolean     @default(false)
+  won_at          DateTime    @default(now()) @db.Timestamptz(6)
+  
+  user            User        @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  fitness         UserFitness @relation(fields: [fitness_id], references: [id], onDelete: Cascade)
+  
+  @@unique([group_chat_id, user_id, month_key])
+  @@index([group_chat_id, year])
+  @@index([user_id])
+  @@index([month_key])
+  @@map("group_trophies")
 }
 
 // === Spotify models ===
@@ -526,6 +609,14 @@ model GroupChat {
   settings        Json?    @db.Json // voting thresholds, etc.
   createdAt       DateTime @default(now()) @db.Timestamptz(6)
   updatedAt       DateTime @updatedAt @db.Timestamptz(6)
+  
+  // Workout tracking fields
+  dogfortEnabled          Boolean  @default(false)
+  workoutNotifications    Boolean  @default(false)
+  workoutTrackingEnabled  Boolean  @default(false)
+  lastRankingUpdate       DateTime? @db.Timestamptz(6)
+  lastMonthProcessed      String?  // MM/YYYY format
+  currentSeason           Int?
 
   playlist        Playlist? @relation(fields: [playlistId], references: [id], onDelete: SetNull)
   votes           CollaborativeVote[]
