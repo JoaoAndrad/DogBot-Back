@@ -26,6 +26,102 @@ function fmtJson(obj) {
   }
 }
 
+async function loadWorkoutLogs(userId) {
+  const container = document.getElementById("workoutLogsContainer");
+  if (!container) return;
+
+  try {
+    const r = await fetch(
+      `/api/workouts/user/${encodeURIComponent(userId)}/logs?limit=20`,
+    );
+    if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
+    const data = await r.json();
+
+    if (!data.success || !data.logs || data.logs.length === 0) {
+      container.innerHTML =
+        '<p style="color: #888">Nenhum treino registrado</p>';
+      return;
+    }
+
+    const logsHtml = data.logs
+      .map((log) => {
+        const date = new Date(log.logged_at);
+        const dateStr = date.toLocaleDateString("pt-BR");
+        const timeStr = date.toLocaleTimeString("pt-BR", {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+        const note = log.note ? ` - ${log.note}` : "";
+
+        return `
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px solid #eee;">
+            <div>
+              <strong>${log.workout_date}</strong> 
+              <span style="color: #666; font-size: 0.9em;">(${dateStr} ${timeStr})</span>
+              ${note}
+            </div>
+            <button 
+              type="button" 
+              class="btn-delete-log" 
+              data-log-id="${log.id}"
+              style="background: #dc3545; color: white; border: none; padding: 4px 12px; border-radius: 4px; cursor: pointer; font-size: 0.85em;"
+            >
+              Deletar
+            </button>
+          </div>
+        `;
+      })
+      .join("");
+
+    container.innerHTML = logsHtml;
+
+    // Attach delete handlers
+    container.querySelectorAll(".btn-delete-log").forEach((btn) => {
+      btn.addEventListener("click", async (e) => {
+        const logId = e.target.dataset.logId;
+        if (!confirm("Tem certeza que deseja deletar este treino?")) return;
+
+        try {
+          const r = await fetch(
+            `/api/workouts/logs/${encodeURIComponent(logId)}`,
+            {
+              method: "DELETE",
+            },
+          );
+          if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
+          const result = await r.json();
+
+          if (result.success) {
+            alert("Treino deletado com sucesso!");
+            // Reload logs
+            loadWorkoutLogs(userId);
+            // Reload user data to update totals
+            const u = await fetchUser(userId);
+            const fitness = u.fitness || {};
+            setValue(
+              "fitnessTotalWorkouts",
+              fitness.total_workouts != null
+                ? String(fitness.total_workouts)
+                : "",
+            );
+          } else {
+            alert(
+              "Erro ao deletar treino: " + (result.message || result.error),
+            );
+          }
+        } catch (err) {
+          console.error("Failed to delete workout log", err);
+          alert("Erro ao deletar treino: " + err.message);
+        }
+      });
+    });
+  } catch (err) {
+    console.error("Failed to load workout logs", err);
+    container.innerHTML =
+      '<p style="color: #dc3545">Erro ao carregar treinos</p>';
+  }
+}
+
 async function fetchUser(id) {
   const r = await fetch(`/admin/api/users/${encodeURIComponent(id)}`);
   if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
@@ -174,6 +270,9 @@ export default async function initUserEdit() {
       "fitnessLastWorkout",
       fitness.last_workout_at ? fitness.last_workout_at : "",
     );
+
+    // Load workout logs
+    loadWorkoutLogs(id);
   } catch (e) {
     console.log("Failed to load user for edit", e);
   }

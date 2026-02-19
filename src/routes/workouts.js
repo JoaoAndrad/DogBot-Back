@@ -330,4 +330,48 @@ router.post("/set-goal", async (req, res) => {
   }
 });
 
+/**
+ * GET /api/workouts/user/:userId/logs
+ * Get workout logs for a specific user (for admin management)
+ */
+router.get("/user/:userId/logs", async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const limit = parseInt(req.query.limit || "30", 10);
+
+    const logs = await workoutService.getUserWorkoutLogs(userId, limit);
+
+    return res.json({
+      success: true,
+      logs,
+    });
+  } catch (err) {
+    logger.error("[workouts] get user logs error:", err);
+    return res.status(500).json({
+      success: false,
+      error: "internal_error",
+    });
+  }
+});
+
+/**
+ * DELETE /api/workouts/logs/:logId
+ * Delete a specific workout log (for admin corrections)
+ */
+router.delete("/logs/:logId", async (req, res) => {
+  try {
+    const { logId } = req.params;
+
+    const result = await workoutService.deleteWorkoutLog(logId);
+
+    return res.json(result);
+  } catch (err) {
+    logger.error("[workouts] delete log error:", err);
+    return res.status(500).json({
+      success: false,
+      error: "internal_error",
+    });
+  }
+});
+
 module.exports = router;

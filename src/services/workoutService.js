@@ -571,6 +571,88 @@ async function getYearWorkouts(userId, year) {
   });
 }
 
+/**
+ * Get workout logs for a user (for admin management)
+ * @param {string} userId - User ID
+ * @param {number} limit - Maximum number of logs to return
+ * @returns {Array} Array of workout logs
+ */
+async function getUserWorkoutLogs(userId, limit = 30) {
+  try {
+    const logs = await prisma.workoutLog.findMany({
+      where: { user_id: userId },
+      orderBy: { logged_at: "desc" },
+      take: limit,
+      select: {
+        id: true,
+        workout_date: true,
+        logged_at: true,
+        month_key: true,
+        year: true,
+        note: true,
+        points_earned: true,
+        streak_at_time: true,
+      },
+    });
+
+    return logs;
+  } catch (err) {
+    logger.error("[workoutService] Error getting user workout logs:", err);
+    throw err;
+  }
+}
+
+/**
+ * Delete a workout log and recalculate user fitness stats
+ * @param {string} logId - Workout log ID
+ * @returns {Object} Result object with success status
+ */
+async function deleteWorkoutLog(logId) {
+  try {
+    // Get the log to find user_id
+    const log = await prisma.workoutLog.findUnique({
+      where: { id: logId },
+      select: { user_id: true, fitness_id: true },
+    });
+
+    if (!log) {
+      return {
+        success: false,
+        error: "log_not_found",
+        message: "Log de treino não encontrado",
+      };
+    }
+
+    // Delete the log
+    await prisma.workoutLog.delete({
+      where: { id: logId },
+    });
+
+    // Recalculate total_workouts for the user
+    const totalWorkouts = await prisma.workoutLog.count({
+      where: { user_id: log.user_id },
+    });
+
+    // Update UserFitness
+    await prisma.userFitness.update({
+      where: { id: log.fitness_id },
+      data: { total_workouts: totalWorkouts },
+    });
+
+    logger.info(
+      `[workoutService] Deleted workout log ${logId} for user ${log.user_id}`,
+    );
+
+    return {
+      success: true,
+      message: "Log de treino deletado com sucesso",
+    };
+  } catch (err) {
+    logger.error("[workoutService] Error deleting workout log:", err);
+    throw err;
+  }
+}
+
 module.exports = {
   logWorkout,
   calculateStreak,
@@ -582,6 +664,6 @@ module.exports = {
   getUserWorkoutHistory,
   setAnnualGoal,
   getYearWorkouts,
-  getUserWorkoutHistory,
-  getUserStats,
+  getUserWorkoutLogs,
+  deleteWorkoutLog,
 };
