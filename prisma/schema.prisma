@@ -614,6 +614,7 @@ model GroupChat {
   dogfortEnabled          Boolean  @default(false)
   workoutNotifications    Boolean  @default(false)
   workoutTrackingEnabled  Boolean  @default(false)
+  workoutActivatedAt      DateTime? @db.Timestamptz(6) // When workout tracking was first activated
   lastRankingUpdate       DateTime? @db.Timestamptz(6)
   lastMonthProcessed      String?  // MM/YYYY format
   currentSeason           Int?

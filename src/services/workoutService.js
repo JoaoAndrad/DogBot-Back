@@ -176,13 +176,25 @@ async function getMonthlyRankingForGroup(
   try {
     const targetMonth = monthKey || getCurrentMonthKeyBR();
 
-    // Get all workouts for this group in this month
+    // Get the group's activation date to avoid counting workouts before activation
+    const groupChat = await prisma.groupChat.findUnique({
+      where: { chatId: groupChatId },
+      select: { workoutActivatedAt: true },
+    });
+    const activatedAt = groupChat?.workoutActivatedAt ?? null;
+
+    // Get all workouts for this group in this month (only since activation)
+    const workoutsWhere = {
+      chat_id: groupChatId,
+      month_key: targetMonth,
+    };
+    if (activatedAt) {
+      workoutsWhere.logged_at = { gte: activatedAt };
+    }
+
     const workouts = await prisma.workoutLog.groupBy({
       by: ["user_id"],
-      where: {
-        chat_id: groupChatId,
-        month_key: targetMonth,
-      },
+      where: workoutsWhere,
       _count: { id: true },
     });
 

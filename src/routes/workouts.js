@@ -121,6 +121,10 @@ router.post("/activate-group", async (req, res) => {
       });
     }
 
+    // Find existing group to preserve activation date
+    const existingGroup = await prisma.groupChat.findUnique({ where: { chatId } });
+    const activationDate = existingGroup?.workoutActivatedAt ?? new Date();
+
     // Find or create group chat
     const groupChat = await prisma.groupChat.upsert({
       where: { chatId },
@@ -129,6 +133,8 @@ router.post("/activate-group", async (req, res) => {
         dogfortEnabled: true,
         workoutNotifications: true,
         currentSeason: new Date().getFullYear(),
+        // Only set activatedAt if not previously set
+        workoutActivatedAt: activationDate,
       },
       create: {
         chatId,
@@ -136,6 +142,7 @@ router.post("/activate-group", async (req, res) => {
         dogfortEnabled: true,
         workoutNotifications: true,
         currentSeason: new Date().getFullYear(),
+        workoutActivatedAt: new Date(),
       },
     });
 
