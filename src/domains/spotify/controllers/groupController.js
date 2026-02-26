@@ -680,7 +680,7 @@ router.get("/playlists/:playlistId/check-track", async (req, res) => {
     }
 
     const pl = detailsRes.playlist;
-    const items = (pl.tracks && pl.tracks.items) || [];
+    const items = (pl.items && pl.items.items) || [];
 
     // Normalization helper
     function normalizeTitle(t) {
@@ -715,7 +715,7 @@ router.get("/playlists/:playlistId/check-track", async (req, res) => {
     const similar = [];
 
     for (const it of items) {
-      const t = it.track || it;
+      const t = it.item || it;
       if (!t) continue;
       // exact by id
       if (trackId && (t.id === trackId || t.uri === trackId)) {

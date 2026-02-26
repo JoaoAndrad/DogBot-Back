@@ -51,6 +51,39 @@ router.post("/log", async (req, res) => {
 });
 
 /**
+ * POST /api/workouts/log-cross-group
+ * Log a workout for a user in another group (cross-group). This will create a group-scoped WorkoutLog
+ * but will NOT update the global UserFitness counters (to avoid double-counting).
+ */
+router.post("/log-cross-group", async (req, res) => {
+  try {
+    const { senderNumber, chatId, note, loggedAt } = req.body;
+
+    if (!senderNumber || !chatId) {
+      return res.status(400).json({ success: false, error: "missing_params" });
+    }
+
+    const result = await workoutService.logCrossGroupWorkout({
+      senderNumber,
+      chatId,
+      note,
+      loggedAt: loggedAt || new Date().toISOString(),
+    });
+
+    if (!result.success) {
+      const statusCode =
+        result.error === "workout_already_logged_today" ? 400 : 500;
+      return res.status(statusCode).json(result);
+    }
+
+    return res.json(result);
+  } catch (err) {
+    logger.error("[workouts] log-cross-group error:", err);
+    return res.status(500).json({ success: false, error: "internal_error" });
+  }
+});
+
+/**
  * POST /api/workouts/ranking/:chatId
  * Get monthly ranking for a group (with member filter)
  */
@@ -122,7 +155,9 @@ router.post("/activate-group", async (req, res) => {
     }
 
     // Find existing group to preserve activation date
-    const existingGroup = await prisma.groupChat.findUnique({ where: { chatId } });
+    const existingGroup = await prisma.groupChat.findUnique({
+      where: { chatId },
+    });
     const activationDate = existingGroup?.workoutActivatedAt ?? new Date();
 
     // Find or create group chat

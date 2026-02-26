@@ -56,7 +56,7 @@ router.get("/search", async (req, res, next) => {
     const params = new URLSearchParams({
       q: query,
       type,
-      limit: Math.min(parseInt(limit, 10) || 10, 50),
+      limit: Math.min(parseInt(limit, 10) || 5, 10),
       market: "BR",
     });
 
@@ -176,7 +176,7 @@ router.get("/playlist/:playlistId/tracks", async (req, res, next) => {
     const playlistData = await playlistResponse.json();
 
     // Get playlist tracks
-    const tracksUrl = `https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=${Math.min(parseInt(limit, 10) || 50, 100)}`;
+    const tracksUrl = `https://api.spotify.com/v1/playlists/${playlistId}/items?limit=${Math.min(parseInt(limit, 10) || 50, 100)}`;
     const tracksResponse = await spotifyFetch(account.id, tracksUrl);
 
     if (!tracksResponse.ok) {
@@ -196,9 +196,9 @@ router.get("/playlist/:playlistId/tracks", async (req, res, next) => {
 
     // Format tracks
     const tracks = tracksData.items
-      .filter((item) => item.track && !item.track.is_local)
+      .filter((item) => item.item && !item.item.is_local)
       .map((item) => {
-        const track = item.track;
+        const track = item.item;
         return {
           id: track.id,
           uri: track.uri,

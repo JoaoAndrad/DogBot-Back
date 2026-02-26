@@ -635,7 +635,7 @@ async function addTrackToPlaylist(playlistId, trackUri, accountId) {
 
     const res = await spotifyFetch(
       accountId,
-      `https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
+      `https://api.spotify.com/v1/playlists/${playlistId}/items`,
       {
         method: "POST",
         headers: {
@@ -700,24 +700,10 @@ async function createSpotifyPlaylist(
     const account = user.spotifyAccounts[0];
     const accountId = account.id;
 
-    // Get Spotify user profile to get user ID
-    const profileRes = await spotifyFetch(
-      accountId,
-      "https://api.spotify.com/v1/me",
-      { method: "GET" },
-    );
-
-    if (!profileRes.ok) {
-      return { success: false, error: "Failed to get Spotify profile" };
-    }
-
-    const profile = await profileRes.json();
-    const spotifyUserId = profile.id;
-
     // Create playlist
     const createRes = await spotifyFetch(
       accountId,
-      `https://api.spotify.com/v1/users/${spotifyUserId}/playlists`,
+      "https://api.spotify.com/v1/me/playlists",
       {
         method: "POST",
         headers: {
@@ -787,26 +773,10 @@ async function createSpotifyPlaylistForAccount(
   try {
     if (!accountId) return { success: false, error: "accountId required" };
 
-    // Get Spotify user profile to get user ID
-    const profileRes = await spotifyFetch(
-      accountId,
-      "https://api.spotify.com/v1/me",
-      {
-        method: "GET",
-      },
-    );
-
-    if (!profileRes.ok) {
-      return { success: false, error: "Failed to get Spotify profile" };
-    }
-
-    const profile = await profileRes.json();
-    const spotifyUserId = profile.id;
-
     // Create playlist
     const createRes = await spotifyFetch(
       accountId,
-      `https://api.spotify.com/v1/users/${spotifyUserId}/playlists`,
+      "https://api.spotify.com/v1/me/playlists",
       {
         method: "POST",
         headers: {
@@ -852,7 +822,7 @@ async function addTracksToPlaylistBatch(playlistId, trackUris = [], accountId) {
         .map((u) => (u.startsWith("spotify:") ? u : `spotify:track:${u}`));
       const res = await spotifyFetch(
         accountId,
-        `https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
+        `https://api.spotify.com/v1/playlists/${playlistId}/items`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

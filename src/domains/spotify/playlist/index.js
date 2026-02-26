@@ -21,7 +21,7 @@ async function fetchPlaylistTrackIds(accountId, playlistId) {
   const limit = 100;
 
   while (true) {
-    const url = `https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=${limit}&offset=${offset}`;
+    const url = `https://api.spotify.com/v1/playlists/${playlistId}/items?limit=${limit}&offset=${offset}`;
     const res = await spotifyFetch(accountId, url, { method: "GET" });
     if (!res || !res.ok) {
       const text = await (
@@ -34,7 +34,7 @@ async function fetchPlaylistTrackIds(accountId, playlistId) {
     const data = await res.json();
     const items = Array.isArray(data.items) ? data.items : [];
     for (const it of items) {
-      const t = it && it.track ? it.track : null;
+      const t = it && it.item ? it.item : null;
       if (!t) continue;
       const is_local = !!t.is_local;
       const id = t.id || null;
