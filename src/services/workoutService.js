@@ -700,70 +700,73 @@ async function getLastWorkoutForUser(senderNumber, chatId = null) {
   }
 }
 
-  /**
-   * Log a workout for a user in another group without updating UserFitness totals/streaks
-   * This prevents double-counting when the original workout was already registered.
-   */
-  async function logCrossGroupWorkout({ senderNumber, chatId, note, loggedAt }) {
-    try {
-      // Resolve user
-      const user =
-        (await userRepo.findByBaseNumber(senderNumber)) ||
-        (await userRepo.findByIdentifierExact(senderNumber));
-      if (!user) return { success: false, error: "user_not_found" };
+/**
+ * Log a workout for a user in another group without updating UserFitness totals/streaks
+ * This prevents double-counting when the original workout was already registered.
+ */
+async function logCrossGroupWorkout({ senderNumber, chatId, note, loggedAt }) {
+  try {
+    // Resolve user
+    const user =
+      (await userRepo.findByBaseNumber(senderNumber)) ||
+      (await userRepo.findByIdentifierExact(senderNumber));
+    if (!user) return { success: false, error: "user_not_found" };
 
-      // Determine workout_date based on loggedAt (in Sao Paulo timezone)
-      const dt = loggedAt
-        ? DateTime.fromISO(loggedAt, { zone: TIMEZONE })
-        : nowInSaoPaulo();
-      const workoutDate = dt.toFormat("dd/LL/yyyy");
-      const monthKey = dt.toFormat("LL/yyyy");
-      const year = dt.year;
+    // Determine workout_date based on loggedAt (in Sao Paulo timezone)
+    const dt = loggedAt
+      ? DateTime.fromISO(loggedAt, { zone: TIMEZONE })
+      : nowInSaoPaulo();
+    const workoutDate = dt.toFormat("dd/LL/yyyy");
+    const monthKey = dt.toFormat("LL/yyyy");
+    const year = dt.year;
 
-      // Check duplicate for this user/date/chat
-      const existing = await prisma.workoutLog.findFirst({
-        where: {
-          user_id: user.id,
-          workout_date: workoutDate,
-          chat_id: chatId,
-        },
-      });
+    // Check duplicate for this user/date/chat
+    const existing = await prisma.workoutLog.findFirst({
+      where: {
+        user_id: user.id,
+        workout_date: workoutDate,
+        chat_id: chatId,
+      },
+    });
 
-      if (existing) {
-        return {
-          success: false,
-          error: "workout_already_logged_today",
-          message: "Já registrado neste grupo hoje",
-        };
-      }
-
-      // Ensure UserFitness exists (but DO NOT update its counters)
-      let fitness = await prisma.userFitness.findUnique({ where: { user_id: user.id } });
-      if (!fitness) {
-        fitness = await prisma.userFitness.create({ data: { user_id: user.id } });
-      }
-
-      // Create a group-scoped WorkoutLog without touching UserFitness totals
-      await prisma.workoutLog.create({
-        data: {
-          fitness_id: fitness.id,
-          user_id: user.id,
-          workout_date: workoutDate,
-          month_key: monthKey,
-          year,
-          chat_id: chatId,
-          message_id: null,
-          note: note || null,
-          points_earned: 1,
-          streak_at_time: fitness.current_streak || 0,
-        },
-      });
-
-      return { success: true, message: "✅ Treino registrado com sucesso!" };
-    } catch (err) {
-      logger.error("[workoutService] logCrossGroupWorkout error:", err);
-      throw err;
+    if (existing) {
+      return {
+        success: false,
+        error: "workout_already_logged_today",
+        message: "Já registrado neste grupo hoje",
+      };
     }
+
+    // Ensure UserFitness exists (but DO NOT update its counters)
+    let fitness = await prisma.userFitness.findUnique({
+      where: { user_id: user.id },
+    });
+    if (!fitness) {
+      fitness = await prisma.userFitness.create({ data: { user_id: user.id } });
+    }
+
+    // Create a group-scoped WorkoutLog without touching UserFitness totals
+    await prisma.workoutLog.create({
+      data: {
+        fitness_id: fitness.id,
+        user_id: user.id,
+        workout_date: workoutDate,
+        month_key: monthKey,
+        year,
+        chat_id: chatId,
+        message_id: null,
+        note: note || null,
+        points_earned: 1,
+        streak_at_time: fitness.current_streak || 0,
+      },
+    });
+
+    return { success: true, message: "✅ Treino registrado com sucesso!" };
+  } catch (err) {
+    logger.error("[workoutService] logCrossGroupWorkout error:", err);
+    throw err;
+  }
+}
 
 module.exports = {
   logWorkout,
