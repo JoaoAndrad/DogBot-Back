@@ -36,8 +36,25 @@ const SKIP_THRESHOLD_PERCENT = 30;
 const CHECKPOINT_INTERVAL_MS = 90_000;
 // ─────────────────────────────────────────────────────────────────────────────
 
+/** Format milliseconds to m:ss string */
+function fmtMs(ms) {
+  if (!ms || ms < 0) return "0:00";
+  const s = Math.floor(ms / 1000);
+  const m = Math.floor(s / 60);
+  return `${m}:${String(s % 60).padStart(2, "0")}`;
+}
+
+/** Normalize artists field (array of objects or strings) to readable string */
+function fmtArtists(artists) {
+  if (!artists) return "";
+  if (typeof artists === "string") return artists;
+  if (Array.isArray(artists))
+    return artists.map((a) => (typeof a === "string" ? a : a.name)).join(", ");
+  return "";
+}
+
 // In-memory cache for active listening sessions
-const activeSessions = new Map(); // userId -> { trackId, playbackId, lastSave, lastProgressMs, accumulatedMs, totalMs, durationMs }
+const activeSessions = new Map(); // userId -> { trackId, trackName, artistsStr, playbackId, lastSave, lastProgressMs, accumulatedMs, totalMs, durationMs }
 
 // Cache for enriched track data (TTL: 1 hour)
 const trackCache = new Map(); // trackId -> { data, timestamp }
@@ -60,6 +77,16 @@ module.exports = {
       currentProgressMs <
         (session.lastProgressMs || 0) - RESTART_BACKWARD_THRESHOLD_MS;
 
+    if (isRestart) {
+      const prevName = session.trackName || session.trackId;
+      const prevArtist = session.artistsStr ? ` — ${session.artistsStr}` : "";
+      console.log(
+        `[PlaybackTracker] 🔁 Loop/restart detectado: "${prevName}"${prevArtist}` +
+          ` | progress voltou ${fmtMs(session.lastProgressMs || 0)} → ${fmtMs(currentProgressMs)}` +
+          ` | ouvido até agora: ${fmtMs(session.totalMs || 0)}`,
+      );
+    }
+
     // Check if track changed or restarted (loop)
     const isNewTrack =
       !session || session.trackId !== trackData.id || isRestart;
@@ -67,18 +94,42 @@ module.exports = {
     if (isNewTrack) {
       // Flush previous session — first add residual time (tail of last track)
       if (session) {
+        let residual = 0;
         if (session.durationMs && session.lastProgressMs != null) {
           const remainingMs = session.durationMs - session.lastProgressMs;
           const wallElapsed = Math.min(
             now - session.lastSave,
             WALL_CLOCK_MAX_GAP_MS,
           );
-          const residual = Math.max(0, Math.min(remainingMs, wallElapsed));
+          residual = Math.max(0, Math.min(remainingMs, wallElapsed));
           if (residual > 0) {
             session.accumulatedMs += residual;
             session.totalMs = (session.totalMs || 0) + residual;
           }
         }
+
+        // Log track change with stats of the track that just ended
+        const prevName = session.trackName || session.trackId;
+        const prevArtist = session.artistsStr ? ` — ${session.artistsStr}` : "";
+        const totalAfterResidual = session.totalMs || 0;
+        const pct = session.durationMs
+          ? Math.min(
+              100,
+              Math.round((totalAfterResidual / session.durationMs) * 100),
+            )
+          : null;
+        const pctStr = pct !== null ? ` (${pct}%)` : "";
+        const residualStr = residual > 0 ? ` +${fmtMs(residual)} residual` : "";
+        const newName = trackData.name || trackData.id;
+        const newArtist = trackData.artists
+          ? ` — ${fmtArtists(trackData.artists)}`
+          : "";
+        console.log(
+          `[PlaybackTracker] ⏭ Troca: "${prevName}"${prevArtist}` +
+            ` | ouvido: ${fmtMs(totalAfterResidual)}${pctStr}${residualStr}` +
+            ` → "${newName}"${newArtist} @ ${fmtMs(currentProgressMs)}`,
+        );
+
         await this.flushSession(userId, session);
       }
 
@@ -111,6 +162,17 @@ module.exports = {
           ? currentProgressMs
           : 0;
 
+      if (seedMs > 0) {
+        const newName = trackData.name || trackData.id;
+        const newArtist = trackData.artists
+          ? ` — ${fmtArtists(trackData.artists)}`
+          : "";
+        console.log(
+          `[PlaybackTracker] 🌱 Início recuperado: "${newName}"${newArtist}` +
+            ` | ${fmtMs(seedMs)} pré-preenchido (progress_ms=${currentProgressMs})`,
+        );
+      }
+
       // Back-date startedAt to reflect when playback actually began
       const startedAt = seedMs > 0 ? new Date(now - seedMs) : new Date();
 
@@ -134,6 +196,8 @@ module.exports = {
       // Store in active sessions cache
       activeSessions.set(userId, {
         trackId: trackData.id,
+        trackName: trackData.name || trackData.id,
+        artistsStr: fmtArtists(trackData.artists),
         playbackId: playback.id,
         sessionId: listeningSession.id,
         lastSave: now,
@@ -408,6 +472,23 @@ module.exports = {
    */
   getActiveSessionsCount() {
     return activeSessions.size;
+  },
+
+  /**
+   * Get a lightweight summary of a user's current in-memory session.
+   * Used by SpotifyMonitor for enriched log lines.
+   */
+  getSessionSummary(userId) {
+    const session = activeSessions.get(userId);
+    if (!session) return null;
+    return {
+      trackId: session.trackId,
+      trackName: session.trackName || null,
+      artistsStr: session.artistsStr || null,
+      totalMs: session.totalMs || 0,
+      lastProgressMs: session.lastProgressMs || 0,
+      durationMs: session.durationMs || null,
+    };
   },
 };
 

@@ -2,6 +2,15 @@ const { fetchAndPersistUser, isSpotifyBlocked } = require("./spotifyService");
 const jamService = require("./jamService");
 const sseHub = require("../lib/sseHub");
 const { prisma } = require("./spotifyService");
+const playbackTracker = require("../domains/spotify/services/playbackTrackerService");
+
+/** Format milliseconds to m:ss string */
+function fmtMs(ms) {
+  if (!ms || ms < 0) return "0:00";
+  const s = Math.floor(ms / 1000);
+  const m = Math.floor(s / 60);
+  return `${m}:${String(s % 60).padStart(2, "0")}`;
+}
 
 /**
  * Helper to get user display name for logging
@@ -480,7 +489,21 @@ class SpotifyMonitor {
             }
             const trackTitle = track.name || track.trackName || "Unknown track";
             const trackId = track.id || track.trackId || "unknown";
-            const line = `${display} (${userId}) — ${trackTitle} (${trackId})`;
+
+            // Enrich with session stats from the in-memory tracker
+            const summary = playbackTracker.getSessionSummary(userId);
+            const progressMs = track.progress_ms || 0;
+            const durationMs = track.duration_ms || summary?.durationMs || 0;
+            const listenedMs = summary?.totalMs || 0;
+            const progressStr =
+              durationMs > 0
+                ? `${fmtMs(progressMs)}/${fmtMs(durationMs)}`
+                : fmtMs(progressMs);
+            const listenedStr = fmtMs(listenedMs);
+
+            const line =
+              `${display} — ${trackTitle} (${trackId})` +
+              ` | ${progressStr} | ouvido: ${listenedStr}`;
             const prev = this._lastPrinted.get(userId);
             if (prev !== line) {
               console.log(`[SpotifyMonitor] ${line}`);
