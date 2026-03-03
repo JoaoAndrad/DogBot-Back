@@ -35,6 +35,7 @@ class SpotifyMonitor {
 
     // Track which users should be monitored at fast interval
     this.fastTrackUsers = new Set(); // userId in active jams with listeners
+    this.dangerZoneUsers = new Set(); // userId near start (<35s) or end (<35s) of track
 
     // Cache last printed log per user to avoid duplicate console lines
     this._lastPrinted = new Map();
@@ -195,6 +196,18 @@ class SpotifyMonitor {
             e,
           );
         }
+      }
+
+      // Update danger zone: fast-track users near start or end of track
+      // so track transitions are captured with ~5s precision instead of ~30s
+      if (res && res.track) {
+        const pMs = res.track.progress_ms || 0;
+        const dMs = res.track.duration_ms || 0;
+        const inDanger = pMs < 35000 || (dMs > 0 && dMs - pMs < 35000);
+        if (inDanger) this.dangerZoneUsers.add(userId);
+        else this.dangerZoneUsers.delete(userId);
+      } else {
+        this.dangerZoneUsers.delete(userId);
       }
 
       return { userId, ok: true, res };
@@ -367,7 +380,10 @@ class SpotifyMonitor {
       return { processed: 0, skipped: true, reason: "spotify_blocked" };
     }
 
-    const fastUsers = Array.from(this.fastTrackUsers);
+    // Merge jam fast-track users with danger-zone users (near start/end of track)
+    const fastUsers = Array.from(
+      new Set([...this.fastTrackUsers, ...this.dangerZoneUsers]),
+    );
     if (fastUsers.length === 0) {
       return { processed: 0 };
     }
@@ -413,9 +429,9 @@ class SpotifyMonitor {
       this.userSpotifyAPI.getConnectedUsers(),
     );
 
-    // Filter out fast track users - they're handled by fast interval
+    // Filter out fast-track and danger-zone users — handled by the 5s interval
     const normalUsers = (connected || []).filter(
-      (u) => !this.fastTrackUsers.has(u),
+      (u) => !this.fastTrackUsers.has(u) && !this.dangerZoneUsers.has(u),
     );
 
     // Suppress verbose connected-users log to avoid leaking user ids in logs

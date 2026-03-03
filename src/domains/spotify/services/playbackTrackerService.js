@@ -17,7 +17,7 @@ const { spotifyFetch } = require(
  */
 
 // In-memory cache for active listening sessions
-const activeSessions = new Map(); // userId -> { trackId, playbackId, lastSave, accumulatedMs, durationMs }
+const activeSessions = new Map(); // userId -> { trackId, playbackId, lastSave, lastProgressMs, accumulatedMs, totalMs, durationMs }
 
 // Cache for enriched track data (TTL: 1 hour)
 const trackCache = new Map(); // trackId -> { data, timestamp }
@@ -31,13 +31,30 @@ module.exports = {
   async recordPlayback({ userId, accountId, trackData, deviceId, progressMs }) {
     const now = Date.now();
     const session = activeSessions.get(userId);
+    const currentProgressMs = progressMs || 0;
 
-    // Check if track changed
-    const isNewTrack = !session || session.trackId !== trackData.id;
+    // Detect loop/restart: same trackId but progress jumped backwards > 5s
+    const isRestart =
+      session &&
+      session.trackId === trackData.id &&
+      currentProgressMs < (session.lastProgressMs || 0) - 5000;
+
+    // Check if track changed or restarted (loop)
+    const isNewTrack =
+      !session || session.trackId !== trackData.id || isRestart;
 
     if (isNewTrack) {
-      // Flush previous session if exists
+      // Flush previous session — first add residual time (tail of last track)
       if (session) {
+        if (session.durationMs && session.lastProgressMs != null) {
+          const remainingMs = session.durationMs - session.lastProgressMs;
+          const wallElapsed = Math.min(now - session.lastSave, 60000);
+          const residual = Math.max(0, Math.min(remainingMs, wallElapsed));
+          if (residual > 0) {
+            session.accumulatedMs += residual;
+            session.totalMs = (session.totalMs || 0) + residual;
+          }
+        }
         await this.flushSession(userId, session);
       }
 
@@ -83,25 +100,33 @@ module.exports = {
         playbackId: playback.id,
         sessionId: listeningSession.id,
         lastSave: now,
+        lastProgressMs: currentProgressMs,
         // accumulatedMs: time since last flush; totalMs: cumulative listened for this playback
         accumulatedMs: 0,
         totalMs: 0,
-        durationMs: trackData.duration_ms || 180000, // default 3min
+        durationMs: trackData.duration_ms || null,
       });
 
       return;
     }
 
-    // Same track continuing - accumulate time
-    const elapsed = Math.min(now - session.lastSave, 60000); // max 60s between checks
+    // Same track continuing — use progress_ms delta as source of truth.
+    // This correctly handles pauses (delta ≈ 0), seeks, and avoids wall-clock drift.
+    const progressDelta = currentProgressMs - (session.lastProgressMs || 0);
+    // Valid delta: positive and within a plausible range (≤ 65s to cover fast-poll gaps)
+    const elapsed =
+      progressDelta > 0 && progressDelta < 65000 ? progressDelta : 0;
+
     session.accumulatedMs += elapsed;
     session.totalMs = (session.totalMs || 0) + elapsed;
+    session.lastProgressMs = currentProgressMs;
     session.lastSave = now;
 
     // Determine if should flush to DB
     const shouldFlush =
-      session.accumulatedMs >= 30000 || // every 30s
-      session.accumulatedMs >= session.durationMs * 0.3 || // or 30% of track
+      session.accumulatedMs >= 30000 || // every 30s of actual listening
+      (session.durationMs &&
+        session.accumulatedMs >= session.durationMs * 0.3) || // or 30% of track
       !trackData.is_playing; // or stopped playing
 
     if (shouldFlush) {
@@ -172,18 +197,20 @@ module.exports = {
         metadata: newMetadata,
       });
 
-      // Only count towards stats if determined above
+      // Count towards global track stats only once per non-skipped play (deduplication)
       if (shouldIncrement) {
-        await trackRepo.incrementStats(session.trackId, session.accumulatedMs);
+        await trackRepo.incrementStats(session.trackId, totalMs);
+      }
 
-        // Update user summary
+      // Always accumulate listening time into user summary and session stats
+      // using the delta since last flush — independent of skip/dedup logic
+      if (session.accumulatedMs > 0) {
         await summaryRepo.addListeningTime(
           userId,
           session.accumulatedMs,
           session.trackId,
         );
 
-        // Update session stats
         await sessionRepo.incrementStats(
           session.sessionId,
           session.accumulatedMs,
@@ -344,3 +371,13 @@ module.exports = {
     return activeSessions.size;
   },
 };
+
+// Safety net: flush all active sessions periodically to limit data loss on unexpected crash.
+// In the worst case, at most ~90s of listening time can be lost.
+setInterval(() => {
+  module.exports
+    .flushAll()
+    .catch((e) =>
+      console.error("[PlaybackTracker] checkpoint flush error:", e),
+    );
+}, 90_000);

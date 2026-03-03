@@ -79,7 +79,7 @@ module.exports = {
    * Update or create track stats
    */
   async incrementStats(trackId, listenedMs) {
-    return prisma.trackStat.upsert({
+    const updated = await prisma.trackStat.upsert({
       where: { trackId },
       create: {
         trackId,
@@ -94,6 +94,23 @@ module.exports = {
         lastPlayedAt: new Date(),
       },
     });
+
+    // Recalculate avgSessionMs from the updated totals (best-effort)
+    try {
+      if (updated.playCount > 0) {
+        const avg = Math.round(
+          Number(updated.totalListenMs) / updated.playCount,
+        );
+        await prisma.trackStat.update({
+          where: { trackId },
+          data: { avgSessionMs: avg },
+        });
+      }
+    } catch (e) {
+      // best-effort, ignore
+    }
+
+    return updated;
   },
 
   /**

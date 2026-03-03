@@ -133,6 +133,26 @@ try {
   // attach monitor to app for introspection (e.g., routes can access)
   app.locals.spotifyMonitor = monitor;
   console.log("[App] SpotifyMonitor initialized and started");
+
+  // Flush active playback sessions on graceful shutdown to avoid data loss
+  const playbackTracker = require("./domains/spotify/services/playbackTrackerService");
+  const shutdown = async (signal) => {
+    console.log(
+      `[App] ${signal} recebido — fazendo flush de sessões de playback ativas...`,
+    );
+    try {
+      await playbackTracker.flushAll();
+      console.log("[App] Flush concluído.");
+    } catch (e) {
+      console.error(
+        "[App] Erro no flush de shutdown:",
+        e && e.message ? e.message : e,
+      );
+    }
+    process.exit(0);
+  };
+  process.on("SIGTERM", () => shutdown("SIGTERM"));
+  process.on("SIGINT", () => shutdown("SIGINT"));
 } catch (e) {
   console.warn(
     "Failed to initialize SpotifyMonitor:",
