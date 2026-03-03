@@ -16,6 +16,7 @@ const { spotifyFetch } = require(
  * - Stats aggregation
  */
 
+//
 // In-memory cache for active listening sessions
 const activeSessions = new Map(); // userId -> { trackId, playbackId, lastSave, lastProgressMs, accumulatedMs, totalMs, durationMs }
 
