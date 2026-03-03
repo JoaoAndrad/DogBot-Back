@@ -19,6 +19,9 @@ async function getUserDisplayName(userId) {
   }
 }
 
+/** Usuários dentro desta janela do início ou fim da faixa entram no fast track (5s) */
+const DANGER_ZONE_MS = 35_000;
+
 class SpotifyMonitor {
   constructor({ userSpotifyAPI, intervalMs = 30000, concurrency = 5 } = {}) {
     if (!userSpotifyAPI) throw new Error("userSpotifyAPI is required");
@@ -203,7 +206,8 @@ class SpotifyMonitor {
       if (res && res.track) {
         const pMs = res.track.progress_ms || 0;
         const dMs = res.track.duration_ms || 0;
-        const inDanger = pMs < 35000 || (dMs > 0 && dMs - pMs < 35000);
+        const inDanger =
+          pMs < DANGER_ZONE_MS || (dMs > 0 && dMs - pMs < DANGER_ZONE_MS);
         if (inDanger) this.dangerZoneUsers.add(userId);
         else this.dangerZoneUsers.delete(userId);
       } else {

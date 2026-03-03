@@ -17,6 +17,25 @@ const { spotifyFetch } = require(
  */
 
 //
+// ── Playback tracking tunables ────────────────────────────────────────────────
+/** Queda de progress_ms maior que isso → detecta loop/restart na mesma faixa */
+const RESTART_BACKWARD_THRESHOLD_MS = 5_000;
+/** Cap de wall-clock por ciclo — evita somar gaps enormes em caso de crash/reinício */
+const WALL_CLOCK_MAX_GAP_MS = 60_000;
+/** Tempo máximo de início recuperável via progress_ms (evita contar seeks pro meio) */
+const SEED_CAP_MS = 30_000;
+/** Delta máximo plausível de progress_ms por ciclo (cobre intervalo fast + margem) */
+const PROGRESS_DELTA_MAX_MS = 65_000;
+/** Acumular este tempo de escuta antes de fazer flush ao banco */
+const FLUSH_INTERVAL_MS = 30_000;
+/** Ou fazer flush ao atingir esta fração da duração total da faixa */
+const FLUSH_TRACK_FRACTION = 0.3;
+/** Plays abaixo deste percentual são marcados como skipped */
+const SKIP_THRESHOLD_PERCENT = 30;
+/** Intervalo do checkpoint periódico de segurança (flush de todas as sessões ativas) */
+const CHECKPOINT_INTERVAL_MS = 90_000;
+// ─────────────────────────────────────────────────────────────────────────────
+
 // In-memory cache for active listening sessions
 const activeSessions = new Map(); // userId -> { trackId, playbackId, lastSave, lastProgressMs, accumulatedMs, totalMs, durationMs }
 
@@ -34,11 +53,12 @@ module.exports = {
     const session = activeSessions.get(userId);
     const currentProgressMs = progressMs || 0;
 
-    // Detect loop/restart: same trackId but progress jumped backwards > 5s
+    // Detect loop/restart: same trackId but progress jumped backwards > RESTART_BACKWARD_THRESHOLD_MS
     const isRestart =
       session &&
       session.trackId === trackData.id &&
-      currentProgressMs < (session.lastProgressMs || 0) - 5000;
+      currentProgressMs <
+        (session.lastProgressMs || 0) - RESTART_BACKWARD_THRESHOLD_MS;
 
     // Check if track changed or restarted (loop)
     const isNewTrack =
@@ -49,7 +69,10 @@ module.exports = {
       if (session) {
         if (session.durationMs && session.lastProgressMs != null) {
           const remainingMs = session.durationMs - session.lastProgressMs;
-          const wallElapsed = Math.min(now - session.lastSave, 60000);
+          const wallElapsed = Math.min(
+            now - session.lastSave,
+            WALL_CLOCK_MAX_GAP_MS,
+          );
           const residual = Math.max(0, Math.min(remainingMs, wallElapsed));
           if (residual > 0) {
             session.accumulatedMs += residual;
@@ -78,6 +101,19 @@ module.exports = {
         );
       }
 
+      // Recover undetected listening time at track start.
+      // If progress_ms < 30s the user started this track before the last poll
+      // (e.g. wasn't playing → started → detected 20s later).
+      // progress_ms is the exact elapsed play time reported by Spotify, so we
+      // can safely pre-seed it. We cap at SEED_CAP_MS to avoid counting mid-track seeks.
+      const seedMs =
+        currentProgressMs > 0 && currentProgressMs < SEED_CAP_MS
+          ? currentProgressMs
+          : 0;
+
+      // Back-date startedAt to reflect when playback actually began
+      const startedAt = seedMs > 0 ? new Date(now - seedMs) : new Date();
+
       // Create new playback record
       const playback = await playbackRepo.create({
         accountId,
@@ -87,8 +123,8 @@ module.exports = {
         deviceType: this.inferDeviceType(trackData.device_type),
         contextType: trackData.context?.type,
         contextId: trackData.context?.uri,
-        startedAt: new Date(),
-        listenedMs: 0,
+        startedAt,
+        listenedMs: seedMs,
         percentPlayed: 0,
         isFirstPlay,
         sessionId: listeningSession.id,
@@ -103,8 +139,8 @@ module.exports = {
         lastSave: now,
         lastProgressMs: currentProgressMs,
         // accumulatedMs: time since last flush; totalMs: cumulative listened for this playback
-        accumulatedMs: 0,
-        totalMs: 0,
+        accumulatedMs: seedMs,
+        totalMs: seedMs,
         durationMs: trackData.duration_ms || null,
       });
 
@@ -114,9 +150,11 @@ module.exports = {
     // Same track continuing — use progress_ms delta as source of truth.
     // This correctly handles pauses (delta ≈ 0), seeks, and avoids wall-clock drift.
     const progressDelta = currentProgressMs - (session.lastProgressMs || 0);
-    // Valid delta: positive and within a plausible range (≤ 65s to cover fast-poll gaps)
+    // Valid delta: positive and within a plausible range (≤ PROGRESS_DELTA_MAX_MS)
     const elapsed =
-      progressDelta > 0 && progressDelta < 65000 ? progressDelta : 0;
+      progressDelta > 0 && progressDelta < PROGRESS_DELTA_MAX_MS
+        ? progressDelta
+        : 0;
 
     session.accumulatedMs += elapsed;
     session.totalMs = (session.totalMs || 0) + elapsed;
@@ -125,9 +163,9 @@ module.exports = {
 
     // Determine if should flush to DB
     const shouldFlush =
-      session.accumulatedMs >= 30000 || // every 30s of actual listening
+      session.accumulatedMs >= FLUSH_INTERVAL_MS || // every FLUSH_INTERVAL_MS of actual listening
       (session.durationMs &&
-        session.accumulatedMs >= session.durationMs * 0.3) || // or 30% of track
+        session.accumulatedMs >= session.durationMs * FLUSH_TRACK_FRACTION) || // or FLUSH_TRACK_FRACTION of track
       !trackData.is_playing; // or stopped playing
 
     if (shouldFlush) {
@@ -146,7 +184,7 @@ module.exports = {
     const percentPlayed = session.durationMs
       ? (totalMs / session.durationMs) * 100
       : 0;
-    const wasSkipped = percentPlayed < 30; // consider skipped if < 30%
+    const wasSkipped = percentPlayed < SKIP_THRESHOLD_PERCENT; // consider skipped if < SKIP_THRESHOLD_PERCENT%
 
     try {
       // Update playback record with cumulative listened time
@@ -381,4 +419,4 @@ setInterval(() => {
     .catch((e) =>
       console.error("[PlaybackTracker] checkpoint flush error:", e),
     );
-}, 90_000);
+}, CHECKPOINT_INTERVAL_MS);
