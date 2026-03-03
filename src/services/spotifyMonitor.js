@@ -51,6 +51,8 @@ class SpotifyMonitor {
 
     // Cache last printed log per user to avoid duplicate console lines
     this._lastPrinted = new Map();
+    // Cache last listenedMs per user to show progression delta
+    this._lastListened = new Map();
     // Cache last known state for jam hosts to detect changes
     this._lastJamState = new Map();
   }
@@ -217,8 +219,37 @@ class SpotifyMonitor {
         const dMs = res.track.duration_ms || 0;
         const inDanger =
           pMs < DANGER_ZONE_MS || (dMs > 0 && dMs - pMs < DANGER_ZONE_MS);
-        if (inDanger) this.dangerZoneUsers.add(userId);
-        else this.dangerZoneUsers.delete(userId);
+        const wasInDanger = this.dangerZoneUsers.has(userId);
+        if (inDanger && !wasInDanger) {
+          this.dangerZoneUsers.add(userId);
+          // Log activation of fast track due to danger zone
+          try {
+            const display = await getUserDisplayName(userId);
+            const title =
+              res.track.name ||
+              res.track.trackName ||
+              res.track.id ||
+              "unknown";
+            console.log(
+              `[SpotifyMonitor] FastTrack ativado (zona crítica) para ${display} (${userId}) — ${title} @ ${fmtMs(pMs)}`,
+            );
+          } catch (e) {
+            // ignore logging errors
+          }
+        } else if (!inDanger && wasInDanger) {
+          this.dangerZoneUsers.delete(userId);
+          try {
+            const display = await getUserDisplayName(userId);
+            const title =
+              res.track.name ||
+              res.track.trackName ||
+              res.track.id ||
+              "unknown";
+            console.log(
+              `[SpotifyMonitor] FastTrack desativado para ${display} (${userId}) — ${title}`,
+            );
+          } catch (e) {}
+        }
       } else {
         this.dangerZoneUsers.delete(userId);
       }
@@ -501,13 +532,17 @@ class SpotifyMonitor {
                 : fmtMs(progressMs);
             const listenedStr = fmtMs(listenedMs);
 
-            const line =
-              `${display} — ${trackTitle} (${trackId})` +
-              ` | ${progressStr} | ouvido: ${listenedStr}`;
+            const baseLine = `${display} (${userId}) — ${trackTitle} (${trackId})`;
+            const delta = listenedMs - (this._lastListened.get(userId) || 0);
+            const deltaStr = delta > 0 ? ` (+${fmtMs(delta)})` : "";
+            const line = `${baseLine} | ${progressStr} | ouvido: ${listenedStr}${deltaStr}`;
+
             const prev = this._lastPrinted.get(userId);
-            if (prev !== line) {
+            // Always log progression when listened time increased, or when line changed
+            if (delta > 0 || prev !== line) {
               console.log(`[SpotifyMonitor] ${line}`);
               this._lastPrinted.set(userId, line);
+              this._lastListened.set(userId, listenedMs);
             }
           }),
         );

@@ -308,6 +308,17 @@ module.exports = {
       // Always accumulate listening time into user summary and session stats
       // using the delta since last flush — independent of skip/dedup logic
       if (session.accumulatedMs > 0) {
+        // Log how much was added to this track in this flush
+        try {
+          const added = session.accumulatedMs;
+          const name = session.trackName || session.trackId;
+          const artist = session.artistsStr ? ` — ${session.artistsStr}` : "";
+          console.log(
+            `[PlaybackTracker] +${fmtMs(added)} adicionados a "${name}"${artist} (agora: ${fmtMs(totalMs)})`,
+          );
+        } catch (e) {
+          // ignore logging errors
+        }
         await summaryRepo.addListeningTime(
           userId,
           session.accumulatedMs,
