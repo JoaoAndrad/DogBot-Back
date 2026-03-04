@@ -29,13 +29,13 @@ async function getUserDisplayName(userId) {
 }
 
 /** Usuários dentro desta janela do início ou fim da faixa entram no fast track (5s) */
-const DANGER_ZONE_MS = 35_000;
+const DANGER_ZONE_MS = 15_000;
 
 class SpotifyMonitor {
-  constructor({ userSpotifyAPI, intervalMs = 30000, concurrency = 5 } = {}) {
+  constructor({ userSpotifyAPI, intervalMs = 10000, concurrency = 5 } = {}) {
     if (!userSpotifyAPI) throw new Error("userSpotifyAPI is required");
     this.userSpotifyAPI = userSpotifyAPI;
-    this.normalIntervalMs = intervalMs; // 30s for normal users
+    this.normalIntervalMs = intervalMs; // 10s for normal users (safe with ≤5 accounts/app)
     this.fastIntervalMs = 5000; // 5s for users in active jams
     this.concurrency = concurrency;
 
