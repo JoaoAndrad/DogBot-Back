@@ -83,28 +83,46 @@ async function findBestSpotifyMatch(accountId, trackName, artistName) {
 
   const targetArtistNorm = normalizeName(artistName);
 
-  // Filter items where any artist matches normalized artist name
-  const exactMatches = items.filter((it) => {
-    const artistNames = (it.artists || []).map((a) => normalizeName(a.name));
-    return artistNames.includes(targetArtistNorm);
-  });
+  // Heuristic: penalize live/remix/remaster versions so the studio original
+  // is preferred when popularity is no longer available from the API.
+  const LIVE_RE =
+    /\b(ao vivo|aovivo|live|remix|remaster(?:ed)?|acoustic|cover|edit|demo|instrumental)\b/i;
+  function versionPenalty(name) {
+    return LIVE_RE.test(name || "") ? 1 : 0;
+  }
 
-  // If we have exact artist matches, sort by popularity and return the most popular
+  // Score: lower = better.
+  // Primary: version penalty (0 = clean, 1 = live/remix/etc.)
+  // Secondary: position in Spotify's relevance-ranked results
+  function score(item, index) {
+    return versionPenalty(item.name) * 100 + index;
+  }
+
+  // Filter items where any artist matches normalized artist name
+  const exactMatches = items
+    .map((it, idx) => ({ it, idx }))
+    .filter(({ it }) => {
+      const artistNames = (it.artists || []).map((a) => normalizeName(a.name));
+      return artistNames.includes(targetArtistNorm);
+    });
+
   if (exactMatches.length > 0) {
-    exactMatches.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
+    exactMatches.sort((a, b) => score(a.it, a.idx) - score(b.it, b.idx));
+    const best = exactMatches[0].it;
     logger.info(
-      `[LastfmResolver] found ${exactMatches.length} exact matches, selected most popular (popularity=${exactMatches[0].popularity}) for track="${trackName}" artist="${artistName}"`,
+      `[LastfmResolver] found ${exactMatches.length} exact matches, selected by relevance+version (pos=${exactMatches[0].idx} penalty=${versionPenalty(best.name)}) for track="${trackName}" artist="${artistName}"`,
     );
-    return exactMatches[0];
+    return best;
   }
 
   logger.info(
-    `[LastfmResolver] no exact artist match; sorting by popularity for track="${trackName}" artist="${artistName}"`,
+    `[LastfmResolver] no exact artist match; selecting by relevance+version for track="${trackName}" artist="${artistName}"`,
   );
 
-  // No exact artist match; sort all results by popularity and return top
-  items.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
-  return items[0] || null;
+  // No exact artist match: pick best by relevance position + version penalty
+  const ranked = items.map((it, idx) => ({ it, idx }));
+  ranked.sort((a, b) => score(a.it, a.idx) - score(b.it, b.idx));
+  return ranked[0].it;
 }
 
 async function resolveCandidatesToSpotify(accountId, candidates = []) {

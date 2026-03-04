@@ -632,7 +632,8 @@ router.get("/playlists/:playlistId", async (req, res) => {
       name: playlist.name,
       description: playlist.description,
       owner: playlist.owner?.display_name,
-      tracks: playlist.tracks?.total,
+      // Feb 2026: Spotify renamed "tracks" → "items" on playlist objects
+      tracks: playlist.items?.total ?? playlist.tracks?.total,
       url: playlist.external_urls?.spotify,
     });
   } catch (error) {

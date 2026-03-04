@@ -464,6 +464,8 @@ async function spotifyFetch(accountId, url, options = {}) {
           res.status
         } body=${text ? text.slice(0, 1000) : "<no-body>"}${pushNameExtra}`,
       );
+      // Cache body so callers can still read it after we consumed the stream
+      res._bodyText = text || null;
     }
   } catch (e) {
     console.warn("[spotifyFetch] failed to log response body", e && e.message);
@@ -718,8 +720,30 @@ async function addTrackToPlaylist(playlistId, trackUri, accountId) {
       return { success: true, data };
     }
 
-    const errorText = await res.text().catch(() => "Unknown error");
-    return { success: false, error: `Spotify API error: ${errorText}` };
+    // Body may already be consumed by spotifyFetch's logging — use cached text first
+    const errorText =
+      res._bodyText != null
+        ? res._bodyText
+        : await res.text().catch(() => null);
+
+    // Detect scope issues and return a clearer message
+    if (
+      res.status === 403 &&
+      errorText &&
+      errorText.toLowerCase().includes("insufficient client scope")
+    ) {
+      return {
+        success: false,
+        error:
+          "A conta Spotify do dono da playlist não tem permissão para modificar playlists. Reconecte o Spotify com /conectar.",
+        code: "INSUFFICIENT_SCOPE",
+      };
+    }
+
+    return {
+      success: false,
+      error: `Spotify API error: ${errorText || `HTTP ${res.status}`}`,
+    };
   } catch (error) {
     console.error("[spotifyService] addTrackToPlaylist error:", error);
     return { success: false, error: error.message };
