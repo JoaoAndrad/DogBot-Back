@@ -505,13 +505,15 @@ model SpotifyAuthSession {
   @@index([accountId])
 }
 
-// Global Spotify rate limit state (singleton table)
+// Per-app Spotify rate limit state.
+// id = appIndex (0-based) — one row per Spotify app credential set.
+// Old global singleton was id=1; clean it up: DELETE FROM "SpotifyRateLimit" WHERE id = 1;
 model SpotifyRateLimit {
-  id              Int      @id @default(1) // Always 1 (singleton)
+  id              Int      @id // appIndex (0-based), no default — must be set explicitly
   blockedUntil    DateTime? @db.Timestamptz(6)
   retryAfterHeader String?
   lastUpdated     DateTime @default(now()) @db.Timestamptz(6)
-  
+
   @@map("SpotifyRateLimit")
 }
 

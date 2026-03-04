@@ -6,33 +6,46 @@ const {
 
 /**
  * Minimal adapter that implements the `userSpotifyAPI` shape used by the monitor.
- * - getConnectedUsers(): returns array of userId strings
- * - getCurrentlyPlaying(userId): returns simplified track info or { playing: false }
- * - getUserProfile(userId): returns profile object { displayName, spotifyId, ... }
+ * - getConnectedUsers(): returns array of { userId, accountId } — properly linked accounts only
+ * - getCurrentlyPlaying(userId, accountId): uses the provided accountId directly
+ * - getUserProfile(userId, accountId): uses the provided accountId directly
  */
 module.exports = {
   async getConnectedUsers() {
     const accounts = await prisma.spotifyAccount.findMany({
       where: { userId: { not: null } },
       select: { userId: true, id: true },
+      orderBy: { createdAt: "asc" },
     });
-    // Return only unique userIds
-    return Array.from(new Set(accounts.map((a) => a.userId).filter(Boolean)));
+    // One entry per userId — oldest (primary) account wins
+    const seen = new Map();
+    for (const a of accounts) {
+      if (a.userId && !seen.has(a.userId)) {
+        seen.set(a.userId, { userId: a.userId, accountId: a.id });
+      }
+    }
+    return Array.from(seen.values());
   },
 
-  async getCurrentlyPlaying(userId) {
+  async getCurrentlyPlaying(userId, accountId) {
     if (!userId) {
       return { playing: false, message: "no userId" };
     }
-    const account = await prisma.spotifyAccount.findFirst({
-      where: { userId },
-    });
-    if (!account) return { playing: false, message: "no account" };
+    // Use provided accountId; fallback to DB only as last resort
+    let resolvedAccountId = accountId;
+    if (!resolvedAccountId) {
+      const account = await prisma.spotifyAccount.findFirst({
+        where: { userId },
+        orderBy: { createdAt: "asc" },
+      });
+      resolvedAccountId = account?.id;
+    }
+    if (!resolvedAccountId) return { playing: false, message: "no account" };
 
     try {
       const res = await spotifyFetch(
-        account.id,
-        "https://api.spotify.com/v1/me/player/currently-playing"
+        resolvedAccountId,
+        "https://api.spotify.com/v1/me/player/currently-playing",
       );
       // If Spotify service is globally blocked, propagate friendly message
       if (res && res.status === 429) {
@@ -79,15 +92,20 @@ module.exports = {
     }
   },
 
-  async getUserProfile(userId) {
-    const account = await prisma.spotifyAccount.findFirst({
-      where: { userId },
-    });
-    if (!account) return null;
+  async getUserProfile(userId, accountId) {
+    let resolvedAccountId = accountId;
+    if (!resolvedAccountId) {
+      const account = await prisma.spotifyAccount.findFirst({
+        where: { userId },
+        orderBy: { createdAt: "asc" },
+      });
+      resolvedAccountId = account?.id;
+    }
+    if (!resolvedAccountId) return null;
     try {
       const res = await spotifyFetch(
-        account.id,
-        "https://api.spotify.com/v1/me"
+        resolvedAccountId,
+        "https://api.spotify.com/v1/me",
       );
       if (!res.ok) return null;
       const data = await res.json();
@@ -106,19 +124,23 @@ module.exports = {
     }
   },
 
-  async getPlaylist(userId, playlistId) {
-    const account = await prisma.spotifyAccount.findFirst({
-      where: { userId },
-    });
-    if (!account) return null;
+  async getPlaylist(userId, playlistId, accountId) {
+    let resolvedAccountId = accountId;
+    if (!resolvedAccountId) {
+      const account = await prisma.spotifyAccount.findFirst({
+        where: { userId },
+        orderBy: { createdAt: "asc" },
+      });
+      resolvedAccountId = account?.id;
+    }
+    if (!resolvedAccountId) return null;
     try {
       const res = await spotifyFetch(
-        account.id,
-        `https://api.spotify.com/v1/playlists/${playlistId}`
+        resolvedAccountId,
+        `https://api.spotify.com/v1/playlists/${playlistId}`,
       );
       if (!res.ok) return null;
-      const data = await res.json();
-      return data;
+      return await res.json();
     } catch (e) {
       return null;
     }

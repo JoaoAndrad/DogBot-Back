@@ -4,13 +4,14 @@ const fetch = require("node-fetch");
 const prisma = new PrismaClient();
 
 /**
- * Check if Spotify is globally rate-limited (blocked) - reads from DB
+ * Check if a specific Spotify app (by appIndex) is rate-limited.
+ * SpotifyRateLimit.id is repurposed as appIndex (0, 1, 2, ...).
  * Returns { blocked: boolean, blockedUntil?: number, message?: string }
  */
-async function isSpotifyBlocked() {
+async function isSpotifyBlocked(appIndex = 0) {
   try {
     const rateLimitRecord = await prisma.spotifyRateLimit.findUnique({
-      where: { id: 1 },
+      where: { id: appIndex },
     });
 
     if (
@@ -26,29 +27,32 @@ async function isSpotifyBlocked() {
       )}/${blockedDate.getFullYear()} às ${pad(blockedDate.getHours())}:${pad(
         blockedDate.getMinutes(),
       )}`;
+      const serverLabel = `servidor ${appIndex + 1}`;
       return {
         blocked: true,
+        appIndex,
         blockedUntil: blockedUntil,
         blockedHeader: rateLimitRecord.retryAfterHeader,
-        message: `O Spotify está passando por algumas instabilidades então as requisições foram suspensas por hora.\n\nPrevisão de retorno: ${formatted}`,
+        message: `O ${serverLabel} do Spotify está passando por algumas instabilidades então as requisições foram suspensas por hora.\n\nPrevisão de retorno: ${formatted}`,
       };
     }
-    return { blocked: false };
+    return { blocked: false, appIndex };
   } catch (e) {
-    console.warn("[isSpotifyBlocked] DB read failed:", e.message);
-    return { blocked: false };
+    console.warn(`[isSpotifyBlocked] DB read failed (app ${appIndex}):`, e.message);
+    return { blocked: false, appIndex };
   }
 }
 
 /**
- * Set global Spotify rate limit block (persists to DB)
+ * Set rate limit block for a specific Spotify app (by appIndex).
+ * SpotifyRateLimit.id is repurposed as appIndex.
  */
-async function setSpotifyBlock(blockedUntilMs, retryAfterHeader) {
+async function setSpotifyBlock(appIndex = 0, blockedUntilMs, retryAfterHeader) {
   try {
     await prisma.spotifyRateLimit.upsert({
-      where: { id: 1 },
+      where: { id: appIndex },
       create: {
-        id: 1,
+        id: appIndex,
         blockedUntil: new Date(blockedUntilMs),
         retryAfterHeader: retryAfterHeader || null,
         lastUpdated: new Date(),
@@ -60,12 +64,30 @@ async function setSpotifyBlock(blockedUntilMs, retryAfterHeader) {
       },
     });
     console.log(
-      `[SpotifyService] Rate limit persisted: blockedUntil=${new Date(
+      `[SpotifyService] Rate limit persisted for app ${appIndex}: blockedUntil=${new Date(
         blockedUntilMs,
       ).toISOString()} retryAfter=${retryAfterHeader}`,
     );
   } catch (e) {
-    console.warn("[setSpotifyBlock] DB write failed:", e.message);
+    console.warn(`[setSpotifyBlock] DB write failed (app ${appIndex}):`, e.message);
+  }
+}
+
+/** In-memory cache: accountId -> appIndex (avoids DB lookup on every spotifyFetch call) */
+const _appIndexCache = new Map();
+
+async function getAppIndexForAccount(accountId) {
+  if (_appIndexCache.has(accountId)) return _appIndexCache.get(accountId);
+  try {
+    const acct = await prisma.spotifyAccount.findUnique({
+      where: { id: accountId },
+      select: { appIndex: true },
+    });
+    const idx = acct?.appIndex ?? 0;
+    _appIndexCache.set(accountId, idx);
+    return idx;
+  } catch (e) {
+    return 0;
   }
 }
 
@@ -73,6 +95,7 @@ async function setSpotifyBlock(blockedUntilMs, retryAfterHeader) {
 module.exports = {
   isSpotifyBlocked,
   setSpotifyBlock,
+  getAppIndexForAccount,
   get prisma() {
     return prisma;
   },
@@ -346,15 +369,16 @@ async function getValidAccessTokenForAccount(accountId) {
 
 // Wrapper for calling Spotify API using stored account tokens.
 // Automatically refreshes once on 401 and retries.
-// Checks global block state from DB before making requests.
+// Checks per-app block state from DB before making requests.
 async function spotifyFetch(accountId, url, options = {}) {
   if (!accountId) throw new Error("accountId is required for spotifyFetch");
 
-  // Check DB for global block state
-  const blockStatus = await isSpotifyBlocked();
+  // Resolve which Spotify app this account belongs to, then check its block state
+  const appIndex = await getAppIndexForAccount(accountId);
+  const blockStatus = await isSpotifyBlocked(appIndex);
   if (blockStatus.blocked) {
     console.warn(
-      `[spotifyFetch] global block active (from DB). blockedUntil=${new Date(
+      `[spotifyFetch] app ${appIndex} blocked. blockedUntil=${new Date(
         blockStatus.blockedUntil,
       ).toISOString()} retryHeader=${blockStatus.blockedHeader}`,
     );
@@ -363,6 +387,7 @@ async function spotifyFetch(accountId, url, options = {}) {
       ok: false,
       blockedUntil: blockStatus.blockedUntil,
       blockedHeader: blockStatus.blockedHeader,
+      appIndex,
       text: async () => blockStatus.message,
       json: async () => ({ error: blockStatus.message }),
     };
@@ -411,12 +436,12 @@ async function spotifyFetch(accountId, url, options = {}) {
         ).toISOString()} -> waiting ${minutes} minutes`,
       );
 
-      // Persist block to DB
-      await setSpotifyBlock(blockedUntilMs, ra);
+      // Persist block to DB (per-app)
+      await setSpotifyBlock(appIndex, blockedUntilMs, ra);
     } catch (e) {
       console.warn("[spotifyFetch] failed parsing Retry-After", e && e.message);
       // ensure a short block to avoid hammering
-      await setSpotifyBlock(Date.now() + 30000, null);
+      await setSpotifyBlock(appIndex, Date.now() + 30000, null);
     }
   }
 
@@ -535,18 +560,19 @@ async function createTrackPlayback({
 /**
  * Fetch currently playing for a single user/account using a provided userSpotifyAPI
  * and persist results to DB using the playbackTracker service.
- * userSpotifyAPI must implement: getCurrentlyPlaying(userId) and getConnectedUsers()/getConnectionStatus
+ * userSpotifyAPI must implement: getCurrentlyPlaying(userId, accountId) and getConnectedUsers()/getConnectionStatus
  */
 async function fetchAndPersistUser({ accountId, userId, userSpotifyAPI }) {
   if (!userSpotifyAPI) throw new Error("userSpotifyAPI is required");
 
-  const result = await userSpotifyAPI.getCurrentlyPlaying(userId);
+  const result = await userSpotifyAPI.getCurrentlyPlaying(userId, accountId);
 
-  // Resolve accountId if not provided
+  // Resolve accountId if not provided — always use the oldest (primary) account
   let resolvedAccountId = accountId;
   if (!resolvedAccountId) {
     const account = await prisma.spotifyAccount.findFirst({
       where: { userId },
+      orderBy: { createdAt: "asc" },
     });
     resolvedAccountId = account?.id;
   }

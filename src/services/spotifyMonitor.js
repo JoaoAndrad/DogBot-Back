@@ -1,4 +1,4 @@
-const { fetchAndPersistUser, isSpotifyBlocked } = require("./spotifyService");
+const { fetchAndPersistUser } = require("./spotifyService");
 const jamService = require("./jamService");
 const sseHub = require("../lib/sseHub");
 const { prisma } = require("./spotifyService");
@@ -46,8 +46,8 @@ class SpotifyMonitor {
     this.consecutiveErrors = {};
 
     // Track which users should be monitored at fast interval
-    this.fastTrackUsers = new Set(); // userId in active jams with listeners
-    this.dangerZoneUsers = new Set(); // userId near start (<35s) or end (<35s) of track
+    this.fastTrackUsers = new Map(); // userId -> accountId (active jam members)
+    this.dangerZoneUsers = new Map(); // userId -> accountId (near start/end of track)
 
     // Cache last printed log per user to avoid duplicate console lines
     this._lastPrinted = new Map();
@@ -64,7 +64,7 @@ class SpotifyMonitor {
    */
   async _categorizeUsers() {
     try {
-      const newFastTrack = new Set();
+      const newFastTrack = new Map(); // userId -> accountId
 
       // Get all active jams
       const jamsResult = await jamService.getActiveJams(null, false); // Don't fetch playback here
@@ -72,27 +72,42 @@ class SpotifyMonitor {
         return;
       }
 
+      // Helper: resolve accountId for a userId (oldest account wins)
+      const resolveAccountId = async (userId) => {
+        // Check if already known from connected users cache
+        const account = await prisma.spotifyAccount.findFirst({
+          where: { userId },
+          orderBy: { createdAt: "asc" },
+          select: { id: true },
+        });
+        return account?.id || null;
+      };
+
       for (const jam of jamsResult.jams) {
         const activeListeners = jam.listeners?.filter((l) => l.isActive) || [];
         const totalPeople = activeListeners.length + 1; // +1 for host
 
-        // Only fast track if 2+ people AND jam is playing
-        if (totalPeople >= 2 && jam.isPlaying) {
-          // Add host
-          newFastTrack.add(jam.hostUserId);
-
-          // Add all active listeners
+        // Fast track if 2+ people in jam, regardless of isPlaying.
+        // Requiring isPlaying caused a race: during track transitions Spotify
+        // briefly reports not-playing, which flushed the set and left jam users
+        // in neither fast nor normal track.
+        if (totalPeople >= 2) {
+          if (!newFastTrack.has(jam.hostUserId)) {
+            newFastTrack.set(jam.hostUserId, await resolveAccountId(jam.hostUserId));
+          }
           for (const listener of activeListeners) {
-            newFastTrack.add(listener.userId);
+            if (!newFastTrack.has(listener.userId)) {
+              newFastTrack.set(listener.userId, await resolveAccountId(listener.userId));
+            }
           }
         }
       }
 
-      // Update fast track set
-      const added = [...newFastTrack].filter(
+      // Update fast track map
+      const added = [...newFastTrack.keys()].filter(
         (u) => !this.fastTrackUsers.has(u),
       );
-      const removed = [...this.fastTrackUsers].filter(
+      const removed = [...this.fastTrackUsers.keys()].filter(
         (u) => !newFastTrack.has(u),
       );
 
@@ -110,7 +125,8 @@ class SpotifyMonitor {
         // so they appear in normal track logs without waiting for next cycle
         setImmediate(() => {
           removed.forEach((userId) => {
-            this._checkOne(userId).catch((err) => {
+            const accountId = this.fastTrackUsers.get(userId);
+            this._checkOne(userId, accountId).catch((err) => {
               console.error(
                 `[SpotifyMonitor] Erro ao verificar usuário removido ${userId}:`,
                 err,
@@ -221,8 +237,8 @@ class SpotifyMonitor {
           pMs < DANGER_ZONE_MS || (dMs > 0 && dMs - pMs < DANGER_ZONE_MS);
         const wasInDanger = this.dangerZoneUsers.has(userId);
         if (inDanger && !wasInDanger) {
-          this.dangerZoneUsers.add(userId);
-          // Log activation of fast track due to danger zone
+          this.dangerZoneUsers.set(userId, accountId);
+          // Log activation of danger zone (extra 5s poll near track edges)
           try {
             const display = await getUserDisplayName(userId);
             const title =
@@ -231,7 +247,7 @@ class SpotifyMonitor {
               res.track.id ||
               "unknown";
             console.log(
-              `[SpotifyMonitor] FastTrack ativado (zona crítica) para ${display} (${userId}) — ${title} @ ${fmtMs(pMs)}`,
+              `[SpotifyMonitor] DangerZone ativado para ${display} (${userId}) — ${title} @ ${fmtMs(pMs)}`,
             );
           } catch (e) {
             // ignore logging errors
@@ -246,7 +262,7 @@ class SpotifyMonitor {
               res.track.id ||
               "unknown";
             console.log(
-              `[SpotifyMonitor] FastTrack desativado para ${display} (${userId}) — ${title}`,
+              `[SpotifyMonitor] DangerZone desativado para ${display} (${userId}) — ${title}`,
             );
           } catch (e) {}
         }
@@ -254,11 +270,11 @@ class SpotifyMonitor {
         this.dangerZoneUsers.delete(userId);
       }
 
-      return { userId, ok: true, res };
+      return { userId, accountId, ok: true, res };
     } catch (err) {
       this.consecutiveErrors[userId] =
         (this.consecutiveErrors[userId] || 0) + 1;
-      return { userId, ok: false, error: err.message };
+      return { userId, accountId, ok: false, error: err.message };
     }
   }
 
@@ -418,16 +434,9 @@ class SpotifyMonitor {
 
   // Simple concurrency limiter using chunks
   async _runFastTrack() {
-    // Check if Spotify is globally blocked
-    const blockStatus = await isSpotifyBlocked();
-    if (blockStatus.blocked) {
-      return { processed: 0, skipped: true, reason: "spotify_blocked" };
-    }
-
     // Merge jam fast-track users with danger-zone users (near start/end of track)
-    const fastUsers = Array.from(
-      new Set([...this.fastTrackUsers, ...this.dangerZoneUsers]),
-    );
+    const mergedMap = new Map([...this.fastTrackUsers, ...this.dangerZoneUsers]);
+    const fastUsers = Array.from(mergedMap.entries()); // [[userId, accountId], ...]
     if (fastUsers.length === 0) {
       return { processed: 0 };
     }
@@ -437,7 +446,7 @@ class SpotifyMonitor {
 
     for (let i = 0; i < fastUsers.length; i += chunkSize) {
       const chunk = fastUsers.slice(i, i + chunkSize);
-      const promises = chunk.map((userId) => this._checkOne(userId));
+      const promises = chunk.map(([userId, accountId]) => this._checkOne(userId, accountId));
       await Promise.all(promises);
       processed += chunk.length;
     }
@@ -450,32 +459,14 @@ class SpotifyMonitor {
     // Recategorize users at each normal track cycle
     await this._categorizeUsers();
 
-    // Check if Spotify is globally blocked; if so, skip cycle
-    const blockStatus = await isSpotifyBlocked();
-    if (blockStatus.blocked) {
-      // Suppress spam: log once per block window (track last logged blockedUntil)
-      if (
-        !this._lastBlockedUntil ||
-        this._lastBlockedUntil !== blockStatus.blockedUntil
-      ) {
-        console.log(
-          `[SpotifyMonitor] skipping cycle — Spotify bloqueado até ${new Date(
-            blockStatus.blockedUntil,
-          ).toLocaleString("pt-BR")}`,
-        );
-        this._lastBlockedUntil = blockStatus.blockedUntil;
-      }
-      return { processed: 0, skipped: true, reason: "spotify_blocked" };
-    }
-    this._lastBlockedUntil = null; // reset when unblocked
-
     const connected = await Promise.resolve(
       this.userSpotifyAPI.getConnectedUsers(),
     );
 
     // Filter out fast-track and danger-zone users — handled by the 5s interval
+    // connected is now [{userId, accountId}] pairs
     const normalUsers = (connected || []).filter(
-      (u) => !this.fastTrackUsers.has(u) && !this.dangerZoneUsers.has(u),
+      ({ userId }) => !this.fastTrackUsers.has(userId) && !this.dangerZoneUsers.has(userId),
     );
 
     // Suppress verbose connected-users log to avoid leaking user ids in logs
@@ -491,7 +482,7 @@ class SpotifyMonitor {
 
     for (let i = 0; i < (normalUsers.length || 0); i += chunkSize) {
       const chunk = normalUsers.slice(i, i + chunkSize);
-      const promises = chunk.map((userId) => this._checkOne(userId));
+      const promises = chunk.map(({ userId, accountId }) => this._checkOne(userId, accountId));
       const results = await Promise.all(promises);
       processed += results.length;
 
@@ -506,12 +497,13 @@ class SpotifyMonitor {
         await Promise.all(
           playing.map(async (p) => {
             const userId = p.userId;
+            const accountId = p.accountId;
             const track = p.res.track || {};
             let display = userId;
             try {
               if (this.userSpotifyAPI.getUserProfile) {
                 const profile = await this.userSpotifyAPI
-                  .getUserProfile(userId)
+                  .getUserProfile(userId, accountId)
                   .catch(() => null);
                 if (profile && profile.displayName)
                   display = profile.displayName;
