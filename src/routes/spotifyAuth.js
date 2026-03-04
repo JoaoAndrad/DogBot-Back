@@ -323,12 +323,80 @@ router.get("/callback", async (req, res) => {
       } catch (uErr) {
         console.warn("failed to update spotify auth session", uErr);
       }
-      return res.json({
-        message: "Tokens saved",
-        account: account.id,
-        tokenId: result.token.id,
-        raw: data,
-      });
+      // This endpoint is always reached via a browser redirect from Spotify.
+      // Return a friendly HTML page instead of raw JSON.
+      const successHtml = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Spotify Conectado</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: #121212;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 24px;
+    }
+    .card {
+      background: #1e1e1e;
+      border-radius: 16px;
+      padding: 48px 40px;
+      max-width: 420px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    }
+    .icon {
+      width: 72px;
+      height: 72px;
+      background: #1db954;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 24px;
+    }
+    .icon svg { width: 38px; height: 38px; fill: #fff; }
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: #fff;
+    }
+    p {
+      font-size: 1rem;
+      color: #b3b3b3;
+      line-height: 1.6;
+    }
+    .highlight { color: #1db954; font-weight: 600; }
+    .footer {
+      margin-top: 32px;
+      font-size: 0.8rem;
+      color: #535353;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="icon">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+      </svg>
+    </div>
+    <h1>Conta Spotify conectada!</h1>
+    <p>Sua conta foi autorizada com sucesso.<br>
+    Você já pode <span class="highlight">retornar ao WhatsApp</span> e continuar usando o bot.</p>
+    <div class="footer">DogBot &bull; Pode fechar esta aba.</div>
+  </div>
+</body>
+</html>`;
+      return res.status(200).type("text/html").send(successHtml);
     } catch (dbErr) {
       console.log("Failed to persist Spotify tokens:", dbErr);
       // still return tokens to caller but warn
