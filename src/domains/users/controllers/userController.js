@@ -101,10 +101,17 @@ router.get("/lookup", async (req, res) => {
       user.spotifyAccounts && user.spotifyAccounts.length > 0
     );
 
+    const spotifyAccount = hasSpotify
+      ? user.spotifyAccounts[0] // primary account
+      : null;
+
     return res.json({
       found: true,
       userId: user.id,
       hasSpotify,
+      spotifyAccount: spotifyAccount
+        ? { id: spotifyAccount.id, appIndex: spotifyAccount.appIndex }
+        : null,
     });
   } catch (err) {
     console.log("[GET /api/users/lookup] Error:", err);
@@ -154,10 +161,17 @@ router.post("/lookup", async (req, res) => {
       user.spotifyAccounts && user.spotifyAccounts.length > 0
     );
 
+    const spotifyAccount = hasSpotify
+      ? user.spotifyAccounts[0] // primary account
+      : null;
+
     return res.json({
       found: true,
       userId: user.id,
       hasSpotify,
+      spotifyAccount: spotifyAccount
+        ? { id: spotifyAccount.id, appIndex: spotifyAccount.appIndex }
+        : null,
     });
   } catch (err) {
     console.log("[POST /api/users/lookup] Error:", err);
