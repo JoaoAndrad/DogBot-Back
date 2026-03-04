@@ -554,7 +554,8 @@ class SpotifyMonitor {
 
     if (
       !anyPlaying &&
-      (normalUsers.length > 0 || this.fastTrackUsers.size > 0)
+      normalUsers.length > 0 &&
+      this.fastTrackUsers.size === 0
     ) {
       console.log(
         "[SpotifyMonitor] nenhum usuário está ouvindo musica no momento (normal track)",
