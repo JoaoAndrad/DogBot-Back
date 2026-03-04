@@ -65,6 +65,20 @@ module.exports = {
   },
 
   /**
+   * Find active vote in a group for a specific track (for deduplication)
+   */
+  async findActiveByGroupAndTrack(groupChatId, trackId) {
+    return await prisma.collaborativeVote.findFirst({
+      where: {
+        groupChatId,
+        trackId,
+        status: "active",
+      },
+      orderBy: { createdAt: "desc" },
+    });
+  },
+
+  /**
    * Add vote to a collaborative vote
    */
   async addVote(voteId, userId, isFor) {

@@ -151,6 +151,18 @@ router.post("/:chatId/vote", async (req, res) => {
     // Find or create group
     const group = await groupChatRepo.findOrCreateByChatId(chatId);
 
+    // Guard against duplicate active votes for the same track in this group
+    if (trackId) {
+      const existing = await collaborativeVoteRepo.findActiveByGroupAndTrack(
+        group.id,
+        trackId,
+      );
+      if (existing) {
+        const stats = await collaborativeVoteRepo.getVoteStats(existing.id);
+        return res.json({ vote: existing, stats, alreadyExists: true });
+      }
+    }
+
     // Create expiration (30 seconds from now)
     const expiresAt = new Date(Date.now() + 30 * 1000);
 
