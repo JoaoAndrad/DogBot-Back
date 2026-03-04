@@ -223,6 +223,7 @@ model GroupTrophy {
 model SpotifyAccount {
   id         String   @id @default(uuid())
   userId     String?  // optional FK to User.id for per-user tokens
+  appIndex   Int      @default(0) // index into SPOTIFY_CLIENT_ID_N credentials (0-based)
   createdAt  DateTime @default(now()) @db.Timestamptz(6)
   updatedAt  DateTime @updatedAt @db.Timestamptz(6)
   lastDeviceId String? // cache last used Spotify device ID
@@ -493,6 +494,7 @@ model SpotifyAuthSession {
   state         String   @unique
   userId        String?  // optional: the local User.id this auth is intended for
   accountId     String?  // optional: SpotifyAccount.id if already known
+  appIndex      Int?     // which Spotify app (SPOTIFY_CLIENT_ID_N) initiated this auth
   redirectAfter String?  // optional URL or route to redirect after auth
   used          Boolean  @default(false)
   metadata      Json?    @db.Json

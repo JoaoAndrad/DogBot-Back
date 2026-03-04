@@ -103,19 +103,49 @@ module.exports = {
   get fetchAndPersistUser() {
     return fetchAndPersistUser;
   },
+  get selectAppIndexForNewAccount() {
+    return selectAppIndexForNewAccount;
+  },
 };
 
 // Now safe to import modules that depend on spotifyService
 const playbackTracker = require("../domains/spotify/services/playbackTrackerService");
 const sseHub = require("../lib/sseHub");
+const config = require("../config");
 
 const SPOTIFY_TOKEN_URL = "https://accounts.spotify.com/api/token";
+const MAX_USERS_PER_APP = 5;
 
-async function upsertAccountForUser({ userId }) {
-  // If no userId provided, create a global account
+/**
+ * Select the best appIndex for a new SpotifyAccount.
+ * Picks the first app that has fewer than MAX_USERS_PER_APP accounts.
+ * Throws if all apps are at capacity.
+ */
+async function selectAppIndexForNewAccount() {
+  const apps = config.spotifyApps;
+  const counts = await prisma.spotifyAccount.groupBy({
+    by: ["appIndex"],
+    _count: { id: true },
+  });
+  const countMap = {};
+  for (const row of counts) countMap[row.appIndex] = row._count.id;
+
+  for (const app of apps) {
+    const used = countMap[app.index] || 0;
+    if (used < MAX_USERS_PER_APP) return app.index;
+  }
+  throw new Error(
+    `All ${apps.length} Spotify apps are at capacity (${MAX_USERS_PER_APP} accounts each). Add a new app to accept more users.`,
+  );
+}
+
+async function upsertAccountForUser({ userId, appIndex } = {}) {
+  // If no userId provided, create a global (bot) account
   if (!userId) {
+    const resolvedIndex =
+      appIndex != null ? appIndex : await selectAppIndexForNewAccount();
     const account = await prisma.spotifyAccount.create({
-      data: {},
+      data: { appIndex: resolvedIndex },
     });
     return account;
   }
@@ -142,15 +172,28 @@ async function upsertAccountForUser({ userId }) {
     const existing = await prisma.spotifyAccount.findFirst({
       where: { userId: resolvedUser.id },
     });
-    if (existing) return existing;
+    if (existing) {
+      // Update appIndex if explicitly provided and different from current
+      if (appIndex != null && existing.appIndex !== appIndex) {
+        return prisma.spotifyAccount.update({
+          where: { id: existing.id },
+          data: { appIndex },
+        });
+      }
+      return existing;
+    }
+    const resolvedIndex =
+      appIndex != null ? appIndex : await selectAppIndexForNewAccount();
     return prisma.spotifyAccount.create({
-      data: { userId: resolvedUser.id },
+      data: { userId: resolvedUser.id, appIndex: resolvedIndex },
     });
   }
 
   // Could not resolve a local User; create an account WITHOUT foreign key
+  const resolvedIndex =
+    appIndex != null ? appIndex : await selectAppIndexForNewAccount();
   const account = await prisma.spotifyAccount.create({
-    data: {},
+    data: { appIndex: resolvedIndex },
   });
   return account;
 }
@@ -236,11 +279,34 @@ async function refreshTokenForAccount(accountId) {
   if (!tokenRow || !tokenRow.refreshToken)
     throw new Error("No refresh token available");
 
+  // Resolve credentials from the account's assigned app
+  let clientId = process.env.SPOTIFY_CLIENT_ID_1;
+  let clientSecret = process.env.SPOTIFY_CLIENT_SECRET_1;
+  try {
+    const acct = await prisma.spotifyAccount.findUnique({
+      where: { id: accountId },
+      select: { appIndex: true },
+    });
+    if (acct != null) {
+      const apps = config.spotifyApps;
+      const app = apps[acct.appIndex] || apps[0];
+      if (app) {
+        clientId = app.clientId;
+        clientSecret = app.clientSecret;
+      }
+    }
+  } catch (e) {
+    console.warn(
+      "[refreshTokenForAccount] could not resolve appIndex:",
+      e.message,
+    );
+  }
+
   const params = new URLSearchParams({
     grant_type: "refresh_token",
     refresh_token: tokenRow.refreshToken,
-    client_id: process.env.SPOTIFY_CLIENT_ID,
-    client_secret: process.env.SPOTIFY_CLIENT_SECRET,
+    client_id: clientId,
+    client_secret: clientSecret,
   }).toString();
 
   const res = await fetch(SPOTIFY_TOKEN_URL, {

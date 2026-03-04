@@ -2,32 +2,32 @@ const express = require("express");
 
 const router = express.Router();
 
-const SPOTIFY_CLIENT_ID = process.env.SPOTIFY_CLIENT_ID;
-const SPOTIFY_CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET;
-const SPOTIFY_REDIRECT_URI = process.env.SPOTIFY_REDIRECT_URI;
+const config = require("../config");
 
 const {
   upsertAccountTokens,
   upsertAccountForUser,
   prisma,
+  selectAppIndexForNewAccount,
 } = require("../services/spotifyService");
 const userRepo = require("../domains/users/repo/userRepo");
 const { randomUUID } = require("crypto");
 
-function base64ClientCreds() {
-  return Buffer.from(`${SPOTIFY_CLIENT_ID}:${SPOTIFY_CLIENT_SECRET}`).toString(
-    "base64",
-  );
+function base64Creds(clientId, clientSecret) {
+  return Buffer.from(`${clientId}:${clientSecret}`).toString("base64");
 }
 
 // Simple helper to POST form-encoded to Spotify token endpoint
-async function postTokenForm(bodyObj) {
+async function postTokenForm(bodyObj, clientId, clientSecret) {
+  const apps = config.spotifyApps;
+  const id = clientId || apps[0].clientId;
+  const secret = clientSecret || apps[0].clientSecret;
   const body = new URLSearchParams(bodyObj).toString();
   const res = await fetch("https://accounts.spotify.com/api/token", {
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
-      Authorization: `Basic ${base64ClientCreds()}`,
+      Authorization: `Basic ${base64Creds(id, secret)}`,
     },
     body,
   });
@@ -38,16 +38,18 @@ async function postTokenForm(bodyObj) {
 
 // Redirect user to Spotify Authorization page
 router.get("/login", (req, res) => {
-  if (!SPOTIFY_CLIENT_ID || !SPOTIFY_REDIRECT_URI) {
+  const apps = config.spotifyApps;
+  const app = apps[0];
+  if (!app || !app.clientId || !app.redirectUri) {
     return res.status(500).json({ error: "Spotify client not configured" });
   }
   const scopes = (
     req.query.scopes || "user-read-private user-read-email"
   ).trim();
   const params = new URLSearchParams({
-    client_id: SPOTIFY_CLIENT_ID,
+    client_id: app.clientId,
     response_type: "code",
-    redirect_uri: SPOTIFY_REDIRECT_URI,
+    redirect_uri: app.redirectUri,
     scope: scopes,
   });
   const url = `https://accounts.spotify.com/authorize?${params.toString()}`;
@@ -62,11 +64,51 @@ router.post("/start", async (req, res) => {
     redirectAfter = null,
     show_dialog = false,
   } = req.body || {};
-  if (!SPOTIFY_CLIENT_ID || !SPOTIFY_REDIRECT_URI) {
+  const apps = config.spotifyApps;
+  if (!apps.length || !apps[0].clientId || !apps[0].redirectUri) {
     return res.status(500).json({ error: "Spotify client not configured" });
   }
 
   try {
+    // If this userId already has a SpotifyAccount, reuse its appIndex (re-auth)
+    // Otherwise auto-assign the best app for a new user
+    let appIndex;
+    try {
+      if (userId) {
+        // Resolve UUID or WhatsApp identifier to find existing account
+        let resolvedId = userId;
+        const isUUID =
+          /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+            userId,
+          );
+        if (!isUUID) {
+          let user = await userRepo.findByIdentifierExact(userId);
+          if (!user) {
+            user = await userRepo.findByBaseNumber(
+              userRepo.extractBaseNumber(userId),
+            );
+          }
+          if (user) resolvedId = user.id;
+        }
+        const existingAccount = await prisma.spotifyAccount.findFirst({
+          where: { userId: resolvedId },
+          select: { appIndex: true },
+        });
+        if (existingAccount != null) {
+          appIndex = existingAccount.appIndex;
+          console.log(
+            `[SpotifyAuth] Re-auth: reusing appIndex=${appIndex} for userId=${resolvedId}`,
+          );
+        }
+      }
+      if (appIndex == null) {
+        appIndex = await selectAppIndexForNewAccount();
+      }
+    } catch (capErr) {
+      return res.status(503).json({ error: capErr.message });
+    }
+    const app = apps[appIndex];
+
     const state = randomUUID();
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
 
@@ -84,6 +126,7 @@ router.post("/start", async (req, res) => {
         userId,
         redirectAfter,
         expiresAt,
+        appIndex,
         metadata: { initiatedBy: "frontend" },
       },
     });
@@ -93,16 +136,16 @@ router.post("/start", async (req, res) => {
       "user-read-private user-read-email user-read-playback-state user-read-currently-playing user-modify-playback-state"
     ).trim();
     const params = new URLSearchParams({
-      client_id: SPOTIFY_CLIENT_ID,
+      client_id: app.clientId,
       response_type: "code",
-      redirect_uri: SPOTIFY_REDIRECT_URI,
+      redirect_uri: app.redirectUri,
       scope: scopeStr,
       state,
       show_dialog: show_dialog ? "true" : "false",
     });
 
     const url = `https://accounts.spotify.com/authorize?${params.toString()}`;
-    return res.json({ auth_url: url, state });
+    return res.json({ auth_url: url, state, appIndex });
   } catch (err) {
     console.log("/spotify/auth/start error", err);
     return res
@@ -117,29 +160,36 @@ router.get("/callback", async (req, res) => {
   let userId = req.query.user_id || null; // optional: link token to a user
   if (!code) return res.status(400).json({ error: "Missing code" });
   try {
-    const data = await postTokenForm({
-      grant_type: "authorization_code",
-      code,
-      redirect_uri: SPOTIFY_REDIRECT_URI,
-    });
-
-    // If state present, try to resolve session and prefer its userId
+    // If state present, try to resolve session and pick the correct app credentials
     const state = req.query.state || null;
     let session = null;
+    let appIndex = 0;
     try {
       if (state) {
         session = await prisma.spotifyAuthSession.findUnique({
           where: { state },
         });
-        if (session && session.userId && !userId) {
-          // prefer session's userId if callback did not include one
-          // eslint-disable-next-line no-param-reassign
-          userId = session.userId;
+        if (session) {
+          if (session.userId && !userId) userId = session.userId;
+          if (session.appIndex != null) appIndex = session.appIndex;
         }
       }
     } catch (sessErr) {
       console.warn("failed to lookup spotify auth session", sessErr);
     }
+
+    const apps = config.spotifyApps;
+    const app = apps[appIndex] || apps[0];
+
+    const data = await postTokenForm(
+      {
+        grant_type: "authorization_code",
+        code,
+        redirect_uri: app.redirectUri,
+      },
+      app.clientId,
+      app.clientSecret,
+    );
 
     // Persist tokens in DB
     try {
@@ -203,8 +253,9 @@ router.get("/callback", async (req, res) => {
         ? await upsertAccountForUser({
             userId: resolvedUserId,
             accountType: "user",
+            appIndex,
           })
-        : await upsertAccountForUser({ accountType: "bot" });
+        : await upsertAccountForUser({ accountType: "bot", appIndex });
 
       console.log(
         `[SpotifyAuth] ✅ Spotify account ${
@@ -323,10 +374,13 @@ router.get("/refresh", async (req, res) => {
   if (!refresh_token)
     return res.status(400).json({ error: "Missing refresh_token" });
   try {
-    const data = await postTokenForm({
-      grant_type: "refresh_token",
-      refresh_token,
-    });
+    const apps = config.spotifyApps;
+    const app = apps[0];
+    const data = await postTokenForm(
+      { grant_type: "refresh_token", refresh_token },
+      app.clientId,
+      app.clientSecret,
+    );
     return res.json(data);
   } catch (e) {
     console.log("spotify refresh error", e.message || e);

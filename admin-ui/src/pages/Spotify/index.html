@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-br">
   <head>
     <meta charset="utf-8" />
@@ -203,7 +203,9 @@
         border-radius: 16px;
         overflow: hidden;
         border: 1px solid var(--border-color);
-        transition: transform 0.3s, box-shadow 0.3s;
+        transition:
+          transform 0.3s,
+          box-shadow 0.3s;
       }
       .playlist-card-item:hover {
         transform: translateY(-5px);
@@ -605,6 +607,30 @@
         <div class="sidebar-widget-container">
           <div class="card">
             <div class="section-header">
+              <h2 class="section-title">App Capacity</h2>
+              <button
+                onclick="loadCapacity()"
+                style="
+                  background: none;
+                  border: none;
+                  cursor: pointer;
+                  color: var(--primary-color);
+                  font-size: 0.85rem;
+                "
+              >
+                ↻ Refresh
+              </button>
+            </div>
+            <ul
+              id="capacityList"
+              style="list-style: none; padding: 0; margin: 0"
+            >
+              <li style="color: #aaa; font-size: 0.9rem">Loading…</li>
+            </ul>
+          </div>
+
+          <div class="card">
+            <div class="section-header">
               <h2 class="section-title">Live users sessions</h2>
               <span class="section-counter"
                 ><span id="sessionsCounter">—</span> active</span
@@ -665,8 +691,8 @@
             type === "error"
               ? "#ff5252"
               : type === "success"
-              ? "#2ecc71"
-              : "#333";
+                ? "#2ecc71"
+                : "#333";
           t.style.color = "white";
           t.style.boxShadow = "0 6px 18px rgba(0,0,0,0.12)";
           t.style.fontSize = "0.95rem";
@@ -683,7 +709,7 @@
           if (internalSecret) headers["X-Internal-Secret"] = internalSecret;
           const res = await fetch(
             path,
-            Object.assign({}, opts, { headers, credentials: "include" })
+            Object.assign({}, opts, { headers, credentials: "include" }),
           );
           if (!res.ok) {
             const text = await res.text().catch(() => res.statusText);
@@ -692,14 +718,80 @@
           return res.json().catch(() => null);
         }
 
+        async function loadCapacity() {
+          try {
+            const resp = await fetchJson(
+              "/api/admin/spotify/accounts/capacity",
+            );
+            const list = document.getElementById("capacityList");
+            if (!list) return;
+            const items = (resp && resp.capacity) || [];
+            if (!items.length) {
+              list.innerHTML =
+                '<li style="color:#aaa;font-size:0.9rem;">No apps configured</li>';
+              return;
+            }
+            list.innerHTML = items
+              .map((app) => {
+                const pct = Math.round((app.used / app.max) * 100);
+                const color =
+                  app.used >= app.max
+                    ? "#e74c3c"
+                    : app.used >= 4
+                      ? "#f39c12"
+                      : "#1db954";
+                return `
+                <li style="margin-bottom:14px;">
+                  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+                    <span style="font-size:0.85rem;font-weight:500;">App ${app.appIndex + 1}</span>
+                    <span style="font-size:0.8rem;color:${color};font-weight:600;">${app.used}/${app.max}</span>
+                  </div>
+                  <div style="height:6px;border-radius:3px;background:#eee;overflow:hidden;">
+                    <div style="height:100%;width:${pct}%;background:${color};border-radius:3px;transition:width 0.4s;"></div>
+                  </div>
+                  <div style="font-size:0.75rem;color:#aaa;margin-top:2px;">id: ${app.clientId}</div>
+                </li>`;
+              })
+              .join("");
+          } catch (e) {
+            console.error("Failed to load capacity", e);
+          }
+        }
+
+        async function moveAccount(accountId, appIndex) {
+          if (
+            !confirm(
+              `Move account ${accountId} to App ${appIndex + 1}? Tokens will be deleted and the user will need to re-authenticate.`,
+            )
+          )
+            return;
+          try {
+            const resp = await fetchJson(
+              `/api/admin/spotify/accounts/${accountId}/app`,
+              {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ appIndex }),
+              },
+            );
+            showToast(
+              `Account moved to App ${appIndex + 1}. Re-auth required.`,
+              "success",
+            );
+            loadCapacity();
+          } catch (e) {
+            showToast("Move failed: " + e.message, "error");
+          }
+        }
+
         async function loadPlaylists() {
           try {
             const resp = await fetchJson("/api/spotify/playlists/managed");
             const playlists = Array.isArray(resp)
               ? resp
               : resp && Array.isArray(resp.playlists)
-              ? resp.playlists
-              : [];
+                ? resp.playlists
+                : [];
             renderPlaylists(playlists || []);
             // update active playlists counter (those shown)
             try {
@@ -719,8 +811,8 @@
             const top = Array.isArray(resp)
               ? resp
               : resp && Array.isArray(resp.top)
-              ? resp.top
-              : [];
+                ? resp.top
+                : [];
             renderTrending(top || []);
           } catch (e) {
             console.error("Failed to load top tracks", e);
@@ -737,7 +829,7 @@
             const reqEl = document.getElementById("requestsToday");
             const sessEl = document.getElementById("activeSessions");
             const playlistsEl = document.getElementById(
-              "managedPlaylistsCount"
+              "managedPlaylistsCount",
             );
             const playlistsTotalEl = document.getElementById("playlistsTotal");
             const sessionsHeaderEl = document.getElementById("sessionsCounter");
@@ -897,7 +989,7 @@
             const avatar =
               s.userAvatar ||
               `https://i.pravatar.cc/150?u=${encodeURIComponent(
-                s.userId || s.userName || "u"
+                s.userId || s.userName || "u",
               )}`;
             const trackText = s.trackName
               ? `${s.userName || "User"} listening "${s.trackName}"`
@@ -935,7 +1027,7 @@
             const id = btn.dataset.id;
             try {
               const settings = await fetchJson(
-                `/api/admin/spotify/playlists/${id}/settings`
+                `/api/admin/spotify/playlists/${id}/settings`,
               );
               showToast("Settings loaded (console)", "info");
               console.log("playlist settings", settings);
@@ -949,7 +1041,7 @@
         function connectSSE(secret) {
           try {
             const url = `/api/admin/spotify/events?internal_secret=${encodeURIComponent(
-              secret
+              secret,
             )}`;
             const es = new EventSource(url);
             es.addEventListener("vote_cancelled", (ev) => {
@@ -986,6 +1078,7 @@
 
         async function init() {
           await loadStatus();
+          await loadCapacity();
           await loadPlaylists();
           await loadTop();
           await loadSessions();
@@ -1007,7 +1100,7 @@
                 .catch(() => {
                   // final fallback: prompt the user
                   const s = prompt(
-                    "Enter admin internal secret for live feed (or cancel to skip)"
+                    "Enter admin internal secret for live feed (or cancel to skip)",
                   );
                   if (s) {
                     internalSecret = s;

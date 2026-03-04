@@ -54,7 +54,7 @@ router.get("/sessions", adminAuth, async (req, res) => {
 
     // Fetch track metadata in batch for any trackIds present
     const trackIds = Array.from(
-      new Set(sessions.map((s) => s.trackId).filter(Boolean))
+      new Set(sessions.map((s) => s.trackId).filter(Boolean)),
     );
     const tracks =
       trackIds.length > 0
@@ -201,7 +201,7 @@ router.post("/votes/:voteId/force", adminAuth, async (req, res) => {
         const resAdd = await spotifyService.addTrackToPlaylist(
           playlist.spotifyId,
           vote.trackId,
-          accountId
+          accountId,
         );
         actionResult = {
           executed: true,
@@ -307,7 +307,7 @@ router.post("/playlists/:id/sync", adminAuth, async (req, res) => {
         const r = await spotifyService.addTrackToPlaylist(
           playlist.spotifyId,
           trackId,
-          accountId
+          accountId,
         );
         results.push({
           id: e.id,
@@ -388,6 +388,103 @@ router.post("/playlists/:id/unlink", adminAuth, async (req, res) => {
     return res.json({ success: true, group: updated });
   } catch (err) {
     console.error("[adminSpotify] unlink playlist error:", err);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /spotify/accounts/capacity -> show how many accounts are in each app
+router.get("/accounts/capacity", adminAuth, async (req, res) => {
+  try {
+    const db = require("../db").getPrisma();
+    const config = require("../config");
+    const apps = config.spotifyApps;
+
+    const counts = await db.spotifyAccount.groupBy({
+      by: ["appIndex"],
+      _count: { id: true },
+    });
+    const countMap = {};
+    for (const row of counts) countMap[row.appIndex] = row._count.id;
+
+    const capacity = apps.map((app) => ({
+      appIndex: app.index,
+      clientId: app.clientId.substring(0, 8) + "...", // partial for display
+      used: countMap[app.index] || 0,
+      max: 5,
+    }));
+
+    return res.json({ capacity });
+  } catch (err) {
+    console.error("[adminSpotify] capacity error:", err);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// PATCH /spotify/accounts/:accountId/app -> move account to a different Spotify app
+// Deletes existing tokens (user must re-authenticate with the new app)
+router.patch("/accounts/:accountId/app", adminAuth, async (req, res) => {
+  try {
+    const db = require("../db").getPrisma();
+    const config = require("../config");
+    const { accountId } = req.params;
+    const { appIndex } = req.body;
+
+    if (appIndex == null || typeof appIndex !== "number") {
+      return res.status(400).json({ error: "appIndex (number) is required" });
+    }
+
+    const apps = config.spotifyApps;
+    if (!apps[appIndex]) {
+      return res
+        .status(400)
+        .json({
+          error: `appIndex ${appIndex} does not exist (${apps.length} apps configured)`,
+        });
+    }
+
+    // Check capacity on target app
+    const countInTarget = await db.spotifyAccount.count({
+      where: { appIndex },
+    });
+    if (countInTarget >= 5) {
+      return res
+        .status(409)
+        .json({ error: `App ${appIndex} is already at capacity (5/5)` });
+    }
+
+    const existing = await db.spotifyAccount.findUnique({
+      where: { id: accountId },
+    });
+    if (!existing) {
+      return res.status(404).json({ error: "SpotifyAccount not found" });
+    }
+
+    // Delete all tokens — they are bound to the old app's client_id
+    await db.spotifyToken.deleteMany({ where: { accountId } });
+
+    // Move to new app
+    const updated = await db.spotifyAccount.update({
+      where: { id: accountId },
+      data: { appIndex },
+      include: {
+        user: {
+          select: {
+            id: true,
+            display_name: true,
+            push_name: true,
+            sender_number: true,
+          },
+        },
+      },
+    });
+
+    return res.json({
+      message: "Account moved. Tokens deleted — user must re-authenticate.",
+      account: updated,
+      reAuthRequired: true,
+    });
+  } catch (err) {
+    console.error("[adminSpotify] move account error:", err);
     return res.status(500).json({ error: err.message });
   }
 });
