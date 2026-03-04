@@ -1,4 +1,4 @@
-const { fetchAndPersistUser } = require("./spotifyService");
+const { fetchAndPersistUser, getAppIndexForAccount } = require("./spotifyService");
 const jamService = require("./jamService");
 const sseHub = require("../lib/sseHub");
 const { prisma } = require("./spotifyService");
@@ -55,6 +55,9 @@ class SpotifyMonitor {
     this._lastListened = new Map();
     // Cache last known state for jam hosts to detect changes
     this._lastJamState = new Map();
+    // Per-jam sync cooldown: Map<jamId, timestampMs> — prevents burst re-syncs during track transitions
+    this._lastJamSync = new Map();
+    this._JAM_SYNC_COOLDOWN_MS = 10_000; // 10s cooldown between syncs for same jam
   }
 
   /**
@@ -155,12 +158,17 @@ class SpotifyMonitor {
         await this._handleJamSync(userId, res.track);
 
         // Additionally: if this user is a listener in a jam and is playing a different track
-        // than the jam host, force a sync to the host state.
+        // than the jam host, force a sync — but only if the jam is not in cooldown.
         try {
           const userJamResult = await jamService.getUserActiveJam(userId);
           if (userJamResult.success && userJamResult.role === "listener") {
             const jam = userJamResult.jam;
             if (jam && jam.isActive) {
+              // Skip desync check while a sync was recently issued for this jam
+              const lastSync = this._lastJamSync?.get(jam.id) || 0;
+              const inCooldown = (Date.now() - lastSync) < this._JAM_SYNC_COOLDOWN_MS;
+
+              if (!inCooldown) {
               const listenerTrackId =
                 (res.track && (res.track.url || res.track.id)) || null;
               const jamTrackUri =
@@ -308,13 +316,26 @@ class SpotifyMonitor {
         progressMs: currentTrack.progress_ms || 0,
       };
 
-      // Check if state changed significantly
+      // Check if state changed significantly — only react to track changes, NOT isPlaying.
+      // isPlaying fluctuates during transitions and would cause burst syncAllListeners calls.
       const hasChanged =
         !lastState ||
-        lastState.trackId !== currentState.trackId ||
-        lastState.isPlaying !== currentState.isPlaying;
+        lastState.trackId !== currentState.trackId;
 
       if (hasChanged) {
+        // Enforce per-jam cooldown to prevent burst syncs during Spotify's own transition window
+        const lastSync = this._lastJamSync.get(jam.id) || 0;
+        const cooldownRemaining = this._JAM_SYNC_COOLDOWN_MS - (Date.now() - lastSync);
+        if (cooldownRemaining > 0) {
+          console.log(
+            `[SpotifyMonitor] Jam ${jam.id} cooldown ativo — sync em ${Math.ceil(cooldownRemaining / 1000)}s`,
+          );
+          // Still update lastState so we don't re-trigger on next poll
+          this._lastJamState.set(jam.id, currentState);
+          return;
+        }
+        this._lastJamSync.set(jam.id, Date.now());
+
         console.log(
           `[SpotifyMonitor] Jam ${jam.id} teve alteração na faixa do host, sincronizando ouvintes...`,
         );
@@ -525,7 +546,9 @@ class SpotifyMonitor {
                 : fmtMs(progressMs);
             const listenedStr = fmtMs(listenedMs);
 
-            const baseLine = `${display} (${userId}) — ${trackTitle} (${trackId})`;
+            const appIndex = await getAppIndexForAccount(accountId).catch(() => null);
+            const appLabel = appIndex != null ? ` [app ${appIndex}]` : "";
+            const baseLine = `${display}${appLabel} — ${trackTitle}`;
             const delta = listenedMs - (this._lastListened.get(userId) || 0);
             const deltaStr = delta > 0 ? ` (+${fmtMs(delta)})` : "";
             const line = `${baseLine} | ${progressStr} | ouvido: ${listenedStr}${deltaStr}`;
