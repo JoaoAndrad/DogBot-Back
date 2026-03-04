@@ -228,6 +228,7 @@ class SpotifyMonitor {
               }
             }
           }
+          }
         } catch (e) {
           console.error(
             "[SpotifyMonitor] Erro ao verificar estado da jam do ouvinte:",
