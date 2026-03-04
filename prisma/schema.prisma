@@ -706,6 +706,7 @@ model JamQueue {
   position     Int      // Order in queue
   votesFor     Int      @default(0)
   votesAgainst Int      @default(0)
+  voters       Json     @default("[]") @db.Json // Array of user IDs who have already voted (deduplication)
   approved     Boolean  @default(false)
   createdAt    DateTime @default(now()) @db.Timestamptz(6)
   playedAt     DateTime? @db.Timestamptz(6)

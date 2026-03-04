@@ -103,7 +103,7 @@ async function addToQueue(jamId, userId, trackData, skipVoting = false) {
         trackImage: trackData.trackImage,
         addedBy: userId,
         position,
-        approved: skipVoting ? true : false, // Skip voting if pre-approved
+        approved: skipVoting,
       },
       include: {
         addedByUser: {
@@ -174,13 +174,22 @@ async function voteOnQueueEntry(queueEntryId, userId, isFor) {
       };
     }
 
-    // Update votes
+    // Prevent double voting
+    const voters = Array.isArray(queueEntry.voters) ? queueEntry.voters : [];
+    if (voters.includes(userId)) {
+      return {
+        success: false,
+        error: "ALREADY_VOTED",
+        message: "Você já votou nesta música",
+      };
+    }
+
+    // Update votes (only increment the relevant counter + register voter for deduplication)
     const updatedEntry = await prisma.jamQueue.update({
       where: { id: queueEntryId },
-      data: {
-        votesFor: isFor ? { increment: 1 } : queueEntry.votesFor,
-        votesAgainst: !isFor ? { increment: 1 } : queueEntry.votesAgainst,
-      },
+      data: isFor
+        ? { votesFor: { increment: 1 }, voters: [...voters, userId] }
+        : { votesAgainst: { increment: 1 }, voters: [...voters, userId] },
     });
 
     // Check if should be approved/rejected

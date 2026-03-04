@@ -28,7 +28,7 @@ async function getUserDisplayName(userId) {
   }
 }
 
-/** Usuários dentro desta janela do início ou fim da faixa entram no fast track (5s) */
+/** Usuários dentro desta janela do início ou fim da faixa entram no fast track (15s) */
 const DANGER_ZONE_MS = 15_000;
 
 class SpotifyMonitor {
@@ -487,6 +487,7 @@ class SpotifyMonitor {
 
     const chunkSize = Math.max(1, this.concurrency);
     let processed = 0;
+    let anyPlaying = false;
 
     for (let i = 0; i < (normalUsers.length || 0); i += chunkSize) {
       const chunk = normalUsers.slice(i, i + chunkSize);
@@ -547,49 +548,8 @@ class SpotifyMonitor {
           }),
         );
       }
-    }
 
-    // If nothing was logged as playing across all chunks, print a single message
-    // (quick check: run through all users results by forcing a fresh check would be expensive here,
-    // so instead rely on the last run's state via consecutiveErrors and processed count.)
-    // To fulfill the requirement, if processed > 0 and no active plays were printed above,
-    // print the message. Note: we can't know globally here without extra state, so approximate by
-    // checking if there were any successes with playing status in a fresh quick pass.
-    // Perform a lightweight pass to detect any currently playing users (non-persisting).
-    // Check both normal track users AND fast track users
-    let anyPlaying = false;
-
-    // Check normal track users
-    for (const userId of normalUsers || []) {
-      try {
-        const peek = (await this.userSpotifyAPI.getCurrentlyPlaying)
-          ? await this.userSpotifyAPI.getCurrentlyPlaying(userId)
-          : null;
-        if (peek && peek.playing) {
-          anyPlaying = true;
-          break;
-        }
-      } catch (e) {
-        // ignore
-      }
-    }
-
-    // Also check fast track users (jam participants)
-    if (!anyPlaying) {
-      const fastUsers = Array.from(this.fastTrackUsers);
-      for (const userId of fastUsers) {
-        try {
-          const peek = (await this.userSpotifyAPI.getCurrentlyPlaying)
-            ? await this.userSpotifyAPI.getCurrentlyPlaying(userId)
-            : null;
-          if (peek && peek.playing) {
-            anyPlaying = true;
-            break;
-          }
-        } catch (e) {
-          // ignore
-        }
-      }
+      if (playing.length > 0) anyPlaying = true;
     }
 
     if (
@@ -620,7 +580,7 @@ class SpotifyMonitor {
       );
     }, this.fastIntervalMs);
 
-    // Start normal track timer (30s) with immediate run
+    // Start normal track timer (10s) with immediate run
     this._runNormalTrack().catch((e) =>
       console.log(
         "[SpotifyMonitor] falha na execução inicial do normal track",
