@@ -492,7 +492,7 @@ async function spotifyFetch(accountId, url, options = {}) {
         if (names) usersLabel = ` | usuários: [${names}]`;
       }
     } catch (e) {
-      // best-effort, don't let this crash the fetch path
+      // best-effort, don't let this crash the fetch path vdd
     }
     console.warn(
       `[spotifyFetch] app ${appIndex} blocked. blockedUntil=${new Date(
