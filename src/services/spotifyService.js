@@ -167,6 +167,8 @@ async function notifyAdminsRateLimit(appIndex, blockedUntilMs) {
 
 /** In-memory rate-limit cache: appIndex -> { blockedUntil: ms, header: string|null } */
 const _blockCache = new Map();
+/** Throttle blocked-app log: appIndex -> lastLoggedAt ms (print at most once per 10s) */
+const _blockLogThrottle = new Map();
 
 /** In-memory cache: accountId -> appIndex (avoids DB lookup on every spotifyFetch call) */
 const _appIndexCache = new Map();
@@ -494,11 +496,16 @@ async function spotifyFetch(accountId, url, options = {}) {
     } catch (e) {
       // best-effort, don't let this crash the fetch path vdd
     }
-    console.warn(
-      `[spotifyFetch] app ${appIndex} blocked. blockedUntil=${new Date(
-        blockStatus.blockedUntil,
-      ).toISOString()} retryHeader=${blockStatus.blockedHeader}${usersLabel}`,
-    );
+    const now = Date.now();
+    const lastLog = _blockLogThrottle.get(appIndex) || 0;
+    if (now - lastLog >= 10_000) {
+      _blockLogThrottle.set(appIndex, now);
+      console.warn(
+        `[spotifyFetch] app ${appIndex} blocked. blockedUntil=${new Date(
+          blockStatus.blockedUntil,
+        ).toISOString()} retryHeader=${blockStatus.blockedHeader}${usersLabel}`,
+      );
+    }
     return {
       status: 429,
       ok: false,
