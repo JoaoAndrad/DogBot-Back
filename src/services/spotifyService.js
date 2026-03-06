@@ -472,10 +472,32 @@ async function spotifyFetch(accountId, url, options = {}) {
   const appIndex = await getAppIndexForAccount(accountId);
   const blockStatus = await isSpotifyBlocked(appIndex);
   if (blockStatus.blocked) {
+    // Resolve display names of all users on this blocked app for the log
+    let usersLabel = "";
+    try {
+      const appAccounts = await prisma.spotifyAccount.findMany({
+        where: { appIndex, userId: { not: null } },
+        select: { userId: true },
+      });
+      if (appAccounts.length) {
+        const userIds = appAccounts.map((a) => a.userId);
+        const users = await prisma.user.findMany({
+          where: { id: { in: userIds } },
+          select: { display_name: true, push_name: true },
+        });
+        const names = users
+          .map((u) => u.display_name || u.push_name)
+          .filter(Boolean)
+          .join(", ");
+        if (names) usersLabel = ` | usuários: [${names}]`;
+      }
+    } catch (e) {
+      // best-effort, don't let this crash the fetch path
+    }
     console.warn(
       `[spotifyFetch] app ${appIndex} blocked. blockedUntil=${new Date(
         blockStatus.blockedUntil,
-      ).toISOString()} retryHeader=${blockStatus.blockedHeader}`,
+      ).toISOString()} retryHeader=${blockStatus.blockedHeader}${usersLabel}`,
     );
     return {
       status: 429,
