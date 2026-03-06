@@ -9,6 +9,24 @@ const prisma = new PrismaClient();
  * Returns { blocked: boolean, blockedUntil?: number, message?: string }
  */
 async function isSpotifyBlocked(appIndex = 0) {
+  // Check in-memory cache first — avoids DB round-trip and eliminates the race
+  // condition where concurrent requests all read "not blocked" before the first
+  // 429 handler has a chance to persist the block.
+  const cached = _blockCache.get(appIndex);
+  if (cached && cached.blockedUntil > Date.now()) {
+    const blockedDate = new Date(cached.blockedUntil);
+    const pad = (n) => String(n).padStart(2, "0");
+    const formatted = `${pad(blockedDate.getDate())}/${pad(blockedDate.getMonth() + 1)}/${blockedDate.getFullYear()} às ${pad(blockedDate.getHours())}:${pad(blockedDate.getMinutes())}`;
+    const serverLabel = `servidor ${appIndex + 1}`;
+    return {
+      blocked: true,
+      appIndex,
+      blockedUntil: cached.blockedUntil,
+      blockedHeader: cached.header,
+      message: `O ${serverLabel} do Spotify está passando por algumas instabilidades então as requisições foram suspensas por hora.\n\nPrevisão de retorno: ${formatted}`,
+    };
+  }
+
   try {
     const rateLimitRecord = await prisma.spotifyRateLimit.findUnique({
       where: { id: appIndex },
@@ -20,6 +38,11 @@ async function isSpotifyBlocked(appIndex = 0) {
       new Date(rateLimitRecord.blockedUntil).getTime() > Date.now()
     ) {
       const blockedUntil = new Date(rateLimitRecord.blockedUntil).getTime();
+      // Re-populate in-memory cache from DB (e.g. after server restart)
+      _blockCache.set(appIndex, {
+        blockedUntil,
+        header: rateLimitRecord.retryAfterHeader,
+      });
       const blockedDate = new Date(blockedUntil);
       const pad = (n) => String(n).padStart(2, "0");
       const formatted = `${pad(blockedDate.getDate())}/${pad(
@@ -38,7 +61,10 @@ async function isSpotifyBlocked(appIndex = 0) {
     }
     return { blocked: false, appIndex };
   } catch (e) {
-    console.warn(`[isSpotifyBlocked] DB read failed (app ${appIndex}):`, e.message);
+    console.warn(
+      `[isSpotifyBlocked] DB read failed (app ${appIndex}):`,
+      e.message,
+    );
     return { blocked: false, appIndex };
   }
 }
@@ -48,6 +74,22 @@ async function isSpotifyBlocked(appIndex = 0) {
  * SpotifyRateLimit.id is repurposed as appIndex.
  */
 async function setSpotifyBlock(appIndex = 0, blockedUntilMs, retryAfterHeader) {
+  // Check if app was previously unblocked (new block, not an extension)
+  const prev = _blockCache.get(appIndex);
+  const wasBlocked = prev && prev.blockedUntil > Date.now();
+
+  // Update in-memory cache IMMEDIATELY — this is what prevents concurrent requests
+  // from racing past the block check before the DB write completes.
+  _blockCache.set(appIndex, {
+    blockedUntil: blockedUntilMs,
+    header: retryAfterHeader || null,
+  });
+
+  // Notify admins only when transitioning from unblocked → blocked
+  if (!wasBlocked) {
+    notifyAdminsRateLimit(appIndex, blockedUntilMs).catch(() => {});
+  }
+
   try {
     await prisma.spotifyRateLimit.upsert({
       where: { id: appIndex },
@@ -69,9 +111,62 @@ async function setSpotifyBlock(appIndex = 0, blockedUntilMs, retryAfterHeader) {
       ).toISOString()} retryAfter=${retryAfterHeader}`,
     );
   } catch (e) {
-    console.warn(`[setSpotifyBlock] DB write failed (app ${appIndex}):`, e.message);
+    console.warn(
+      `[setSpotifyBlock] DB write failed (app ${appIndex}):`,
+      e.message,
+    );
   }
 }
+
+/**
+ * Send a WhatsApp notification to all admin users via the frontend internal API
+ * when a new Spotify rate limit block starts.
+ */
+async function notifyAdminsRateLimit(appIndex, blockedUntilMs) {
+  try {
+    const admins = await prisma.user.findMany({
+      where: { isAdmin: true },
+      select: { sender_number: true },
+    });
+    if (!admins.length) return;
+
+    const blockedDate = new Date(blockedUntilMs);
+    const pad = (n) => String(n).padStart(2, "0");
+    const formatted = `${pad(blockedDate.getDate())}/${pad(blockedDate.getMonth() + 1)}/${blockedDate.getFullYear()} às ${pad(blockedDate.getHours())}:${pad(blockedDate.getMinutes())}`;
+    const message = `⚠️ *[SpotifyMon]* O servidor ${appIndex + 1} do Spotify foi bloqueado por excesso de requisições.\n\nPrevisão de retorno: *${formatted}*`;
+
+    const internalApiUrl =
+      process.env.INTERNAL_API_URL || "http://127.0.0.1:3001";
+    const secret =
+      process.env.POLL_SHARED_SECRET || process.env.INTERNAL_API_SECRET;
+    if (!secret) {
+      console.warn(
+        "[SpotifyService] notifyAdminsRateLimit: POLL_SHARED_SECRET not set, skipping",
+      );
+      return;
+    }
+
+    for (const admin of admins) {
+      try {
+        await fetch(`${internalApiUrl}/internal/send-message`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Internal-Secret": secret,
+          },
+          body: JSON.stringify({ chatId: admin.sender_number, message }),
+        });
+      } catch (e) {
+        // best-effort, individual send failures are non-fatal
+      }
+    }
+  } catch (e) {
+    console.warn("[SpotifyService] notifyAdminsRateLimit failed:", e.message);
+  }
+}
+
+/** In-memory rate-limit cache: appIndex -> { blockedUntil: ms, header: string|null } */
+const _blockCache = new Map();
 
 /** In-memory cache: accountId -> appIndex (avoids DB lookup on every spotifyFetch call) */
 const _appIndexCache = new Map();
@@ -416,8 +511,8 @@ async function spotifyFetch(accountId, url, options = {}) {
           ms = Number(digits) || 0;
         } else if (/^[0-9]+$/.test(raw)) {
           const numeric = Number(raw);
-          // Heuristic: values > 1000 are likely milliseconds, otherwise seconds
-          ms = numeric > 1000 ? numeric : numeric * 1000;
+          // RFC 7231: Retry-After integer value is always in seconds
+          ms = numeric * 1000;
         } else {
           // Try parsing as HTTP-date
           const d = Date.parse(raw);
